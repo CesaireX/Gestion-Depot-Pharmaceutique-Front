@@ -1,0 +1,386 @@
+<!-- inventory.component.html -->
+<div class="inventory-container">
+    <div class="header">
+        <div> <h6>Historique Fournisseur</h6>
+            <p>• À la date du {{today  | customDate}} </p></div>
+        <div class="flex">
+            <button [disabled]="fournisseurhistoriques.length===0" type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportExcel()" class="p-button-success mr-2" pTooltip="XLS" tooltipPosition="bottom"></button>
+            <button [disabled]="fournisseurhistoriques.length===0" type="button" pButton pRipple icon="pi pi-file-pdf" (click)="exportPDF()" class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>
+        </div>
+
+    </div>
+    <div class="filters">
+        <div class="filter-group">
+            <label >Fournisseur <span
+                style="color: red">*</span></label>
+            <p-dropdown [options]="fournisseurs" [(ngModel)]="fournisseurselected" (onChange)="changeFournisseur()"
+                        [showClear]="true" appendTo="body" [filter]="true" [filterBy]="'nom'" optionLabel="prenom"
+                        [style]="{width: '300px'}" name="magasin" placeholder="Selectionner un fournisseur"
+                        [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false" [required]="true">
+
+                <ng-template let-fournisseurs pTemplate="item">
+                    <div class="flex align-items-center fournisseurs-item">
+                        <div>{{ fournisseurs?.nom }} &nbsp;&nbsp; {{ fournisseurs?.prenom }}</div>
+
+                    </div>
+                </ng-template>
+                <ng-template let-fournisseurs pTemplate="selectedItem">
+
+                    {{ fournisseurs?.nom }}&nbsp;&nbsp; {{ fournisseurs?.prenom }}
+
+                </ng-template>
+
+            </p-dropdown>
+        </div>
+        <div class="filter-group">
+            <label>Filtre par :</label>
+            <div>
+                <p-radioButton name="jour" value=0 [(ngModel)]="check" inputId="jour" label="Date" (onClick)="checkValue()"></p-radioButton>&nbsp;
+                <p-radioButton name="periode" value=1 [(ngModel)]="check" inputId="periode" label="Période" (onClick)="checkValue()"></p-radioButton>
+               </div>
+        </div>
+        <div class="filter-group"  *ngIf="check==0">
+            <label >Date :</label>
+            <p-calendar appendTo="body" [(ngModel)]="dateJournee"
+                        (ngModelChange)="onDateChange()"
+                        name="dateJournee" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                        [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+            ></p-calendar>
+        </div>
+        <div class="filter-group"  *ngIf="check==1">
+            <label >Période :</label>
+            <p-calendar [(ngModel)]="selectedPeriod"  (ngModelChange)="onPeriodChange()" selectionMode="range" [showIcon]="true" dateFormat="dd/mm/yy"></p-calendar>
+        </div>
+        <!--
+        <button pButton type="button" label="+ More Filters" class="p-button-outlined more-filters"></button>
+-->
+        <button [disabled]="!fournisseurselected" pButton type="button" (click)="loadFournisseurHistorique()" class="execute-report"><i class="pi pi-sync"></i>Charger</button>
+    </div>
+
+    <div class="card">
+        <div style="display : flex; align-items: center; align-content: center; justify-content: center">
+            <h5>Historique Fournisseur</h5>
+        </div>
+        <p-table #dt [value]="fournisseurhistoriques" [paginator]="true" [loading]="loading" [rows]="25"
+                 responsiveLayout="scroll" [exportHeader]="'customExportHeader'"
+                 [rowsPerPageOptions]="[25,50,100]" [rowHover]="true"
+                 [globalFilterFields]="['date','numero','moyenPaiement','faitPar']">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+
+
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher fournisseur" class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <div style="display:flex; flex-direction: row">
+                <div class="field col-12 md:col-12">
+                    <p><span style="font-weight:bold;">Nom&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; :&nbsp;&nbsp;</span> {{fournisseurselected?.nom}}</p>
+                    <label ><span style="font-weight:bold;">Prénom&nbsp; &nbsp;&nbsp; &nbsp; :&nbsp;&nbsp;</span> {{fournisseurselected?.prenom}}</label>
+                    <p ><span style="font-weight:bold;">Tel &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;</span> {{fournisseurselected?.telephone}}</p>
+                    <p ><span style="font-weight:bold;">Entreprise &nbsp;&nbsp;:&nbsp;&nbsp;</span> {{fournisseurselected?.entreprise}}</p>
+                    <p ><span style="font-weight:bold;">Adresse &nbsp;&nbsp;:&nbsp;&nbsp;</span> {{fournisseurselected?.adresse}}</p>
+                    <p ><span style="font-weight:bold;">CINB &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; :&nbsp;&nbsp;</span> {{fournisseurselected?.cinb}}</p>
+                </div>
+                    <div class="field col-12 md:col-12" *ngIf="fournisseurhistoriques.length > 0">
+                        <p *ngIf="fournisseurhistoriques[0].totalFacturePaye !== undefined">
+                            <span style="font-weight:bold;">Total Facture Payée : </span>{{fournisseurhistoriques[0].totalFacturePaye | customNumber}} FCFA
+                        </p>
+
+                        <p *ngIf="fournisseurhistoriques[0].totalFactureImpayee !== undefined">
+                            <span style="font-weight:bold;">Total Facture Impayée : </span>{{fournisseurhistoriques[0].totalFactureImpayee | customNumber}} FCFA
+                        </p>
+                        <p *ngIf="fournisseurhistoriques[0].totalCreanceImpayee !== undefined">
+                            <span style="font-weight:bold;">Total Créance Impayée : </span>{{fournisseurhistoriques[0].totalCreanceImpayee | customNumber}} FCFA
+                        </p>
+                        <p *ngIf="fournisseurhistoriques[0].totalFacture !== undefined">
+                            <span style="font-weight:bold;">Total Facture : </span>{{fournisseurhistoriques[0].totalFacture | customNumber}} FCFA
+                        </p>
+
+                        <p *ngIf="fournisseurhistoriques[0].totalCommande !== undefined">
+                            <span style="font-weight:bold;">Total Commandé : </span>{{fournisseurhistoriques[0].totalCommande | customNumber}} FCFA
+                        </p>
+                    </div>
+                </div>
+                <tr>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Date
+                        </div>
+                    </th>
+                    <th style="min-width: 6rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Numéro
+                        </div>
+                    <th style="min-width: 7rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Montant
+                        </div>
+                    </th>
+                    <th style="min-width: 7rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Reste à payer
+                        </div>
+                    </th>
+                    <th style="min-width: 9rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Moyen Paiement
+                        </div>
+                    </th>
+                    <th style="min-width: 9rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Etabli Par
+                        </div>
+                    </th>
+
+                    <th style="min-width: 6rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Type
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-fournisseurHistorique>
+                <tr>
+                    <td>{{fournisseurHistorique.date| customDate}}</td>
+                    <td>{{fournisseurHistorique.numero}}</td>
+                    <td>{{fournisseurHistorique.somme | customNumber}}  &nbsp; &nbsp; FCFA</td>
+                    <td  *ngIf="fournisseurHistorique.type.toLowerCase()=='Reçu'.toLowerCase()">---</td>
+<!--                    <td *ngIf="fournisseurHistorique.type.toLowerCase()=='Facture Fournisseur'.toLowerCase()">{{fournisseurHistorique.reste | customNumber}}  &nbsp; &nbsp; FCFA</td>-->
+
+                    <td *ngIf="fournisseurHistorique.type.toLowerCase() === 'Facture Fournisseur'.toLowerCase()"
+                        [ngClass]="{'regle': fournisseurHistorique.reste == 0, 'non-regle': fournisseurHistorique.reste != 0}">
+                        {{ fournisseurHistorique.reste == 0 ? 'Réglé' : (fournisseurHistorique.reste | customNumber) +'  &nbsp; &nbsp; FCFA'}}
+                    </td>
+
+                    <td *ngIf="fournisseurHistorique.type.toLowerCase()=='Bon de commande'.toLowerCase()">---</td>
+                    <td *ngIf="fournisseurHistorique.moyenPaiement">{{fournisseurHistorique.moyenPaiement}}
+                    </td>
+                    <td *ngIf="!fournisseurHistorique.moyenPaiement">---</td>
+                    <td>{{fournisseurHistorique.faitPar}}</td>
+                    <td>
+                        <p-tag  [severity]="getSeverity(fournisseurHistorique)">{{fournisseurHistorique.type}}</p-tag>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="12" style="text-align: center">Aucun historique fournisseur</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="12" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+
+
+
+
+
+<!--
+<div class="card">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card flex justify-content-between align-items-center">
+                    <div class="p-2 h-full w-full flex flex-column justify-content-between">
+                                <h5  style="color: cornflowerblue; text-align: center">Historique Fournisseur</h5>
+                        <br> <br>
+                        <div style="text-align: center" >
+                            <label class="required-input bold-label">Type de Filtre<span class="required-icon"></span></label>&nbsp; &nbsp; &nbsp; &nbsp;
+                            <p-radioButton name="jour" value=0 [(ngModel)]="check" inputId="jour" (onClick)="checkValue()"></p-radioButton>
+                            <label id="jour" for="jour" class="ml-2">Jour</label> &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;
+                            <p-radioButton name="periode" value=1 [(ngModel)]="check" inputId="periode" (onClick)="checkValue()"></p-radioButton>
+                            <label id="periode" for="periode" class="ml-2">Période</label>
+                        </div>                        </div>
+                </div>
+            </div>
+            <form (ngSubmit)="loadFournisseurHistorique()">
+
+                <div class="grid formgrid p-fluid">
+
+                    <div  class="field mb-4 col-3">
+                        <label class="font-medium text-900">Selectionner le Fournisseur
+                        </label>
+                        <p-dropdown [options]="fournisseurs" [(ngModel)]="fournisseurselected" (onChange)="changeFournisseur()"
+                                    [showClear]="true" appendTo="body" [filter]="true" [filterBy]="'nom'" optionLabel="prenom"
+                                    [style]="{width: '100%'}" name="magasin" placeholder="Selectionner un fournisseur"
+                                    [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false" [required]="true">
+
+                            <ng-template let-fournisseur pTemplate="item">
+                                &lt;!&ndash; Affichage personnalisé pour chaque option &ndash;&gt;
+                                <div>{{ fournisseur.prenom }} {{ fournisseur.nom }}</div>
+                            </ng-template>
+
+                        </p-dropdown>
+
+                    </div>
+
+
+                    <div *ngIf="check==0" class="field mb-4 col-3">
+                        <label style="font-weight:bold;">Date de journée:</label>
+                        <p-calendar appendTo="body" [(ngModel)]="dateJournee"
+                                    name="dateJournee" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                                    [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                        ></p-calendar>
+                    </div>
+
+                    <div *ngIf="check==1" class="field mb-4 col-2">
+                        <label style="font-weight:bold;">Date de début:</label>
+                        <p-calendar appendTo="body" [(ngModel)]="dateDebut"
+                                    name="dateDebut" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                                    [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                        ></p-calendar>
+                    </div>
+
+                    <div *ngIf="check==1" class="field mb-4 col-2">
+                        <label style="font-weight:bold;">Date de fin:</label>
+                        <p-calendar appendTo="body" [(ngModel)]="dateFin"
+                                    name="dateDebut" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                                    [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                        ></p-calendar>
+                    </div>
+                    <div class="field mb-2 col-2">
+                        <button [disabled]="!fournisseurselected"  type="submit"
+                                 style="margin-top: 25px" pButton  pRipple label="Charger"
+                                 icon="pi pi-plus-circle">
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <br>
+
+
+        <p-confirmDialog [position]="'top'" [style]="{width: '25vw'}" [baseZIndex]="5000"
+                         rejectButtonStyleClass="p-button-text"></p-confirmDialog>
+        <p-toast position="top-center"></p-toast>
+        <p-table #dt [value]="fournisseurhistoriques" [paginator]="true" [loading]="loading" [rows]="25"
+                 [showCurrentPageReport]="true" responsiveLayout="scroll" [exportHeader]="'customExportHeader'"
+                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                 styleClass="p-datatable-gridlines" [rowsPerPageOptions]="[25,50,100]"
+                    [rowHover]="true"
+
+                 [globalFilterFields]="['date','numero','moyenPaiement','faitPar']">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <div class="flex">
+                        <button [disabled]="fournisseurhistoriques.length===0" type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportExcel()" class="p-button-success mr-2" pTooltip="XLS" tooltipPosition="bottom"></button>
+                       <button [disabled]="fournisseurhistoriques.length===0" type="button" pButton pRipple icon="pi pi-file-pdf" (click)="reportHistoriqueTojasper()" class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>
+                    </div>
+
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher fournisseur" class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <div class="field col-12 md:col-12">
+                    <p><span style="font-weight:bold;">Nom&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; :&nbsp;&nbsp;</span> {{fournisseurselected?.nom}}</p>
+                    <label ><span style="font-weight:bold;">Prénom&nbsp; &nbsp;&nbsp; &nbsp; :&nbsp;&nbsp;</span> {{fournisseurselected?.prenom}}</label>
+                    <p ><span style="font-weight:bold;">Tel &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;</span> {{fournisseurselected?.telephone}}</p>
+                    <p ><span style="font-weight:bold;">Entreprise &nbsp;&nbsp;:&nbsp;&nbsp;</span> {{fournisseurselected?.entreprise}}</p>
+                    <p ><span style="font-weight:bold;">CINB &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; :&nbsp;&nbsp;</span> {{fournisseurselected?.cinb}}</p>
+                    </div>
+                <tr>
+                     <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Date
+                            <th type="text" field="fournisseur" display="menu"
+                                            placeholder="Recherche par désignation"></th>
+                        </div>
+                    </th>
+                     <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Numéro
+                            <th type="text" field="entreprise" display="menu"
+                                            placeholder="Recherche par catégorie"></th>
+                        </div>
+                    </th>
+                <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Montant
+                            <th type="text" field="telephone" display="menu"
+                                            placeholder="Recherche par catégorie"></th>
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Reste à payer
+                            <th type="text" field="telephone" display="menu"
+                                            placeholder="Recherche par catégorie"></th>
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Moyen Paiement
+                            <th type="text" field="telephone" display="menu"
+                                            placeholder="Recherche par catégorie"></th>
+                        </div>
+                    </th>
+
+                 <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Etabli Par
+                            <th type="text" field="montantFacture" display="menu"
+                                            placeholder="Recherche par facture"></th>
+                        </div>
+                    </th>
+                 <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Type
+                            <th type="text" field="montantFacture" display="menu"
+                                            placeholder="Recherche par facture"></th>
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-fournisseurHistorique>
+                <tr style="height: 70px ; font-size: large">
+                    <td>{{fournisseurHistorique.date| customDate}}</td>
+                    <td>{{fournisseurHistorique.numero}}</td>
+                    <td>{{fournisseurHistorique.somme | customNumber}}  &nbsp; &nbsp; FCFA</td>
+                    <td  *ngIf="fournisseurHistorique.type.toLowerCase()=='Reçu'.toLowerCase()">{{fournisseurHistorique.reste | customNumber}}  &nbsp; &nbsp; FCFA</td>
+                    <td *ngIf="fournisseurHistorique.type.toLowerCase()=='Facture'.toLowerCase()">-&#45;&#45;&#45;&#45;</td>
+                    <td *ngIf="fournisseurHistorique.type.toLowerCase()=='Créance'.toLowerCase()">{{fournisseurHistorique.reste}}  &nbsp; &nbsp; FCFA</td>
+                    <td *ngIf="fournisseurHistorique.moyenPaiement">{{fournisseurHistorique.moyenPaiement}}</td>
+                    <td *ngIf="!fournisseurHistorique.moyenPaiement">-&#45;&#45;&#45;&#45;</td>
+                    <td>{{fournisseurHistorique.faitPar}}</td>
+                    <td>
+                        <p-tag  [severity]="getSeverity(fournisseurHistorique)">{{fournisseurHistorique.type}}</p-tag>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucun historique fournisseur</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+&lt;!&ndash;
+
+&ndash;&gt;
+
+    </div>
+
+
+</div>
+-->

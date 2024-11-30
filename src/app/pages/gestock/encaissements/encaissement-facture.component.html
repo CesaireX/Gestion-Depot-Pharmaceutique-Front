@@ -1,0 +1,472 @@
+<p-toast position="top-center"></p-toast>
+<div class="spinner-overlay" *ngIf="chrgmt">
+    <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
+</div>
+<div class="container1" *ngIf="createOrModify">
+
+    <div class="header-special">
+        <h4 *ngIf="updateboolean && factureSelected">Encaissement pour la facture {{factureSelected.numero}}, Client {{client?.nom}} {{client?.prenom}}</h4>
+        <h4 *ngIf="updateboolean && selectedCreance">Encaissement pour la créance {{selectedCreance.numero}}, Client {{client?.nom}} {{client?.prenom}}</h4>
+        <p *ngIf="!updateboolean" style="font-size:large; margin-bottom: 25px"><i class="pi pi-wallet" style="font-size: 1.5rem"></i>
+            Encaissement</p>
+        <div class="header-actions">
+            <button (click)="retour()" class="p-button-primary small-button p-button-icon-only" icon="pi pi-arrow-left" pButton>
+            </button>
+        </div>
+    </div>
+
+    <p-messages [(value)]="messages!" [enableService]="false" [style]="{width: '50%'}"></p-messages>
+    <form name="recuform" (ngSubmit)="makePayment()" role="form" novalidate #recuform="ngForm" style="margin-bottom: 25px">
+        <!-- Première partie du formulaire -->
+        <div class="form-group row" *ngIf="!updateboolean">
+            <label style="color: red;" class="col-label">Nom du client<span style="color: red">*</span></label>
+            <div class="col-input">
+                <p-dropdown [(ngModel)]="client" [filterBy]="'nom'" [filter]="true"
+                            [options]="clients" (onChange)="loadFacturesByClient($event);loadCreancesByClient($event)"
+                            [required]="true" [showClear]="true" [style]="{width: '100%'}"
+                            appendTo="body" name="client" optionLabel="nom"
+                            placeholder="Sélectionner un client">
+                    <ng-template let-clients pTemplate="item">
+                        <div class="flex align-items-center clients-item">
+                            <div>{{clients?.nom}} {{clients?.prenom}}</div>
+                        </div>
+                    </ng-template>
+                </p-dropdown>
+
+            </div>
+        </div>
+
+        <div class="form-group row" *ngIf="(client!=null && !updateboolean && !modifypaiement)">
+            <label style="color: red;" class="col-label">Faites un choix</label>
+            <div style=" display: flex">
+                <div>
+                    <input type="radio" id="facture" name="paymentType" value="facture" [(ngModel)]="paymentType" (change)="onFactureSelected()" [required]="true">
+                    <label for="facture">Paiement de Facture</label>
+                </div>
+                <div>
+                    <input type="radio" id="creance" name="paymentType" value="creance" [(ngModel)]="paymentType" (change)="onCreanceSelected()" [required]="true">
+                    <label for="creance">Paiement de Créance</label>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="(paymentType === 'facture' || paymentType === 'creance') && clientselection" class="form-group row">
+            <label style="color: red;" class="col-label">N° du paiement</label>
+            <div class="input-with-button">
+                <input disabled [(ngModel)]="newBonCommandeNumber" name="bonCommandeNumber" pInputText type="text">
+                <button (click)="customizeBonCommandeNumber()" class="icon-button" type="button">
+                    <i class="pi pi-cog" style="font-size: 1.5rem"></i>
+                </button>
+            </div>
+        </div>
+
+        <div *ngIf="(paymentType === 'facture' || paymentType === 'creance') && clientselection" class="form-group row">
+            <label style="color: red;" class="col-label">Mode de paiement <span style="color: red">*</span></label>
+            <div class="col-input">
+                <p-dropdown
+                    [options]="mode_paiements" [(ngModel)]="paiement.modePaiement"
+                    [showClear]="true" appendTo="body" [filter]="true" [filterBy]="'label'"
+                    [style]="{width: '100%'}"
+                    name="mode_paiement"
+                    [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                    [required]="true">
+                </p-dropdown>
+            </div>
+        </div>
+
+        <div class="form-group row" *ngIf="paiement.modePaiement == 'CHEQUE'">
+            <label style="color: red;" class="col-label">Numéro du chèque<span style="color: red">*</span></label>
+            <div class="col-input">
+                <input name="adresse" type="text" pInputText [(ngModel)]="paiement.numeroCheque" class="form-control" [required]="true"/>
+            </div>
+        </div>
+        <div *ngIf="paymentType === 'facture' && clientselection" class="bon-commande-detail" style="width: 55%; border: none">
+            <div class="main-content">
+
+        <p style="font-size:medium; margin-top: 30px; font-weight: bold">Factures impayées de {{client?.nom}} {{client?.prenom}}</p>
+                <table class="articles-section" *ngIf="client">
+                    <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Numéro de la facture</th>
+                        <th>Date</th>
+                        <th>Reste à payer</th>
+                        <th>Paiement</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <ng-container *ngIf="factures.length > 0; else noArticles">
+                        <tr *ngFor="let fact of factures; let i = index">
+                            <td>{{ i+1  }}</td>
+                            <td *ngIf="!factureSelected">{{ fact.numero }}</td>
+                            <td style="color: #55abda" *ngIf="factureSelected && fact.id === factureSelected.id">{{ fact.numero }}</td>
+                            <td *ngIf="factureSelected && fact.id !== factureSelected.id">{{ fact.numero }}</td>
+                            <td>{{ fact.date_facture | customDate }}</td>
+                            <td>{{ fact.reste }} FCFA</td>
+                            <td style="width: 150px;">
+                                <p-inputNumber
+                                    [name]="'article-' + i + '-prix'"
+                                    pInputNumber
+                                    [showButtons]="true"
+                                    [style]="{'width': '100%'}"
+                                    [min]="0"
+                                    [max]="fact.reste!"
+                                    [(ngModel)]="selectedInvoices[fact.id!]"
+                                    (onInput)="onAmountChange(fact.id!, $event)"
+                                    locale="de-DE"
+                                    [minFractionDigits]="0"
+                                ></p-inputNumber>
+                                <div *ngIf="errors[fact.id!]" style="color: red;">
+                                    {{ errors[fact.id!] }}
+                                </div>
+                            </td>
+                            <td>
+                                <button
+                                    class="p-button"
+                                    icon="pi pi-check"
+                                    pButton
+                                    type="button"
+                                    (click)="payRemaining(fact)"
+                                >Payer le reste</button>
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <ng-template #noArticles>
+                        <tr>
+                            <td colspan="5" style="text-align: center">Aucune facture impayée disponible</td>
+                        </tr>
+                    </ng-template>
+                    </tbody>
+                </table>
+
+        <div class="total-section">
+            <div class="div-right-left2">
+                <div class="div-right">
+                    <div>Total des factures impayées:</div>
+                    <div>Total payé:</div>
+                </div>
+                <div class="div-left">
+                    <div> {{totalReste | customNumber}} FCFA</div>
+                    <div>(-){{totalAmount | customNumber}} FCFA</div>
+                </div>
+            </div>
+        </div>
+        </div>
+        </div>
+        <div *ngIf="paymentType === 'creance' && clientselection" class="bon-commande-detail" style="width: 55%; border: none">
+            <div class="main-content">
+
+        <p style="font-size:medium; margin-top: 30px; font-weight: bold">Créances impayées de {{client?.nom}} {{client?.prenom}}</p>
+                <table class="articles-section" *ngIf="client">
+                    <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Numéro de la créance</th>
+                        <th>Date</th>
+                        <th>Reste à payer</th>
+                        <th>Paiement</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <ng-container *ngIf="creances.length > 0; else noArticles">
+                        <tr *ngFor="let creance of creances; let i = index">
+                            <td>{{ i+1  }}</td>
+                            <td *ngIf="!selectedCreance">{{ creance.numero }}</td>
+                            <td style="color: #55abda" *ngIf="selectedCreance && creance.id === selectedCreance.id">{{ creance.numero }}</td>
+                            <td *ngIf="selectedCreance && creance.id !== selectedCreance.id">{{ creance.numero }}</td>
+                            <td>{{ creance.date_creance | customDate }}</td>
+                            <td>{{ creance.montant_restant_a_payer }} FCFA</td>
+                            <td style="width: 150px;">
+                                <p-inputNumber
+                                    [name]="'article-' + i + '-prix'"
+                                    pInputNumber
+                                    [showButtons]="true"
+                                    [style]="{'width': '100%'}"
+                                    [min]="0"
+                                    [max]="creance.montant_restant_a_payer!"
+                                    [(ngModel)]="selectedCreances[creance.id!]"
+                                    (onInput)="onAmountChangeCreance(creance.id!, $event)"
+                                    locale="de-DE"
+                                    [minFractionDigits]="0"
+                                ></p-inputNumber>
+                                <div *ngIf="errors[creance.id!]" style="color: red;">
+                                    {{ errors[creance.id!] }}
+                                </div>
+                            </td>
+                            <td>
+                                <button
+                                    class="p-button"
+                                    icon="pi pi-check"
+                                    pButton
+                                    type="button"
+                                    (click)="payRemainingCreance(creance)"
+                                >Payer le reste</button>
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <ng-template #noArticles>
+                        <tr>
+                            <td colspan="5" style="text-align: center">Aucune créance impayée disponible</td>
+                        </tr>
+                    </ng-template>
+                    </tbody>
+                </table>
+
+        <div class="total-section">
+            <div class="div-right-left2">
+                <div class="div-right">
+                    <div>Total des créances impayées:</div>
+                    <div>Total payé:</div>
+                </div>
+                <div class="div-left">
+                    <div> {{totalReste | customNumber}} FCFA</div>
+                    <div>(-){{totalAmountCreance | customNumber}} FCFA</div>
+                </div>
+            </div>
+        </div>
+        </div>
+        </div>
+
+
+        <div style="bottom: 0; position: fixed; width: 100%" class="layout-footer p-d-flex p-ai-center p-p-4 p-shadow-z">
+            <span style="font-weight: bold">
+
+                 <button *ngIf="paymentType === 'creance'" type="submit" [disabled]="recuform.invalid || totalAmountCreance===0"  class="btn btn-primary">
+                     Enregistrer
+                </button>
+                <button *ngIf="paymentType === 'received'" type="submit" [disabled]="recuform.invalid || totalAmountCreance===0 || totalAmount===0"  class="btn btn-primary">
+                     Enregistrer
+                </button>
+                <button *ngIf="paymentType === 'facture'" type="submit" [disabled]="recuform.invalid || totalAmount===0"  class="btn btn-primary">
+                     Enregistrer
+                </button>
+                <button type="button" (click)="retour()"  class="btn btn-secondary" >Annuler</button>
+
+            </span>
+        </div>
+    </form>
+        <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                         position="top" >
+            <p-footer style="display: flex;">
+                <button class="btnannulate" (click)="cd.reject()"
+                ><i class="pi pi-close"></i>Annuler</button>
+                <button class="btnvalidate" (click)="cd.accept()"
+                ><i class="pi pi-confirm"></i>Confirmer</button>
+            </p-footer>
+        </p-confirmDialog>
+</div>
+
+
+
+<div *ngIf="!createOrModify" style="display: flex; ">
+    <div [ngClass]="{'shrink': isSecondaryActive}" class="card primary" style="height: 100%;">
+        <div class="header55">
+            <h1>Tous les encaissements</h1>
+            <div class="header-actions">
+                <button *ngIf="droits.includes('AJOUTER_ENCAISSEMENT')"  (click)="createModify(null)" class="p-button-primary small-button" pButton><i
+                        class="pi pi-plus"></i>Nouveau
+                </button>
+                <button class="p-button-secondary small-button p-button-icon-only" icon="pi pi-ellipsis-v"
+                        pButton></button>
+            </div>
+        </div>
+        <p-table #dt [globalFilterFields]="['date_paiement','numero','numerosFactures','numerosCreances','montant', 'client']" [loading]="loading" [paginator]="true" [rowHover]="true"
+                 [rowsPerPageOptions]="[25,50,100]" [rows]="25"
+                 selectionMode="single" [(selection)]="paiement" dataKey="id"
+                 [value]="paiementsfiltered" [loading]="loading"
+                 responsiveLayout="scroll">
+
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher" class="w-full"/>
+						</span>
+                    <p-dropdown
+                        [options]="type_encaissement" (onChange)="getEncaissementby($event)"
+                        [showClear]="true" appendTo="body" [filter]="true" [filterBy]="'label'"
+                        [style]="{'width':'300px'}"
+                        name="type_encaissement" placeholder="Filtrer les encaissements par"
+                        [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                        [required]="true">
+                    </p-dropdown>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="header">
+                <tr class="large-row">
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Date du paiement
+                        </div>
+                    </th>
+
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            N° du paiement
+                        </div>
+                    </th>
+
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Client
+                        </div>
+                    </th>
+
+                    <th  style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            N° de la facture / Créance
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Montant reçu
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template let-paiement pTemplate="body">
+                <tr (click)="onRowSelect(paiement)" [pSelectableRow]="paiement" style="padding-top: 10px; padding-bottom: 10px;"  class="large-row">
+                    <td>{{paiement.date_paiement | customDate}}</td>
+                    <td>{{ paiement.numero}}</td>
+                    <td>{{ paiement.client}}</td>
+                    <td *ngIf="paiement.numerosFactures!=null">{{ paiement.numerosFactures}}</td>
+                    <td *ngIf="paiement.numerosCreances!=null">{{ paiement.numerosCreances}}</td>
+                    <td>{{ paiement.montant |customNumber}} FCFA</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="summary">
+                <div class="flex align-items-center justify-content-between">
+                    Au total il y'a {{paiementsfiltered ? paiementsfiltered.length : 0 }} Encaissements(s).
+                </div>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+
+        <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                         position="top">
+            <p-footer>
+                <button (click)="cd.reject()" class="p-button-help" icon="pi pi-times" label="Annuler"
+                        pButton type="button"></button>
+                <button (click)="cd.accept()" class="p-button-primary" icon="pi pi-check" label="Confirmer"
+                        pButton type="button"></button>
+            </p-footer>
+        </p-confirmDialog>
+    </div>
+    <div [ngClass]="{'active': isSecondaryActive}" class="card secondary" style="height: 100%;">
+        <div class="headerfact">
+            <div class="facture-header">
+                <h5>{{paiementSelected.numero}}</h5>
+                <span class="close-button" (click)="close()">&#10006;</span>
+            </div>
+            <div class="actions">
+                <button *ngIf="droits.includes('MODIFIER_ENCAISSEMENT')" (click)="createModify(paiementSelected)" class="btn">
+                    <i class="pi pi-pencil"></i> Modifier
+                </button>
+                <button *ngIf="droits.includes('SUPPRIMER_VERSEMENT')" class="btn" (click)="deleteRecu(paiementSelected)" >
+                    <i class="pi pi-trash"></i> Supprimer
+                </button>
+                <button (click)="startPdf()" class="btn">
+                    <i class="pi pi-file-pdf"></i> PDF/Impression <i class="fas fa-caret-down"></i>
+                </button>
+            </div>
+        </div>
+        <div class="container" *ngIf="facturestoWach.length>0" id="commandeClient2">
+            <div class="header">
+                <h1>{{ societegetted.nom }}</h1>
+                <h5>Burkina Faso</h5>
+                <h6 *ngIf="societegetted.tel">+226 {{societegetted.tel}}</h6>
+                <h6 *ngIf="societegetted.fixe">+226 {{societegetted.fixe}}</h6>
+            </div>
+            <div class="payment-receipt">
+                <h2>REÇU DE PAIEMENT</h2>
+                <div class="payment-info">
+                    <div>
+                        <p><strong>Date du paiement:</strong> {{paiementSelected.date_paiement | customDate}}</p>
+                        <p><strong>Numéro du reçu:</strong>{{paiementSelected.numero}}</p>
+                        <p><strong>Mode de paiement:</strong> {{ paiementSelected.modePaiement }}</p>
+                    </div>
+                    <div class="amount-received">
+                        <p>Montant reçu</p>
+                        <h3>{{ paiementSelected.montant |customNumber}} FCFA</h3>
+                    </div>
+                </div>
+                <p><strong>Facturer à:</strong> <a href="#">{{facturestoWach[0].clientNom}} {{facturestoWach[0].clientPrenom}}</a></p>
+            </div>
+            <div class="payment-details">
+                <h3>Paiement pour</h3>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Numéro de facture</th>
+                        <th>Date de facture</th>
+                        <th>Montant de la facture</th>
+                        <th>Montant du paiement</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr *ngFor="let facture of facturestoWach, let i = index">
+                        <td><a (click)="viewFacture(facture.id!)">{{facture.numero}}</a></td>
+                        <td>{{ facture.createdDate | customDate }}</td>
+                        <td>{{ facture.montant_total |customNumber}} FCFA</td>
+                        <td>{{paiementSelected.invoicePayments[facture.id!] |customNumber}} FCFA</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="container" *ngIf="creancestoWach.length>0" id="commandeClient">
+            <div class="header">
+                    <h1>{{ societegetted.nom }}</h1>
+                    <h5>Burkina Faso</h5>
+                    <h6 *ngIf="societegetted.tel">+226 {{societegetted.tel}}</h6>
+                    <h6 *ngIf="societegetted.fixe">+226 {{societegetted.fixe}}</h6>
+            </div>
+            <div class="payment-receipt">
+                <h2>REÇU DE PAIEMENT</h2>
+                <div class="payment-info">
+                    <div>
+                        <p><strong>Date du paiement:</strong> {{paiementSelected.date_paiement | customDate}}</p>
+                        <p><strong>Numéro du reçu:</strong>{{paiementSelected.numero}}</p>
+                        <p><strong>Mode de paiement:</strong> {{ paiementSelected.modePaiement }}</p>
+                    </div>
+                    <div class="amount-received">
+                        <p>Montant reçu</p>
+                        <h3>{{ paiementSelected.montant |customNumber}} FCFA</h3>
+                    </div>
+                </div>
+                <p><strong>Facturer à:</strong> <a href="#">{{creancestoWach[0].clientNom}} {{creancestoWach[0].clientPrenom}}</a></p>
+            </div>
+            <div class="payment-details">
+                <h3>Paiement pour</h3>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Numéro de créance</th>
+                        <th>Date de créance</th>
+                        <th>Montant de la créance</th>
+                        <th>Montant du paiement</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr *ngFor="let creance of creancestoWach, let i = index">
+                        <td><a (click)="viewCreance(creance.id!)">{{creance.numero}}</a></td>
+                        <td>{{ creance.date_creance | customDate }}</td>
+                        <td>{{ creance.montant_creance |customNumber}} FCFA</td>
+                        <td>{{paiementSelected.invoicePayments[creance.id!] |customNumber}} FCFA</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,442 @@
+<p-toast position="top-center"></p-toast>
+<div *ngIf="chrgmt" class="spinner-overlay">
+    <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
+</div>
+<div *ngIf="!displayForm" style="display: flex">
+    <div class="card primary" [ngClass]="{'shrink': isSecondaryActive}" style="height: 100%;">
+        <div class="header55">
+            <h1>Articles</h1>
+            <div class="header-actions">
+                <button class="p-button-primary small-button" (click)="add(null)" *ngIf="droits.includes('AJOUTER_PRODUIT')"
+                ><i class="pi pi-plus"></i>Nouveau</button>
+
+                <!-- Bouton d'options pour les produits -->
+                <button #optionsButtonProduit class="p-button-secondary small-button p-button-icon-only" icon="pi pi-ellipsis-v"
+                        pButton type="button" (click)="opProduit.toggle($event, optionsButtonProduit)"></button>
+
+                <!-- Overlay Panel pour les options d'exportation des produits -->
+                <p-overlayPanel #opProduit>
+                    <div class="button-group">
+                        <button [disabled]="produits.length === 0" type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportProduitsListPDF()" class="p-button-success mr-2" label="Export Excel"></button>
+                        <button [disabled]="produits.length === 0" type="button" pButton pRipple icon="pi pi-file-pdf" (click)="exportProduitsListPDF()" class="p-button-warning mr-2" label="Export PDF"></button>
+                    </div>
+                </p-overlayPanel>
+            </div>
+
+        </div>
+        <p-table #dt [value]="produits" [paginator]="true" [loading]="loading" [rows]="25"
+                 responsiveLayout="scroll" [rowHover]="true"
+                 selectionMode="single" [(selection)]="produit" dataKey="id"
+                 [rowsPerPageOptions]="[25,50,100]"
+                 [globalFilterFields]="['nom','magasinLibelle','categorieLibelle','seuil','uniteMesureLibelle','prix','quantite','total','description']">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+                        <i class="pi pi-search"></i>
+                        <input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                               placeholder="Rechercher un produit" class="w-full"/>
+                    </span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Catégorie du produit
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Désignation
+                        </div>
+                    </th>
+
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Seuil d'alerte
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Unité de mesure
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Prix vente TTC
+                        </div>
+                    </th>
+
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Prix Achat TTC
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Description
+                        </div>
+                    </th>
+                    <!--                        <th *ngIf="!isSecondaryActive" style="border-left: none; background-color: rgb(236,236,236)">-->
+                    <!--                        </th>-->
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-produit>
+                <tr (click)="onRowSelect(produit)" [pSelectableRow]="produit">
+                    <td>{{produit.categorieLibelle}}</td>
+                    <td>{{produit.nom}}</td>
+                    <td>{{produit.seuil | customNumber}}</td>
+                    <td>{{produit.uniteMesureLibelle}}</td>
+                    <td *ngIf="produit.prixventettc>0"> {{produit.prixventettc | customNumber}}  FCFA</td>
+                    <td *ngIf="produit.prixventettc<=0||null||undefined"> ---</td>
+                    <td *ngIf="produit.prixachatttc>0"> {{produit.prixachatttc | customNumber}}  FCFA</td>
+                    <td *ngIf="produit.prixachatttc<=0||null||undefined"> ---</td>
+                    <td>{{produit.description}}</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucun article disponible.</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+        <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                         position="top" >
+            <p-footer style="display: flex;">
+                <button class="btnannulate" (click)="cd.reject()"
+                ><i class="pi pi-close"></i>Annuler</button>
+                <button class="btnvalidate" (click)="cd.accept()"
+                ><i class="pi pi-confirm"></i>Confirmer</button>
+            </p-footer>
+        </p-confirmDialog>
+    </div>
+
+    <div class="card secondary" [ngClass]="{'active': isSecondaryActive && select}" style="height: 100%;">
+    <div class="loading-spinner" style="height: 950px; display: flex; justify-content: center; align-items: center; background-color: white;">
+        <div class="spinner" style="text-align: center;">
+            <i class="pi pi-spin pi-spinner" style="font-size: 2em;"></i>
+            <p>Patientez s'il vous plaît...</p>
+        </div>
+    </div>
+    </div>
+
+    <div class="card secondary" [ngClass]="{'active': isSecondaryActive && !select}" style="height: 100%;">
+
+        <div class="headerfact">
+            <div class="facture-header">
+                <h5>{{selectedItem?.nom}}</h5>
+                    <span class="close-button" (click)="close()">&#10006;</span>
+            </div>
+            <div class="actions">
+                <button *ngIf="droits.includes('MODIFIER_PRODUIT')" class="btn" (click)="add(selectedItem)"
+                ><i class="pi pi-pencil"></i>Modifier</button>
+
+                <button *ngIf="droits.includes('SUPPRIMER_PRODUIT')" class="btn" (click)="deleteElement(selectedItem)"
+                ><i class="pi pi-trash"></i>Supprimer</button>
+            </div>
+        </div>
+
+        <div class="folder-tabs">
+            <ng-container *ngFor="let tab of tabs; let i = index">
+                <div
+                    class="folder-tab"
+                    [class.active]="i === selectedTab"
+                    (click)="selectTab(i)"
+                    *ngIf="!(tab.label === 'Stock par magasin' && !droits.includes('VOIR_ARTICLE_STOCK_MAGASIN'))">
+                    {{ tab.label }}
+                </div>
+            </ng-container>
+        </div>
+        <div class="folder-content">
+            <ng-container *ngIf="selectedTab !== null">
+
+                <div *ngIf="selectedTab === 0" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <div class="detail-section">
+                            <div>
+                                <p>Désignation : <b style="color: black">{{selectedItem?.nom ? selectedItem.nom : 'non spécifié'}}</b></p>
+                                <p>Unité de mesure : <b style="color: black">{{selectedItem?.uniteMesureLibelle ? selectedItem.uniteMesureLibelle : 'non spécifié'}}</b></p>
+                                <p>Catégorie de l'article : <b style="color: black">{{selectedItem?.categorieLibelle ? selectedItem.categorieLibelle : 'non spécifié'}}</b></p>
+                                <p>Seuil d'alerte : <b style="color: black">{{selectedItem?.seuil ? (selectedItem.seuil| customNumber) : 'non spécifié'}}</b></p>
+                            </div>
+                        </div>
+                        <h4>Achats</h4>
+                        <p>Prix d'achat : <b style="color: black">{{selectedItem?.prixachatttc ? (selectedItem.prixachatttc | customNumber) : 'non spécifié'}} FCFA</b></p>
+                        <h4>Ventes</h4>
+                        <p>Prix de vente : <b style="color: black">{{selectedItem?.prixventettc ? (selectedItem.prixventettc| customNumber) : 'non spécifié'}} FCFA</b></p>
+                        <h4>Description</h4>
+                        <p>Description sur l'article : <b style="color: black">{{selectedItem?.description ? selectedItem.description : 'non spécifié'}}</b></p>
+                    </div>
+
+                    <div *ngIf="droits.includes('VOIR_ARTICLE_TRANSACTION')" class="stock-item-container" style="margin-right: 50px; width: 70%">
+                        <div class="stock-section">
+                            <div class="stock-header">
+                                <h3 *ngIf="ligneMagasins"><i class="icon" aria-hidden="true"></i> Magasin principal <i class="info-icon" aria-hidden="true"></i>: {{ligneMagasins[0]?.magasinNom}}</h3>
+                                <h3 *ngIf="ligneMagasins"><i class="icon" aria-hidden="true"></i> Stock d'ouverture <i class="info-icon" aria-hidden="true"></i>: {{(ligneMagasins[0]?.stockInitial | customNumber) ?? 0}}</h3>
+                            </div>
+                            <!--                                <div class="stock-info">
+                                                                <h3>Stock comptable <i class="info-icon" aria-hidden="true"></i></h3>
+                                                                <p>Stock disponible: <span style="color: black">370.00</span></p>
+                                                                <p>Stock engagé: <span style="color: black">70.00</span></p>
+                                                                <p>Disponible à la vente: <span style="color: black">300.00</span></p>
+                                                            </div>-->
+                            <div class="stock-info">
+                                <h3>Stock physique <i class="info-icon" aria-hidden="true"></i></h3>
+                                <p>Stock disponible: <span *ngIf="ligneMagasins" style="color: black">{{ligneMagasins[0]?.stock_physique_dispo}}</span></p>
+                                <p>Stock engagé: <span *ngIf="ligneMagasins" style="color: black">{{ligneMagasins[0]?.stock_physique_engage}}</span></p>
+                                <p>Disponible à la vente: <span *ngIf="ligneMagasins" style="color: black">{{ligneMagasins[0]?.stock_physique_dispo_vente}}</span></p>
+                            </div>
+                        </div>
+                        <div *ngIf="droits.includes('VOIR_ARTICLE_TRANSACTION')" class="action-section">
+                            <div class="action-info">
+                                <div class="action-card">
+                                    <p>{{selectedItem?.quantite_a_recevoir !== undefined && selectedItem?.quantite_a_recevoir !== null ? (selectedItem.quantite_a_recevoir | customNumber) : 0}}</p>
+                                    <span>Qté à recevoir</span>
+                                </div>
+                                <div class="action-card">
+                                    <p>{{selectedItem?.quantite_a_facture !== undefined && selectedItem?.quantite_a_facture !== null ? (selectedItem.quantite_a_facture | customNumber) : 0}}</p>
+                                    <span>Qté à facturer</span>
+                                </div>
+                                <div class="action-card">
+                                    <p>{{selectedItem?.quantite_a_regler !== undefined && selectedItem?.quantite_a_regler !== null ? (selectedItem.quantite_a_regler | customNumber) : 0}}</p>
+                                    <span>Qté à réglée</span>
+                                </div>
+                                <div class="action-card">
+                                    <p>{{selectedItem?.quantite_a_livrer !== undefined && selectedItem?.quantite_a_livrer !== null ? (selectedItem.quantite_a_livrer | customNumber) : 0}}</p>
+                                    <span>Qté à livrer</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div *ngIf="selectedTab === 1">
+                    <p-table
+                        [paginator]="true"
+                        [rows]="5"
+                        [value]="ligneMagasins"
+                        responsiveLayout="scroll"
+                        selectionMode="single">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th colspan="4" style="text-align: center; color: #8c8989">Stock Physique</th>
+                            </tr>
+                            <tr>
+                                <th style="color: #8c8989">Magasin</th>
+                                <th style="color: #8c8989">Stock d'ouverture</th>
+                                <th style="color: #8c8989">Stock Disponible</th>
+                                <th style="color: #8c8989">Stock Engagé</th>
+                                <th style="color: #8c8989">Disponible à la Vente</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template let-stock pTemplate="body">
+                            <tr [pSelectableRow]="stock">
+                                <td>{{ stock.magasinNom }}</td>
+                                <td>{{ stock.stockInitial }}</td>
+                                <td>{{ stock.stock_physique_dispo | customNumber}}</td>
+                                <td>{{ stock.stock_physique_engage | customNumber}}</td>
+                                <td>{{ stock.stock_physique_dispo_vente | customNumber}}</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </ng-container>
+            <!--        <button (click)="visualize()" mat-raised-button color="primary">Submit</button>-->
+        </div>
+    </div>
+</div>
+
+<div *ngIf="displayForm" style="height: 100%;" class="container1">
+    <div class="header-special" >
+        <p style="font-size: large; margin-bottom: 25px">
+            <i class="pi pi-cart-plus" style="font-size: 1.5rem"></i>
+            Enregistrement d'un article
+        </p>
+        <button (click)="closeSection(editForm)" tooltipPosition="left"
+                pTooltip="Retour sur la liste" class="p-button-primary small-button p-button-icon-only" icon="pi pi-arrow-left" pButton></button>
+    </div>
+    <form name="editForm" role="form" novalidate #editForm="ngForm" class=""
+          >
+
+        <h5>Informations générales</h5>
+
+        <div class="form-group row align-items-center">
+            <label style="color: red" class="col-sm-3 col-form-label">Désignation</label>
+            <div class="col-sm-9 ml-7"> <!-- Ajouter une marge gauche -->
+                <input class="form-control" name="nom" type="text" pInputText [(ngModel)]="produit.nom" required/>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Référence</label>
+            <div class="col-sm-9 ml-7"> <!-- Ajouter une marge gauche -->
+                <input name="reference" class="form-control" type="text" pInputText [(ngModel)]="produit.reference"/>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label for="categorie" class="col-sm-3 col-form-label">Catégorie</label>
+            <div class="col-sm-9 ml-7"> <!-- Ajouter une marge gauche -->
+                <p-dropdown class="form-control" id="categorie" [options]="categories" [(ngModel)]="selectedCategorie"
+                            optionLabel="libelle" name="categorieId" [filter]="true"
+                            placeholder="Sélectionner une catégorie"
+                            [resetFilterOnHide]='true' [showClear]="true"
+                            [style]="{'width':'300px'}">
+                </p-dropdown>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="unite" class="col-sm-3 col-form-label">Unité</label>
+            <div class="col-sm-9 ml-7"> <!-- Ajouter une marge gauche -->
+                <p-dropdown class="form-control" id="unite" [options]="uniteMesures" [(ngModel)]="selectedUniteMesure"
+                            optionLabel="libelle" name="uniteMesureId" [filter]="true"
+                            placeholder="Sélectionner une unite de mesure"
+                            [resetFilterOnHide]='true' [showClear]="true"
+                            [style]="{'width':'300px'}" >
+                </p-dropdown>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label style="color: red" class="col-sm-3 col-form-label">Seuil d'alerte</label>
+            <div class="col-sm-9 ml-7"> <!-- Ajouter une marge gauche -->
+                <p-inputNumber type="number" class="form-control" id="seuil" name="seuil" pInputNumber locale="de-DE" [minFractionDigits]="0"
+                               mode="decimal"  [maxFractionDigits]="2"
+                               [(ngModel)]="seuilAlert" [style]="{'width': '300px'}" [min]="0"  [showButtons]="true" >
+                </p-inputNumber>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-3 col-form-label">Description</label>
+            <div class="col-sm-9 ml-7"> <!-- Ajouter une marge gauche -->
+                <textarea class="form-control" name="description" type="text" pInputText
+                          [(ngModel)]="produit.description"></textarea>            </div>
+        </div>
+
+        <h5>Vente de l'article</h5>
+
+        <div class="form-group row">
+            <label style="color: red" class="col-sm-3 col-form-label">Prix de vente</label>
+            <div class="col-sm-9 ml-7"> <!-- Ajouter une marge gauche -->
+                <p-inputNumber class="form-control" type="number" id="prixht" name="prixventeht" pInputNumber
+                               [(ngModel)]="prixventeht" [style]="{'width': '300px'}" [min]="0" [required]="true"
+                               locale="de-DE" [minFractionDigits]="0" (onInput)="apply_ttc($event, 'vente')" >
+                </p-inputNumber>
+            </div>
+        </div>
+
+
+        <!--        <h5>Achat de l'article</h5>
+
+                <div class="form-group row">
+                    <label style="color: red" class="col-sm-3 col-form-label">Prix d'achat</label>
+                    <div class="col-sm-9 ml-7"> &lt;!&ndash; Ajouter une marge gauche &ndash;&gt;
+                        <p-inputNumber class="form-control" type="number" name="prixachatht" pInputNumber
+                                       [(ngModel)]="produit.prixachatht" [style]="{'width': '300px'}" [min]="0" [required]="true"
+                                       locale="de-DE" [minFractionDigits]="0" (onInput)="apply_ttc($event, 'achat')"  [showButtons]="true">
+                        </p-inputNumber>
+                    </div>
+                </div>-->
+
+        <h5>Stock d'ouverture</h5>
+        <br>
+        <div *ngIf="produit.isUsed == 0||produit.isUsed==null||false">
+            <div class="grid p-fluid">
+                <div class="field col-6 md-3">
+                    <p-dropdown class="form-control" id="magasin" [options]="magasins" [(ngModel)]="selectedMagasin"
+                                optionLabel="nom" name="magasinId" [filter]="true"
+                                (onChange)="onMagasinChange($event)"
+                                placeholder="Ajouter dans un magasin"
+                                [resetFilterOnHide]='true'
+                                [style]="{'width':'100%'}">
+                    </p-dropdown>
+                </div>
+                <div class="field col-5 md-3">
+                    <p-inputNumber type="number" id="stockInitial" name="stockInitial" pInputNumber
+                                   mode="decimal"  [maxFractionDigits]="2"
+                                   locale="de-DE" [minFractionDigits]="0" (onInput)="verifierInitialStock($event)" [(ngModel)]="stockInitial" [style]="{'width': '100%'}" [min]=1 [showButtons]="true">
+                    </p-inputNumber>
+                </div>
+                <div class="field col-1 md-4">
+                    <label for="magasin"></label>
+                    <button *ngIf="!selectedMagasin" [disabled]="true" pButton pRipple type="button"
+                            icon="pi pi-plus" class="btn btn-success" (click)="ajouterLigneBesoin()"></button>
+                    <button *ngIf="selectedMagasin && verifierStockInitial!>=1" [disabled]="false" pButton
+                            pRipple type="button"
+                            icon="pi pi-plus" class="btn btn-success" (click)="ajouterLigneBesoin()"></button>
+                </div>
+            </div>
+            <div class="field col-12 md-3">
+                <p-table [value]="ligneMagasins" [tableStyle]="{'min-width': '50rem'}">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width:50%;">Magasin</th>
+                            <th>Stock Initial</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-ligneMagasin let-i="index">
+                        <tr>
+                            <td>{{ ligneMagasin.magasinNom }}</td>
+                            <td>
+                                <p-inputNumber  type="text" pinputnumber  placeholder="{{ligneMagasin.stockInitial}}"
+                                                (onInput)="changeStockInitial2($event, ligneMagasin)" name="quantité" [showButtons]="true"
+                                                locale="de-DE" [minFractionDigits]="0" [(ngModel)]="stockInitialArray[ligneMagasin.magasinId]"  [min]="0">
+                                </p-inputNumber>
+                            </td>
+                            <td>
+                                <button *ngIf="produit.id" pButton pRipple icon="pi pi-trash"
+                                        pTooltip="Supprimer"
+                                        class="p-mr-2 p-button-sm p-button-danger" tooltipPosition="left"
+                                        (click)="onDeleteLigne(ligneMagasin, produit.id)">
+                                </button>
+                            </td>
+                            <td>
+                                <button *ngIf="!produit.id" pButton pRipple icon="pi pi-trash"
+                                        pTooltip="Supprimer au front"
+                                        class="p-mr-2 p-button-sm p-button-danger" tooltipPosition="left"
+                                        (click)="onDeleteLigne2(ligneMagasin)">
+                                </button>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+            <br><br><br>
+        </div>
+    </form>
+    <div style="bottom: 0; position: fixed; width: 100%" class="layout-footer p-d-flex p-ai-center p-p-4 p-shadow-z">
+            <span style="font-weight: bold">
+
+                <button *ngIf="createormodif" (click)="SaveChoice(editForm, 'continuer')" type="button" [disabled]="editForm.invalid || loading" class="btn btn-primary">
+                    <i *ngIf="loading && display" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                    <span *ngIf="!loading || !display">Enregistrer et continuer</span>
+                    <span *ngIf="loading && display">Enregistrement...</span>
+                </button>
+
+                 <button (click)="SaveChoice(editForm, 'enregistrer')" type="button" [disabled]="editForm.invalid || loading" class="btn btn-primary">
+                    <i *ngIf="loading && !display" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                    <span *ngIf="!loading || display">Enregistrer et terminer</span>
+                    <span *ngIf="loading && !display">Enregistrement...</span>
+                </button>
+
+                <button type="button" (click)="closeSection(editForm)" class="btn btn-secondary" >Annuler</button>
+            </span>
+    </div>
+</div>
+<p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                 position="top" >
+    <p-footer style="display: flex;">
+        <button class="btnannulate" (click)="cd.reject()"
+        ><i class="pi pi-close"></i>Annuler</button>
+        <button class="btnvalidate" (click)="cd.accept()"
+        ><i class="pi pi-confirm"></i>Confirmer</button>
+    </p-footer>
+</p-confirmDialog>

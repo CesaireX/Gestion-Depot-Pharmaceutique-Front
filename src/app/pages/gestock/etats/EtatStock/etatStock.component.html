@@ -1,0 +1,110 @@
+    <div class="inventory-container">
+        <div class="header">
+            <div> <h6>Etat du stock des produits</h6>
+                <p>• À la date du {{today}} </p></div>
+            <div class="flex radio-buttons">
+                <p-radioButton name="stockType" value="stock_physique_dispo" [(ngModel)]="selectedStockType" label="Stock Physique Disponible"></p-radioButton>&nbsp;&nbsp;
+                <p-radioButton name="stockType" value="stock_physique_dispo_vente" [(ngModel)]="selectedStockType" label="Stock Physique Disponible Vente"></p-radioButton>&nbsp;&nbsp;
+                <p-radioButton name="stockType" value="stock_physique_engage" [(ngModel)]="selectedStockType" label="Stock Physique Engage"></p-radioButton>
+            </div>
+            <div class="flex">
+                <button [disabled]="etatStocks.length===0" type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportExcel()" class="p-button-success mr-2" pTooltip="XLS" tooltipPosition="bottom"></button>
+                <button [disabled]="etatStocks.length=== 0" type="button" pButton pRipple icon="pi pi-file-pdf" (click)="exportPDF()" class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>
+            </div>
+        </div>
+       <!-- <div class="filters">
+            <div class="filter-group">
+                <label>Filtre par :</label>
+                <div>
+                    <p-radioButton name="jour" value=0 [(ngModel)]="check"  inputId="jour" label="Jour" (onClick)="checkValue()"></p-radioButton>&nbsp;
+                    <p-radioButton name="periode" value=1 [(ngModel)]="check" inputId="periode" label="Période" (onClick)="checkValue()"></p-radioButton>
+                </div>
+            </div>
+            <div class="filter-group"  *ngIf="check==0">
+                <label>Date :</label>
+                <p-calendar appendTo="body" [(ngModel)]="dateJournee" name="dateJournee" dateFormat="dd/mm/yy" (ngModelChange)="onDateChange()"  [showIcon]="true" [ngModelOptions]="{ standalone: true }"></p-calendar>
+            </div>
+            <div class="filter-group" *ngIf="check==1">
+                <label>Période :</label>
+                <p-calendar [(ngModel)]="selectedPeriod" (ngModelChange)="onPeriodChange()" selectionMode="range" [showIcon]="true"  dateFormat="dd/mm/yy"></p-calendar>
+            </div>
+            &lt;!&ndash;
+            <button pButton type="button" label="+ More Filters" class="p-button-outlined more-filters"></button>
+    &ndash;&gt;
+            <button pButton type="button"  (click)="getEtatStock()"  class="execute-report"><i class="pi pi-sync"></i>Charger</button>
+        </div>-->
+        <div class="card">
+           <div style="display : flex; align-items: center; align-content: center; justify-content: center">
+               <h5 *ngIf="selectedStockType === 'stock_physique_dispo'">Etat du Stock Physique Disponible</h5>
+               <h5 *ngIf="selectedStockType === 'stock_physique_dispo_vente'">Etat du Stock Physique Disponible à la Vente</h5>
+               <h5 *ngIf="selectedStockType === 'stock_physique_engage'">Etat du Stock Physique Engagé</h5>
+           </div>
+            <p-table #dt [value]="etatStocks" [paginator]="true" [loading]="loading" [rows]="25"
+                     responsiveLayout="scroll" [exportHeader]="'customExportHeader'"
+                     [rowsPerPageOptions]="[25,50,100]" [rowHover]="true"
+                     [globalFilterFields]="['produitNom', 'unite']">
+                <ng-template pTemplate="caption">
+                    <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher article" class="w-full"/>
+						</span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header" >
+                    <tr>
+                        <th style="min-width: 10rem">
+                            <div class="flex justify-content-between align-items-center">
+                                Désignation
+                            </div>
+                        </th>
+                        <th style="min-width: 10rem" *ngFor="let magasin of getMagasinNoms()">
+                            <div class="flex justify-content-between align-items-center">
+                                {{magasin}}
+                            </div>
+                        </th>
+                        <th style="min-width: 10rem">
+                            <div class="flex justify-content-between align-items-center">
+                                Total
+                            </div>
+                        </th>
+                        <th style="min-width: 10rem">
+                            <div class="flex justify-content-between align-items-center">
+                                Unité
+                            </div>
+                        </th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-etatstock>
+                    <tr>
+                        <td>{{etatstock.produitNom}}</td>
+                        <td *ngFor="let magasin of getMagasinNoms()">{{getQuantiteByMagasin(etatstock, magasin, selectedStockType)| customNumber }}</td>
+<!--
+                        <td>{{etatstock.stock_dispo_total | customNumber}}</td>
+-->
+                        <td>
+                            <span *ngIf="selectedStockType === 'stock_physique_dispo'">{{etatstock.stock_dispo_total| customNumber}}</span>
+                            <span *ngIf="selectedStockType === 'stock_physique_dispo_vente'">{{etatstock.stock_dispo_vente_total| customNumber}}</span>
+                            <span *ngIf="selectedStockType === 'stock_physique_engage'">{{etatstock.stock_dispo_engage_total| customNumber}}</span>
+                        </td>
+                        <td>{{etatstock.unite}}</td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="7" style="text-align: center">Aucun  disponible</td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="loadingbody">
+                    <tr>
+                        <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+
+        </div>
+    </div>
+
+
+

@@ -1,0 +1,193 @@
+<p-toast position="top-center"></p-toast>
+<div *ngIf="chrgmt" class="spinner-overlay">
+    <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
+</div>
+<div *ngIf="!displayForm" style="display: flex">
+    <div class="card primary" style="height: 100%;">
+        <div class="header55">
+            <h1>Dépenses de l'entreprise</h1>
+            <div class="header-actions">
+                <button class="p-button-primary small-button" (click)="add(selectedItem)" *ngIf="droits.includes('AJOUTER_DEPENSE')"
+                ><i class="pi pi-plus"></i>Nouveau</button>
+
+                <button class="p-button-secondary small-button p-button-icon-only" icon="pi pi-ellipsis-v"
+                        pButton></button>
+            </div>
+        </div>
+        <p-table #dt [value]="depenses" [paginator]="true" [loading]="loading" [rows]="25"
+                 responsiveLayout="scroll" [rowHover]="true"
+                 [rowsPerPageOptions]="[25,50,100]"
+                 [globalFilterFields]="['courseLibelle','prix','description','dateDepense', 'beneficiaire']">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher une dépense" class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Date
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Nature de la course
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Bénéficiaire
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem;  background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Description
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Montant (FCFA)
+                        </div>
+                    </th>
+                    <th style="border-left: none; background-color: rgb(236,236,236)">
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-depense>
+                <tr>
+                    <td>{{depense.dateDepense | customDate}}</td>
+                    <td>{{depense.courseLibelle}}</td>
+                    <td>{{depense.beneficiaire}}</td>
+                    <td>{{depense.description}}</td>
+                    <td>{{depense.prix | customNumber}}</td>
+                    <td style="border-left: none;">
+                        <!--<p-menu #menu appendTo="body" [popup]="true" [model]="menuitems"></p-menu>
+                        <div class="flex justify-content-end">
+                            <button (click)="selectedItem = depense" (click)="menu.toggle($event)" pButton pRipple
+                                    icon="pi pi-ellipsis-h" class="p-button-text p-button-rounded text-900"></button>
+                        </div>-->
+
+
+                        <button  (click)="add(depense)"
+                                 class="p-button-primary small-button mr-2"
+                                 icon="pi pi-pencil" pTooltip="Modifier"
+                                 pButton
+                                 type="button"></button>
+
+                        <button  (click)="deleteElement(depense)"
+                                 class="p-button-danger small-button"
+                                 icon="pi pi-trash" pTooltip="Supprimer"
+                                 pButton
+                                 type="button"></button>
+
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="summary">
+                <div class="flex align-items-center justify-content-between">
+                    Au total il y'a {{depenses.length}} Dépense(s).
+                </div>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+</div>
+</div>
+<div *ngIf="displayForm" style="height: 100%;" class="container1">
+
+    <div class="header-special" >
+        <p style="font-size: large; margin-bottom: 25px">
+            <i class="pi pi-money-bill" style="font-size: 1.5rem"></i>
+            Enregistrement d'une dépense
+        </p>
+        <button (click)="closeSection(editForm)" tooltipPosition="left"
+                pTooltip="Retour sur la liste" class="p-button-primary small-button p-button-icon-only" icon="pi pi-arrow-left" pButton></button>
+    </div>
+
+    <form (ngSubmit)="save(editForm)" name="editForm" role="form" novalidate #editForm="ngForm" class="container">
+
+        <div class="form-group row align-items-center">
+            <label style="color: red" class="col-sm-3 col-form-label">Nature de la course</label>
+            <div class="col-sm-9 ml-7" style="width: 300px;">
+                <p-dropdown id="categorie" [options]="courses" [(ngModel)]="selectedCourse"
+                            optionLabel="libelle" name="courseId" [filter]="true"
+                            placeholder="Sélectionner une course" [showClear]="true"
+                            [resetFilterOnHide]='true' [required]="true"
+                            [style]="{'width':'100%'}">
+                </p-dropdown>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label style="color: red" class="col-sm-3 col-form-label">Date</label>
+            <div class="col-sm-9 ml-7 form-control">
+                <p-calendar appendTo="body" [(ngModel)]="date"
+                            name="dateDepense" dateFormat="dd/mm/yy"
+                            [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                            [maxDate]="currentdate" [style]="{'width':'300px'}"
+                            [required]="true"></p-calendar>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label style="color: red" class="col-sm-3 col-form-label">Bénéficiaire</label>
+            <div class="col-sm-9 ml-7">
+                <input type="text" pInputText [(ngModel)]="depense.beneficiaire" name="beneficiaire" class="form-control"  [required]="true"/>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label style="color: red" class="col-sm-3 col-form-label">Montant</label>
+            <div class="col-sm-9 ml-7">
+                <p-inputNumber class="form-control" name="prix" type="number" (onInput)="updateprix($event)" pInputNumber [(ngModel)]="depense.prix" locale="de-DE"
+                               [minFractionDigits]="0" [style]="{'width':'130%'}" ></p-inputNumber>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Description</label>
+            <div class="col-sm-9 ml-7">
+                <input name="description" type="text" pInputText [(ngModel)]="depense.description" class="form-control"/>
+            </div>
+        </div>
+
+    </form>
+
+    <div style="bottom: 0; position: fixed; width: 100%" class="layout-footer p-d-flex p-ai-center p-p-4 p-shadow-z">
+            <span style="font-weight: bold">
+
+                <button *ngIf="createormodif" (click)="SaveChoice(editForm, 'continuer')" type="button" [disabled]="editForm.invalid|| depenseValue!<=0 || loading" class="btn btn-primary">
+                    <i *ngIf="loading && display" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                    <span *ngIf="!loading || !display">Enregistrer et continuer</span>
+                    <span *ngIf="loading && display">Enregistrement...</span>
+                </button>
+
+                 <button (click)="SaveChoice(editForm, 'enregistrer');" type="button" [disabled]="editForm.invalid||depenseValue!<=0 || loading" class="btn btn-primary">
+                    <i *ngIf="loading && !display" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                    <span *ngIf="!loading || display">Enregistrer et terminer</span>
+                    <span *ngIf="loading && !display">Enregistrement...</span>
+                </button>
+
+                <button type="button" class="btn btn-secondary" (click)="annulate()" >Annuler</button>
+            </span>
+    </div>
+
+
+</div>
+    <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                     position="top" >
+        <p-footer style="display: flex;">
+            <button class="btnannulate" (click)="cd.reject()"
+            ><i class="pi pi-close"></i>Annuler</button>
+            <button class="btnvalidate" (click)="cd.accept()"
+            ><i class="pi pi-confirm"></i>Confirmer</button>
+        </p-footer>
+    </p-confirmDialog>

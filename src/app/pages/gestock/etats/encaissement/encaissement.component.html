@@ -1,0 +1,273 @@
+<div class="inventory-container">
+    <div class="header">
+        <div>
+            <h6>Historique des Encaissements</h6>
+            <p>• À la date du {{today }}</p>
+        </div>
+        <div class="flex">
+            <button [disabled]="encaissements.length===0" type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportExcel()" class="p-button-success mr-2" pTooltip="XLS" tooltipPosition="bottom"></button>
+            <button [disabled]="encaissements.length===0" type="button" pButton pRipple icon="pi pi-file-pdf" (click)="exportPDF()" class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>
+        </div>
+    </div>
+
+    <div class="filters">
+        <div class="filter-group">
+            <label>Filtre par :</label>
+            <div>
+                <p-radioButton name="jour" value=0 [(ngModel)]="check" inputId="jour" label="Jour" (onClick)="checkValue()"></p-radioButton>&nbsp;
+                <p-radioButton name="periode" value=1 [(ngModel)]="check" inputId="periode" label="Période" (onClick)="checkValue()"></p-radioButton>
+            </div>
+        </div>
+        <div class="filter-group" *ngIf="check==0">
+            <label>Date :</label>
+            <p-calendar appendTo="body" [(ngModel)]="dateJournee" name="dateJournee" dateFormat="dd/mm/yy" [showIcon]="true" [ngModelOptions]="{ standalone: true }"></p-calendar>
+        </div>
+        <div class="filter-group" *ngIf="check==1">
+            <label>Période :</label>
+            <p-calendar [(ngModel)]="selectedPeriod" (ngModelChange)="onPeriodChange()" selectionMode="range" [showIcon]="true" dateFormat="dd/mm/yy"></p-calendar>
+        </div>
+        <!--
+        <button pButton type="button" label="+ More Filters" class="p-button-outlined more-filters"></button>
+-->
+        <button pButton type="button" (click)="getEncaissement()" class="execute-report"><i class="pi pi-sync"></i>Charger</button>
+    </div>
+
+    <div class="card">
+        <div style="display: flex; align-items: center; align-content: center; justify-content: center">
+            <h5>Historique des Encaissements</h5>
+        </div>
+        <div class="summary">
+            <span class="bold-text">Total {{total | customNumber}} FCFA</span><br><hr>
+            <span class="bold-text">Total Espèce {{totalEspece | customNumber}} FCFA</span><br><hr>
+            <span class="bold-text">Total Orange Money {{totalOM | customNumber}} FCFA</span><br><hr>
+            <span class="bold-text">Total Moov Money {{totalMM | customNumber}} FCFA</span><br><hr>
+            <span class="bold-text">Total Chèque {{totalCH | customNumber}} FCFA</span><br><hr>
+            <span class="bold-text">Total Versement {{totalVE | customNumber}} FCFA</span>
+        </div>
+        <br/>
+        <p-table #dt [value]="encaissements" [paginator]="true" [loading]="loading" [rows]="25" responsiveLayout="scroll" [exportHeader]="'customExportHeader'" [rowsPerPageOptions]="[10, 25, 50]" [rowHover]="true" [globalFilterFields]="['nomClient','prenomClient','date','paiement']">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+                        <i class="pi pi-search"></i>
+                        <input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)" placeholder="Rechercher encaissement" class="w-full"/>
+                    </span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Date
+                        </div>
+                    </th>
+                    <th style="min-width: 5rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Nom
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Prénom
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Règlement
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Numero Facture/Créance
+                        </div>
+                    </th>
+               <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Facture/Créance
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-encaissement>
+                <tr>
+                    <td>{{encaissement.dateSortie | customDate}}</td>
+                    <td>{{encaissement.nomClient}}</td>
+                    <td>{{encaissement.prenomClient}}</td>
+                    <td>{{encaissement.paiement | customNumber}}</td>
+                    <td>{{encaissement.numero_fact_creance}}</td>
+                    <td>
+                        <p-tag  [severity]="getSeverity(encaissement)">{{encaissement.type}}</p-tag>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="4" style="text-align: center">Aucun encaissement disponible</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="4" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+
+
+<!--
+<div class="card">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card flex justify-content-between align-items-center">
+                    <div class="p-2 h-full w-full flex flex-column justify-content-between">
+                                <h5  style="color: cornflowerblue; text-align: center">Encaissement par période</h5>
+                                   <br> <br>
+                                <div style="text-align: center" >
+                                    <label class="required-input bold-label">Type de Filtre<span class="required-icon"></span></label>&nbsp; &nbsp; &nbsp; &nbsp;
+                                    <p-radioButton name="jour" value=0 [(ngModel)]="check" inputId="jour" (onClick)="checkValue()"></p-radioButton>
+                                    <label id="jour" for="jour" class="ml-2">Jour</label> &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;
+                                    <p-radioButton name="periode" value=1 [(ngModel)]="check" inputId="periode" (onClick)="checkValue()"></p-radioButton>
+                                    <label id="periode" for="periode" class="ml-2">Période</label>
+                                </div>
+                        </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-12">
+            <form (ngSubmit)="getEncaissement()">
+
+                <div class="grid formgrid p-fluid">
+
+
+                    <div *ngIf="check==0" class="field mb-4 col-3">
+                        <label style="font-weight:bold;">Date de journée:</label>
+                        <p-calendar appendTo="body" [(ngModel)]="dateJournee"
+                                    name="dateJournee" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                                    [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                        ></p-calendar>
+                    </div>
+
+                    <div *ngIf="check==1" class="field mb-4 col-2">
+                        <label style="font-weight:bold;">Date de début:</label>
+                        <p-calendar appendTo="body" [(ngModel)]="dateDebut"
+                                    name="dateDebut" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                                    [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                        ></p-calendar>
+                    </div>
+
+                    <div *ngIf="check==1" class="field mb-4 col-2">
+                        <label style="font-weight:bold;">Date de fin:</label>
+                        <p-calendar appendTo="body" [(ngModel)]="dateFin"
+                                    name="dateDebut" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                                    [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                        ></p-calendar>
+                    </div>
+                    <div class="field mb-2 col-2">
+                        <button  type="submit"
+                                 style="margin-top: 25px" pButton  pRipple label="Charger"
+                                 icon="pi pi-plus-circle">
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <br>
+
+        <div class="flex align-items-center justify-content-between mb-3">
+            <div class="col-10">
+                <p-table #dt [value]="encaissements" [paginator]="true" [loading]="loading" [rows]="25"
+                         responsiveLayout="scroll" [exportHeader]="'customExportHeader'"
+                         styleClass="p-datatable-gridlines" [rowsPerPageOptions]="[25,50,100]"
+                         [rowHover]="true"
+
+                         [globalFilterFields]="['nomClient','date','prenomClient']">
+                    <ng-template pTemplate="caption">
+                        <div class="flex justify-content-between flex-column sm:flex-row">
+                            <div class="flex">
+                                <button [disabled]="encaissements.length===0" type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportExcel()" class="p-button-success mr-2" pTooltip="XLS" tooltipPosition="bottom"></button>
+                                <button [disabled]="encaissements.length===0" type="button" pButton pRipple icon="pi pi-file-pdf" (click)="reportTojasper()" class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>
+                            </div>
+
+                            <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher encaissement" class="w-full"/>
+						</span>
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="min-width: 10rem">
+                                <div class="flex justify-content-between align-items-center">
+                                    Date
+                                    <p-columnFilter type="text" field="produitNom" display="menu"
+                                                    placeholder="Recherche par désignation"></p-columnFilter>
+                                </div>
+                            </th>
+                            <th style="min-width: 5rem">
+                                <div class="flex justify-content-between align-items-center">
+                                    Nom
+                                    <p-columnFilter type="text" field="categorie" display="menu"
+                                                    placeholder="Recherche par catégorie"></p-columnFilter>
+                                </div>
+                            </th>
+                            <th style="min-width: 10rem">
+                                <div class="flex justify-content-between align-items-center">
+                                    Prénom
+                                    <p-columnFilter type="text" field="categorie" display="menu"
+                                                    placeholder="Recherche par catégorie"></p-columnFilter>
+                                </div>
+                            </th>
+                            <th style="min-width: 10rem">
+                                <div class="flex justify-content-between align-items-center">
+                                    Règlement
+                                    <p-columnFilter type="text" field="categorie" display="menu"
+                                                    placeholder="Recherche par catégorie"></p-columnFilter>
+                                </div>
+                            </th>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="body" let-encaissement>
+                        <tr>
+                            <td>{{encaissement.dateSortie | customDate}}</td>
+                            <td>{{encaissement.nomClient}}</td>
+                            <td>{{encaissement.prenomClient}}</td>
+                            <td>{{encaissement.paiement | customNumber}}</td>
+                        </tr>
+
+                    </ng-template>
+
+
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="7" style="text-align: center">Aucun encaissement disponible.</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="loadingbody">
+                        <tr>
+                            <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+            <div class="col-2 right-div">
+                <span class="bold-text">Total {{total! | customNumber}}  FCFA</span><br><hr>
+                <span class="bold-text">Total Espèce  {{totalEspece! | customNumber}}  FCFA</span><br><hr>
+                <span class="bold-text">Total Orange Money  {{totalOM! | customNumber}}  FCFA</span><br><hr>
+                <span class="bold-text">Total Moov money  {{totalMM! | customNumber}}  FCFA</span><br><hr>
+                <span class="bold-text">Total Chèque  {{totalCH! | customNumber}}  FCFA</span><br><hr>
+                <span class="bold-text">Total Versement  {{totalVE! | customNumber}}  FCFA</span>
+            </div>
+        </div>
+
+
+    </div>
+
+
+</div>
+-->

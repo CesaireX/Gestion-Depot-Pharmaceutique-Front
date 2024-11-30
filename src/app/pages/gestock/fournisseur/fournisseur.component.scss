@@ -1,0 +1,110 @@
+.float-right {
+    float: right !important;
+}
+.form-columns {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Deux colonnes égales */
+    gap: 20px; /* Espacement entre les colonnes */
+}
+
+.form-column {
+    flex: 1; /* Chaque colonne prend autant d'espace que possible */
+}
+.container-custom {
+    display: flex;
+    flex-direction: row;
+    margin-top: 20px;
+}
+.left-panel, .right-panel {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+.left-panel {
+    flex: 1;
+    margin-right: 20px;
+}
+.right-panel {
+    flex: 2;
+}
+.timeline-container {
+    position: relative;
+    margin: 20px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.timeline-item:before {
+    content: "";
+    position: absolute;
+    left: calc(10% + 10px); /* Ajustement pour le placement de la ligne */
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #e0e0e0;
+    z-index: -1;
+}
+
+.timeline-date {
+    flex-basis: 20%;
+    text-align: right;
+    padding-right: 20px;
+    color: #9e9e9e;
+    font-size: 12px;
+}
+
+.timeline-content {
+    flex-basis: 75%;
+    padding: 10px 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.timeline-content h3 {
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: #3f51b5;
+    font-size: 16px;
+}
+
+.timeline-content p {
+    margin: 0;
+    font-size: 14px;
+    color: #616161;
+}
+
+.timeline-content a {
+    font-size: 12px;
+    color: #3f51b5;
+    text-decoration: none;
+}
+
+.profile-container {
+    white-space: nowrap;
+}
+
+.profile-picture {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 10px;
+    border-radius: 50%;
+}
+
+.user-details {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.user-details h5, .user-details p {
+    margin: 0;
+}

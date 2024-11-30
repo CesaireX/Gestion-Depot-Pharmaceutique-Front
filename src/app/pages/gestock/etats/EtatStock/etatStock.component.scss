@@ -1,0 +1,84 @@
+/* inventory.component.scss */
+.inventory-container {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    .header {
+        h2 {
+            //margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        p {
+            //margin: 5px 0 20px;
+            font-size: 14px;
+            color: #666;
+        }
+    }
+    .filters {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        .filter-group {
+            margin-right: 20px;
+            label {
+                font-size: 14px;
+                margin-right: 5px;
+            }
+        }
+        .p-dropdown {
+            width: 150px;
+        }
+        .p-button-outlined {
+            margin-right: 10px;
+        }
+        .execute-report {
+            background-color:  rgb(3, 16, 59);
+            color: white;
+            border: none;
+            border-radius: 5%;
+            height: 32px !important;
+            font-size: 14px;
+            padding: 0 10px !important;
+            margin-left: auto;
+        }
+        .disabled-button {
+            background-color: rgba(0, 0, 0, 0.12) !important;;
+            color: rgba(0, 0, 0, 0.38) !important;;
+        }
+    }
+    .report {
+        text-align: center;
+        h3, h4 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        p {
+            margin: 10px 0 20px;
+            font-size: 14px;
+            color: #666;
+        }
+    }
+    .p-table {
+        width: 100%;
+        .p-datatable-thead {
+            background-color: #f9f9f9;
+            th {
+                padding: 10px;
+                text-align: left;
+                font-size: 14px;
+                font-weight: bold;
+                border-bottom: 1px solid #ddd;
+            }
+        }
+        .p-datatable-tbody {
+            tr {
+                td {
+                    padding: 10px;
+                    border-bottom: 1px solid #ddd;
+                    font-size: 14px;
+                }
+            }
+        }
+    }
+}

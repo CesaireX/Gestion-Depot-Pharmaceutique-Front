@@ -1,0 +1,132 @@
+<div class="layout-topbar">
+    <div class="layout-topbar-start">
+        <a class="layout-topbar-logo" routerLink="/">
+            <h3 style="color: white; text-align: center">G-STOCK</h3>
+        </a>
+        <a #menuButton class="layout-menu-button" (click)="onMenuButtonClick()" pRipple>
+            <i class="pi pi-chevron-right"></i>
+        </a>
+
+        <a #mobileMenuButton class="layout-topbar-mobile-button" (click)="onMobileTopbarMenuButtonClick()" pRipple>
+            <i class="pi pi-ellipsis-v"></i>
+        </a>
+    </div>
+<!--    <div class="flex justify-content-between flex-column sm:flex-row mr-10">
+                    <span class="p-input-icon-left mb-3 mr-10">
+                        <i class="pi pi-search"></i>
+                        <input pInputText type="text" #filter
+                               placeholder="Rechercher produit" class="w-full"/>
+                    </span>
+    </div>-->
+
+<!--    <div class="layout-topbar-end">
+        <div class="layout-topbar-actions-end">
+            <ul class="layout-topbar-items">
+                <li class="layout-topbar-search">
+                    <a pStyleClass="@next" enterClass="ng-hidden" enterActiveClass="px-scalein" leaveToClass="ng-hidden" leaveActiveClass="px-fadeout" [hideOnOutsideClick]="true" pRipple (click)="focusSearchInput()">
+                        <i class="pi pi-search"></i>
+                    </a>
+
+                    <div class="layout-search-panel ng-hidden p-input-filled">
+                        <i class="pi pi-search"></i>
+                        <input #searchInput type="text" pInputText placeholder="Search">
+                        <button pButton pRipple type="button" icon="pi pi-times" class="p-button-rounded p-button-text p-button-plain" pStyleClass=".layout-search-panel" leaveToClass="ng-hidden" leaveActiveClass="px-fadeout"></button>
+                    </div>
+                </li>
+                <li>
+                    <a pStyleClass="@next" enterClass="ng-hidden" enterActiveClass="px-scalein" leaveToClass="ng-hidden" leaveActiveClass="px-fadeout" [hideOnOutsideClick]="true" pRipple>
+                        <i class="pi pi-bell" pBadge severity="warning"></i>
+                    </a>
+                    <div class="ng-hidden">
+                        <ul class="list-none p-0 m-0">
+                            <li class="px-3 py-1">
+                                <span>You have <b>4</b> new notifications</span>
+                            </li>
+                            <li class="p-3">
+                                <div class="flex align-items-center">
+                                    <img src="assets/demo/images/avatar/avatar-1.png" />
+                                    <div class="flex flex-column ml-3 flex-1">
+                                        <div class="flex align-items-center justify-content-between mb-1">
+                                            <span class="font-bold">Jerome Bell</span>
+                                            <small>42 mins ago</small>
+                                        </div>
+                                        <span class="text-sm line-height-3">How to write content about your photographs?</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="p-3">
+                                <div class="flex align-items-center">
+                                    <img src="assets/demo/images/avatar/avatar-2.png"/>
+                                    <div class="flex flex-column ml-3 flex-1">
+                                        <div class="flex align-items-center justify-content-between mb-1">
+                                            <span class="fs-small font-bold">Cameron Williamson</span>
+                                            <small>48 mins ago</small>
+                                        </div>
+                                        <span class="text-sm line-height-3">Start a blog to reach your creative peak.</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="p-3">
+                                <div class="flex align-items-center">
+                                    <img src="assets/demo/images/avatar/avatar-3.png"/>
+                                    <div class="flex flex-column ml-3 flex-1">
+                                        <div class="flex align-items-center justify-content-between mb-1">
+                                            <span class="fs-small font-bold">Anna Miles</span>
+                                            <small>1 day ago</small>
+                                        </div>
+                                        <span class="text-sm line-height-3">Caring is the new marketing</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="p-3">
+                                <div class="flex align-items-center">
+                                    <img src="assets/demo/images/avatar/avatar-4.png"/>
+                                    <div class="flex flex-column ml-3 flex-1">
+                                        <div class="flex align-items-center justify-content-between mb-1">
+                                            <span class="fs-small font-bold">Arlene Mccoy</span>
+                                            <small>4 day ago</small>
+                                        </div>
+                                        <span class="text-sm line-height-3">Starting your traveling blog with Vasco.</span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li>
+                    <a pStyleClass="@next" enterClass="ng-hidden" enterActiveClass="px-scalein" leaveToClass="ng-hidden" leaveActiveClass="px-fadeout" [hideOnOutsideClick]="true" pRipple>
+                        <i class="pi pi-table"></i>
+                    </a>
+                    <div class="ng-hidden">
+                        <div class="flex flex-wrap">
+                            <div class="w-4 flex flex-column align-items-center p-3">
+                                <button pButton class="p-button-rounded mb-2" icon="pi pi-image" pRipple></button>
+                                <span>Products</span>
+                            </div>
+                            <div class="w-4 flex flex-column align-items-center p-3">
+                                <button pButton class="p-button-rounded mb-2 p-button-success" icon="pi pi-file-pdf" pRipple></button>
+                                <span>Reports</span>
+                            </div>
+                            <div class="w-4 flex flex-column align-items-center p-3">
+                                <button pButton class="p-button-rounded mb-2 p-button-secondary" icon="pi pi-dollar" pRipple></button>
+                                <span>Balance</span>
+                            </div>
+                            <div class="w-4 flex flex-column align-items-center p-3">
+                                <button pButton class="p-button-rounded mb-2 p-button-warning" icon="pi pi-cog" pRipple></button>
+                                <span>Settings</span>
+                            </div>
+                            <div class="w-4 flex flex-column align-items-center p-3">
+                                <button pButton class="p-button-rounded mb-2 p-button-help" icon="pi pi-key" pRipple></button>
+                                <span>Credentials</span>
+                            </div>
+                            <div class="w-4 flex flex-column align-items-center p-3">
+                                <button pButton class="p-button-rounded mb-2 p-button-info" icon="pi pi-sitemap" pRipple></button>
+                                <span>Sitemap</span>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>-->
+</div>

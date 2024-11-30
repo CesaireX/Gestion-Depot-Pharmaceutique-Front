@@ -1,0 +1,124 @@
+<div style="display: flex">
+    <div class="card primary" style="height: 100%;">
+        <p-toast position="top-center"></p-toast>
+        <div class="spinner-overlay" *ngIf="chrgmt">
+            <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
+        </div>
+        <div class="header55">
+        <h1>Magasins</h1>
+        <div class="header-actions">
+            <button *ngIf="droits.includes('AJOUTER_MAGASIN')" class="p-button-primary small-button" (click)="add(null)"
+            ><i class="pi pi-plus"></i>Nouveau</button>
+
+            <p-menu #menu appendTo="body" [popup]="true" [model]="items!"></p-menu>
+            <!-- <div class="flex justify-content-end">
+                <button (click)="menu.toggle($event)" pButton pRipple
+                        icon="pi pi-ellipsis-h" class="p-button-text p-button-rounded text-900"></button>
+            </div> -->
+
+        </div>
+    </div>
+        <p-table #dt [value]="magasins" [paginator]="true" [loading]="loading" [rows]="25"
+                 responsiveLayout="scroll" [rowHover]="true"
+                 [rowsPerPageOptions]="[25,50,100]"
+                 [globalFilterFields]="['libelle']">
+            <ng-template pTemplate="caption">
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Nom du magasin
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Adresse
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Description
+                        </div>
+                    </th>
+                    <th style="border-left: none;background-color: rgb(236,236,236)">
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-magasin>
+                <tr>
+                    <td>{{magasin.nom}}</td>
+                    <td>{{magasin.adresse}}</td>
+                    <td>{{magasin.description}}</td>
+                    <td style="border-left: none;">
+
+                        <button *ngIf="droits.includes('MODIFIER_MAGASIN')"  (click)="add(magasin)"
+                                 class="p-button-primary small-button mr-2"
+                                 icon="pi pi-pencil" pTooltip="Modifier"
+                                 pButton
+                                 type="button"></button>
+
+                        <button *ngIf="droits.includes('SUPPRIMER_MAGASIN')"  (click)="deleteElement(magasin)"
+                                 class="p-button-danger small-button"
+                                 icon="pi pi-trash" pTooltip="Supprimer"
+                                 pButton
+                                 type="button"></button>
+
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucun Magasin disponible</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+        <p-dialog position="top" header="Créer un magasin" [modal]="true" [(visible)]="display" [style]="{ width: '35rem' }">
+            <form (ngSubmit)="save(editForm)" name="editForm" role="form" novalidate #editForm="ngForm" class="p-mb-3">
+                <div class="grid p-fluid mt-3">
+
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Nom du magasin<span style="color: red">*</span></label>
+                        <input name="nom" type="text" pInputText [(ngModel)]="magasin.nom" required/>
+                    </div>
+
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Adresse</label>
+                        <input name="adresse" type="text" pInputText [(ngModel)]="magasin.adresse"/>
+                    </div>
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Description</label>
+                        <input name="description" type="text" pInputText  [(ngModel)]="magasin.description"/>
+                    </div>
+                </div>
+
+                <div class="flex justify-content-end gap-2">
+                    <button type="button" (click)="annuler()" class="btn btn-secondary">
+                        Annuler
+                    </button>
+                    <button type="Submit" [disabled]="editForm.invalid" class="btn btn-primary">
+                        <i *ngIf="loading && display" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                        <span *ngIf="display">Enregistrer</span>
+                        <span *ngIf="loading && display">Enregistrement...</span>
+                    </button>
+                </div>
+            </form>
+        </p-dialog>
+        <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle">
+            <p-footer>
+                <button (click)="cd.reject()" class="p-button-secondary" icon="pi pi-times" label="NON"
+                        pButton type="button"></button>
+                <button (click)="cd.accept()" class="p-button-danger" icon="pi pi-check" label="OUI"
+                        pButton type="button"></button>
+            </p-footer>
+        </p-confirmDialog>
+    </div>
+</div>
+
+

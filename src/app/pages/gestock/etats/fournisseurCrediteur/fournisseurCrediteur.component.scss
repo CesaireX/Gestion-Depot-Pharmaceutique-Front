@@ -1,0 +1,17 @@
+.float-right {
+    float: right !important;
+}
+.table {
+    border-collapse: collapse;
+    margin: 0 auto;
+    width:50%;
+    height:300px;
+    font-size:20px;
+    .client{
+        font-weight : bold;
+    }
+}
+
+.table th, .table td {
+    border: 1px solid black;
+}

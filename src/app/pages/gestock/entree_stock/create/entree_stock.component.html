@@ -1,0 +1,294 @@
+<div class="card">
+    <p-toast position="top-center"></p-toast>
+    <div class="grid">
+        <div class="col-12 lg:col-12">
+            <h6 style="color: cornflowerblue; text-align: center">MAGASIN D'ENTRÉE ET FOURNISSEUR</h6>
+            <form (ngSubmit)="saveEntrees()" name="entreeform" role="form" novalidate #entreeform="ngForm"
+                  class="p-mb-3">
+                <div class="grid formgrid p-fluid" style="justify-content: center">
+
+                    <div class="field mb-4 col-3">
+                    <label style="font-weight:bold;">Sélectionnez la date d'entrée <span
+                        style="color: red">*</span></label>
+                    <p-calendar appendTo="body" [(ngModel)]="currentdate"
+                                name="dateentree" dateFormat="dd/mm/yy"
+                                [showIcon]="true" [ngModelOptions]="{ standalone: true }" [maxDate]="currentdate"
+                                [required]="true"></p-calendar>
+                    </div>
+
+                    <div class="field mb-4 col-3">
+                        <label class="font-medium text-900">Sélectionner le Magasin d'entrée <span
+                            style="color: red">*</span></label>
+                        <p-dropdown [options]="magasins" (onChange)="Clearcontent($event)" [(ngModel)]="magasinselected"
+                                    [showClear]="true" optionLabel="nom"
+                                    appendTo="body" [filter]="true" [filterBy]="'nom'" [style]="{width: '100%'}"
+                                    name="magasin"
+                                    [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                                    [required]="true">
+                        </p-dropdown>
+                    </div>
+
+                    <div class="field mb-4 col-3">
+                        <label class="font-medium text-900">Sélectionner le Fournisseur du produit<span
+                            style="color: red">*</span></label>
+                        <p-dropdown [options]="fournisseurs" (onChange)="Clearcontent($event)"
+                                    [(ngModel)]="fournisseurselected" [showClear]="true" optionLabel="nom"
+                                    appendTo="body" [filter]="true" [filterBy]="'nom'" [style]="{width: '100%'}"
+                                    name="fournisseur"
+                                    [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                                    [required]="true">
+                            <ng-template let-fournisseurs pTemplate="item">
+                                <div class="flex align-items-center fournisseurs-item">
+                                    <div>{{fournisseurs?.nom}} {{fournisseurs?.prenom}}</div>
+                                </div>
+                            </ng-template>
+                            <ng-template let-item pTemplate="selectedItem">
+                                {{item?.nom}} {{item?.prenom}}
+                            </ng-template>
+                        </p-dropdown>
+                    </div>
+                </div>
+                <br>
+                <div>
+                    <h6 style="color: cornflowerblue; text-align: center">PRODUITS</h6>
+                    <br>
+                </div>
+                <p-table *ngIf="produitselected" styleClass="p-datatable-gridlines" [value]="list_of_product">
+                    <ng-template pTemplate="caption" styleClass="custom-background">
+                        <div style="background-color: rgba(3,16,59,0.82);"
+                             class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                            <h5 style="color: white" class="m-0">Détail du produit sélectionné</h5>
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="min-width: 10rem">
+                                <div class="flex justify-content-between align-items-center">
+                                    Référence
+                                </div>
+                            </th>
+                            <th style="min-width: 10rem">
+                                <div class="flex justify-content-between align-items-center">
+                                    Catégorie
+                                </div>
+                            </th>
+                            <th style="min-width: 10rem">
+                                <div class="flex justify-content-between align-items-center">
+                                    Désignation
+                                </div>
+                            </th>
+                            <th style="min-width: 10rem">
+                                <div class="flex justify-content-between align-items-center">
+                                    Seuil d'alerte
+                                </div>
+                            </th>
+                            <th style="min-width: 10rem">
+                                <div class="flex justify-content-between align-items-center">
+                                    Unité de mesure
+                                </div>
+                            </th>
+                            <th style="min-width: 10rem">
+                                <div class="flex justify-content-between align-items-center">
+                                    Prix unitaire TTC
+                                </div>
+                            </th>
+                            <th style="min-width: 10rem">
+                                <div class="flex justify-content-between align-items-center">
+                                    Stock actuel
+                                </div>
+                            </th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-produit>
+                        <tr>
+                            <td>{{produit.reference}}</td>
+                            <td>{{produit.categorieLibelle}}</td>
+                            <td>{{produit.nom}}</td>
+                            <td>{{produit.seuil | customNumber}}</td>
+                            <td>{{produit.uniteMesureLibelle}}</td>
+                            <td>{{produit.prixttc | customNumber}}</td>
+                            <td>{{magasinTotalProduit |customNumber}}</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+                <br><br>
+
+                <div class="grid formgrid p-fluid" style="justify-content: center">
+                    <div class="field mb-4 col-2">
+                        <label class="font-medium text-900">Produit <span style="color: red">*</span></label>
+                        <p-dropdown [disabled]="magasinselected==null || fournisseurselected==null"
+                                    (onChange)="SelectProduct()" [options]="produits" [(ngModel)]="produitselected"
+                                    [showClear]="true" optionLabel="nom"
+                                    appendTo="body" [filter]="true" [filterBy]="'nom'" [style]="{width: '100%'}"
+                                    name="produit"
+                                    [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                                    [required]="true">
+                        </p-dropdown>
+                    </div>
+
+                    <div *ngIf="entree_stock" class="field mb-4 col-2">
+                        <label class="font-medium text-900">Prix du produit <span style="color: red">*</span></label>
+                        <p-inputNumber [disabled]="!produitselected" type="text" pInputNumber
+                               (onInput)="actualiseTotal2($event)" name="prix" [min]="0" [showButtons]="true"
+                                       locale="de-DE" [minFractionDigits]="0" [(ngModel)]="entree_stock.produitPrix" [required]="true">
+
+                        </p-inputNumber>
+                    </div>
+
+                    <div *ngIf="entree_stock" class="field mb-4 col-2">
+                        <label class="font-medium text-900">Quantité <span style="color: red">*</span></label>
+                        <p-inputNumber [disabled]="!produitselected" type="text" pinputnumber
+                               (onInput)="actualiseTotal1($event)" name="quantité" [showButtons]="true"
+                                       locale="de-DE" [minFractionDigits]="0" [(ngModel)]="entree_stock.quantite" [required]="true" [min]="0">
+
+                        </p-inputNumber>
+                    </div>
+
+                    <!--<div *ngIf="entree_stock" class="field mb-4 col-2">
+                        <label class="font-medium text-900">Mode de paiement</label>
+                        <p-dropdown [disabled]="magasinselected==null || fournisseurselected==null"
+                                    [options]="mode_paiements" [(ngModel)]="entree_stock.modePaiement"
+                                    [showClear]="true" appendTo="body" [filter]="true" [filterBy]="'label'" [style]="{width: '100%'}"
+                                    name="mode_paiement"
+                                    [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false">
+                        </p-dropdown>
+                    </div>
+
+                    <div *ngIf="entree_stock && produitselected" class="field mb-4 col-1">
+                        <label class="font-medium text-900">Montant versé</label>
+                        <input type="text" pInputText name="montant_versé"
+                               [(ngModel)]="totalverse" [max]="total"/>
+                    </div>-->
+
+                    <div *ngIf="entree_stock && produitselected" class="field mb-4 col-2">
+                        <label class="font-medium text-900">Prix total</label>
+                        <!--<input disabled type="text" pInputText name="total"
+                               [(ngModel)]="total"/>-->
+                        <p-inputNumber [disabled]="true" type="number" id="total" name="total" pInputNumber
+                                       locale="de-DE" [minFractionDigits]="0"  [(ngModel)]="total" [style]="{'width': '100%'}" >
+                        </p-inputNumber>
+                    </div>
+
+                    <div class="field mb-4 col-1">
+                        <button  *ngIf="droits.includes('AJOUTER_ENTRE_STOCK')" (click)="addentree()" type="button"
+                                style="margin-top: 25px" pButton [disabled]="entreeform.invalid || total!<=0" pRipple label="Ajouter"
+                                icon="pi pi-plus-circle">
+                        </button>
+                    </div>
+                    <div class="field mb-4 col-1">
+                        <button pButton pRipple label="Vider" type="button"
+                                class="p-button-secondary p-mr-2 p-mb-2 font-weight-bold" style="margin-top: 25px"
+                                icon="pi pi-fw pi-times" (click)="Clearproductinformation()"
+                                [disabled]="entreeform.invalid || entree_stock?.quantite===0">
+                        </button>
+                    </div>
+                </div>
+
+                <p-table #dt [value]="list_entrees_stock" styleClass="p-datatable-gridlines" [columns]="cols"
+                         responsiveLayout="scroll"
+                         [rows]="25" [globalFilterFields]="['produitNom', 'produitPrix', 'date_entree', 'magasinNom', 'fournisseurNom']" [rows]="25" [paginator]="true"
+                         [rowsPerPageOptions]="[10,20,30]"
+                         [rowHover]="true"
+                         dataKey="id">
+
+                    <ng-template pTemplate="caption">
+                        <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                            <h5 class="m-0">Liste des entrées de stock</h5>
+                            <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="rechercher une entrée..."
+                                   class="w-full sm:w-auto"/>
+                        </span>
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 3em">
+                                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                            </th>
+                            <th pSortableColumn="libelle">Date d'entrée
+                                <p-sortIcon field="libelle"></p-sortIcon>
+                            </th>
+                            <th pSortableColumn="libelle">Désignation du produit
+                                <p-sortIcon field="libelle"></p-sortIcon>
+                            </th>
+                            <th pSortableColumn="libelle">Prix unitaire
+                                <p-sortIcon field="libelle"></p-sortIcon>
+                            </th>
+                            <th pSortableColumn="description">Quantité entrée
+                                <p-sortIcon field="description"></p-sortIcon>
+                            </th>
+                            <th pSortableColumn="description">Magasin d'entrée
+                                <p-sortIcon field="description"></p-sortIcon>
+                            </th>
+                            <th pSortableColumn="description">Fournisseur
+                                <p-sortIcon field="description"></p-sortIcon>
+                            </th>
+                           <!-- <th pSortableColumn="description">Mode de paiement
+                                <p-sortIcon field="description"></p-sortIcon>
+                            </th>
+                            <th pSortableColumn="description">Montant versé
+                                <p-sortIcon field="description"></p-sortIcon>
+                            </th>-->
+                            <th pSortableColumn="description">Prix total
+                                <p-sortIcon field="description"></p-sortIcon>
+                            </th>
+                            <th style="border-left: none"></th>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template let-entree_stock pTemplate="body">
+                        <tr>
+                            <td>
+                                <p-tableCheckbox [value]="entree_stock"></p-tableCheckbox>
+                            </td>
+                            <td style="width:10%; min-width:10rem;">{{entree_stock.date_entree | customDate}}</td>
+                            <td style="width:30%; min-width:10rem;">{{entree_stock.produitNom}}</td>
+                            <td style="width:15%; min-width:10rem;">{{entree_stock.produitPrix | customNumber}} FCFA</td>
+                            <td style="width:15%; min-width:10rem;">{{entree_stock.quantite | customNumber}}</td>
+                            <td style="width:15%; min-width:10rem;">{{entree_stock.magasinNom}}</td>
+                            <td style="width:15%; min-width:10rem;">{{entree_stock.fournisseurNom}}</td>
+                            <!--<td style="width:20%; min-width:10rem;">{{entree_stock.modePaiement}}</td>
+                            <td style="width:15%; min-width:10rem;">{{entree_stock.paiement}} FCFA</td>-->
+                            <td style="width:15%; min-width:10rem;">{{entree_stock.quantite * entree_stock.produitPrix | customNumber}} FCFA</td>
+                            <td style="width:15%; min-width:10rem; border-left: none">
+                                <button type="button" pButton pRipple icon="pi pi-pencil"
+                                        class="p-button-rounded p-button-success mr-2"
+                                        (click)="UpdateEntreecontent(entree_stock)"></button>
+                                <button type="button" pButton pRipple icon="pi pi-trash"
+                                        class="p-button-rounded p-button-warning"
+                                        (click)="DeleteEntree(entree_stock)"></button>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+
+                <div class="grid p-fluid mt-0">
+                    <div class="field col-12 md:col-8"></div>
+                    <div class="field col-12 md:col-2">
+                        <button pButton pRipple label="Vider le contenu" (click)="Clearcontenu()" type="button"
+                                class="p-button-secondary p-mr-2 p-mb-2 font-weight-bold"
+                                icon="pi pi-fw pi-times" [disabled]="list_entrees_stock.length<1">
+                        </button>
+                    </div>
+                    <div class="field col-12 md:col-2">
+                        <button pButton pRipple label="Enregistrer" icon="pi pi-fw pi-check"
+                                class="p-button-primary p-mr-2 p-mb-2 font-weight-bold"
+                                type="Submit" [disabled]="list_entrees_stock.length<1">
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle">
+                <p-footer>
+                    <button (click)="cd.reject()" class="p-button-secondary" icon="pi pi-times" label="NON"
+                            pButton type="button"></button>
+                    <button (click)="cd.accept()" class="p-button-danger" icon="pi pi-check" label="OUI"
+                            pButton type="button"></button>
+                </p-footer>
+            </p-confirmDialog>
+
+        </div>
+    </div>
+</div>

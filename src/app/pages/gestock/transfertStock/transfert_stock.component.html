@@ -1,0 +1,264 @@
+
+<p-toast position="top-center"></p-toast>
+<div class="spinner-overlay" *ngIf="chrgmt">
+    <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
+</div>
+
+<div class="container1" *ngIf="createOrModify">
+    <div class="header-special">
+        <p style="font-size: large; margin-bottom: 25px">
+            <i class="pi pi-sort-alt" style="font-size: 1.5rem"></i>
+            TRANSFERTS DE STOCK
+        </p>
+        <button (click)="retour()" class="p-button-primary small-button p-button-icon-only" icon="pi pi-arrow-left" pButton></button>
+    </div>
+    <form #factureForm="ngForm" (ngSubmit)="onSubmit(factureForm)" autocomplete="off" name="factureForm" novalidate role="form">
+        <!-- Première partie du formulaire -->
+        <div class="form-group row" style="margin-top: 15px">
+            <label style="color: red" class="col-label">Sélectionnez la date</label>
+            <div class="col-input">
+                <p-calendar appendTo="body" [(ngModel)]="currentdate"
+                            name="datesortie" dateFormat="dd/mm/yy" [style]="{width: '100%'}"
+                            [showIcon]="true" [ngModelOptions]="{ standalone: true }" [maxDate]="currentdate"
+                            [required]="true"></p-calendar>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-label">Motif</label>
+            <div class="col-input">
+            <textarea class="form-control" [(ngModel)]="transfert.motif" name="description" pInputText
+                      type="text"></textarea>
+            </div>
+        </div>
+
+        <br><br><br>
+        <div class="form-group" style="display: flex; gap: 20px;">
+            <div class="dropdown-wrapper" style="display: flex; flex-direction: column; width: 25%;">
+                <label style="color: red">Magasin source</label>
+                <p-dropdown [options]="magasins" (onChange)="checkReset('source', $event)" [(ngModel)]="magasinSourceSelected"
+                            [showClear]="true" optionLabel="nom" appendTo="body" [filter]="true" [filterBy]="'nom'"
+                            [style]="{width: '100%'}" name="magasinSource"
+                            [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false" [required]="true">
+                </p-dropdown>
+            </div>
+
+            <div style="text-align: center; width: 5%; margin-top: 19px">
+                <i class="pi pi-sort-alt" style="font-size: 2rem; color: #5A5A5A;"></i>
+            </div>
+
+            <div class="dropdown-wrapper" style="display: flex; flex-direction: column; width: 25%;">
+                <label style="color: red">Magasin de destination</label>
+                <p-dropdown [disabled]="!magasinSourceSelected" [options]="magasins" (onChange)="checkReset('destination', $event)" [(ngModel)]="magasinDestinationSelected"
+                            [showClear]="true" optionLabel="nom" appendTo="body" [filter]="true" [filterBy]="'nom'"
+                            [style]="{width: '100%'}" name="magasinDestination"
+                            [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false" [required]="true">
+                </p-dropdown>
+            </div>
+        </div>
+
+        <!-- Display error messages -->
+
+        <!-- Deuxième partie du formulaire -->
+        <p style="font-size:medium; margin-top: 30px; font-weight: bold">Articles à transferer</p>
+        <table class="article-table">
+            <thead>
+            <tr>
+                <th>DÉTAILS DE L’ARTICLE</th>
+                <th>DISPONIBILITÉ</th>
+                <th>QUANTITÉ A TRANSFERER</th>
+                <th>ACTION</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let transfert of TransfertRequest; let i = index">
+                <td>
+                    <p-dropdown (onChange)="onArticleChange($event, i)"
+                                [(ngModel)]="transfert.produitId"
+                                [filterBy]="'nom'"
+                                [disabled]="!magasinDestinationSelected || !magasinSourceSelected"
+                                [filter]="true"
+                                [name]="'articles-' + i + '-id'"
+                                [options]="articleOptions"
+                                [required]="true" [showClear]="true"
+                                [style]="{width: '200px'}"
+                                appendTo="body"
+                                optionLabel="nom" optionValue="id"
+                                placeholder="Sélectionner un article"></p-dropdown>
+                </td>
+                <td>
+                    <h6>Stock {{magasinSourceSelected?.nom}}: {{transfert.sourceQ}}</h6>
+                    <h6>Stock {{magasinDestinationSelected?.nom}}: {{transfert.destQ}}</h6>
+                </td>
+                <td>
+                     <p-inputNumber [(ngModel)]="transfert.quantite" [disabled]="!magasinDestinationSelected || !magasinSourceSelected"
+                                   [minFractionDigits]="0" (onInput)="actualiseQuantity($event, i)"
+                                   [min]="1" [name]="'article-' + i + '-quantity'" [showButtons]="true"
+                                   [style]="{'width': '100%'}" locale="de-DE" pInputNumber>
+                    </p-inputNumber>
+                    <div *ngIf="transfert.produitId!=null"><span [ngStyle]="{ color: 'red' }">
+                                quantité max : {{transfert.sourceQ | customNumber}}
+                          </span></div>
+                </td>
+                <td>
+                    <button (click)="supprimerLigne(i)"
+                            [disabled]="TransfertRequest.length === 1"
+                            class="p-button-danger small-button"
+                            icon="pi pi-trash"
+                            pButton
+                            type="button"></button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="form-group row2">
+            <div class="actions">
+                <button (click)="ajouterLigne()" [disabled]="!magasinDestinationSelected || !magasinSourceSelected"
+                        class="p-button p-button-secondary custom-button small-button"
+                        icon="pi pi-plus" label="Ajouter une nouvelle ligne"
+                        pButton
+                        type="button"></button>
+            </div>
+        </div>
+        <div style="bottom: 0; position: fixed; width: 100%" class="layout-footer p-d-flex p-ai-center p-p-4 p-shadow-z">
+            <span style="font-weight: bold">
+
+                 <button  type="submit"  class="btn btn-primary" [disabled]="isFormInvalid()">
+                    <span >Enregistrer</span>
+
+                </button>
+                <button type="button" class="btn btn-secondary" (click)="retour()" >Annuler</button>
+            </span>
+        </div>
+    </form>
+</div>
+
+<div *ngIf="!createOrModify" style="display: flex; ">
+    <div [ngClass]="{'shrink': isSecondaryActive}" class="card primary" style="height: 100%;">
+        <div class="header55">
+            <h1>Tous les transferts de stock</h1>
+            <div class="header-actions">
+                <button *ngIf="droits.includes('AJOUTER_FACTURE_CLIENT')" (click)="createModify({})" class="p-button-primary small-button" pButton><i
+                    class="pi pi-plus"></i>Nouveau transfert
+                </button>
+                <button class="p-button-secondary small-button p-button-icon-only" icon="pi pi-ellipsis-v"
+                        pButton></button>
+            </div>
+        </div>
+        <p-table #dt
+                 [globalFilterFields]="['dateFacture', 'numeroFacture', 'reference', 'client.nom', 'statut', 'dateEcheance', 'montantTotal', 'reste']"
+                 [loading]="loading" [paginator]="true" [rowHover]="true"
+                 selectionMode="single" dataKey="id"
+                 [rowsPerPageOptions]="[25,50,100]" [rows]="25"
+                 [value]="transferts"
+                 responsiveLayout="scroll">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher" class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="header">
+                <tr class="large-row">
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Date
+                        </div>
+                    </th>
+
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Articles transférés
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Motif
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template let-transfert pTemplate="body">
+                <tr (click)="onRowSelect(transfert)" [pSelectableRow]="transfert" class="large-row" style="padding-top: 10px; padding-bottom: 10px;">
+                    <td>{{transfert.dateTransfert | customDate}}</td>
+                    <td>{{ getProduitNoms(transfert) }}</td>
+                    <td>{{ transfert.motif }} </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+    <div [ngClass]="{'active': isSecondaryActive}" class="card secondary" style="height: 100%;">
+        <div class="headerfact">
+            <div class="facture-header">
+                <h5></h5>
+                <span class="close-button" (click)="close()">&#10006;</span>
+            </div>
+            <div class="actions">
+                <!--<button (click)="createModify(transfertselected)" *ngIf="droits.includes('MODIFIER_FACTURE_CLIENT')" class="btn">
+                    <i class="pi pi-pencil"></i> Modifier
+                </button>-->
+                <button (click)="deleteElement(transfertselected)" *ngIf="droits.includes('SUPPRIMER_FACTURE_CLIENT')" class="btn"
+                ><i class="pi pi-times"></i>Annuler le transfert de stock
+                </button>
+
+                <button class="btn">
+                    <i class="pi pi-ellipsis-v"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="container" >
+            <div class="payment-receipt">
+                <h2>TRANSFERT DE STOCK</h2>
+                <div class="payment-info">
+                    <div>
+                        <p><strong>Date du transfert:</strong> {{transfertselected.dateTransfert | customDate}}</p>
+                        <p><strong>Motif:</strong>{{transfertselected.motif}}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="payment-details">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Detail de l'article</th>
+                        <th>Magasin source</th>
+                        <th>Magasin de destination</th>
+                        <th>Quantité transférée</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr *ngFor="let trans of transfertselected.transferts, let i = index">
+                        <td>{{trans.produitNom}}</td>
+                        <td>{{ trans.sourceNom }}</td>
+                        <td>{{ trans.destinationNom }}</td>
+                        <td>{{trans.quantite | customNumber}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                 position="top">
+    <p-footer style="display: flex;">
+        <button (click)="cd.reject()" class="btnannulate"
+        ><i class="pi pi-close"></i>Annuler
+        </button>
+        <button (click)="cd.accept()" class="btnvalidate"
+        ><i class="pi pi-confirm"></i>Confirmer
+        </button>
+    </p-footer>
+</p-confirmDialog>

@@ -1,0 +1,667 @@
+<p-toast position="top-center"></p-toast>
+
+<div *ngIf="chrgmt" class="spinner-overlay">
+    <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
+</div>
+<div *ngIf="createOrModify" class="container1">
+    <div class="header-special">
+        <p style="font-size: large; margin-bottom: 25px">
+            <i class="pi pi-shopping-bag" style="font-size: 1.5rem"></i>
+            Commande clients
+        </p>
+        <button (click)="retour()" class="p-button-primary small-button p-button-icon-only" icon="pi pi-arrow-left" pButton></button>
+    </div>
+    <p-messages [(value)]="messages!" [enableService]="false" [style]="{width: '50%'}"></p-messages>
+    <form #bonCommand="ngForm" autocomplete="off" (ngSubmit)="onSubmit(bonCommand)" name="bonCommand" novalidate role="form">
+        <!-- Première partie du formulaire -->
+        <div class="form-group row" style="margin-top: 15px">
+            <label style="color: red" class="col-label">Nom du client</label>
+            <div class="col-input">
+                <p-dropdown [(ngModel)]="client" [filterBy]="'nom'" [filter]="true"
+                            [options]="clients"
+                            [required]="true" [showClear]="true" [style]="{width: '100%'}"
+                            appendTo="body" name="client" optionLabel="nom"
+                            placeholder="Sélectionner un client">
+                    <ng-template let-clients pTemplate="item">
+                        <div class="flex align-items-center clients-item">
+                            <div>{{ clients?.nom }} &nbsp;&nbsp; {{ clients?.prenom }}</div>
+
+                        </div>
+                    </ng-template>
+                    <ng-template let-clients pTemplate="selectedItem">
+
+                        {{ clients?.nom }}&nbsp;&nbsp; {{ clients?.prenom }}
+
+                    </ng-template>
+                </p-dropdown>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label style="color: red" class="col-label">N° de commande client</label>
+            <div class="input-with-button">
+                <input [(ngModel)]="newBonCommandeNumber" disabled id="i" name="p" pInputText type="text">
+                <button (click)="customizeBonCommandeNumber()" class="icon-button" type="button">
+                    <i class="pi pi-cog" style="font-size: 1.5rem"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-label" for="reference">N° de référence</label>
+            <div class="col-input">
+                <input [(ngModel)]="reference" id="reference" name="reference" pInputText type="text">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label style="color: red" class="col-label">Date de la commande client</label>
+            <div class="col-input">
+                <p-calendar [(ngModel)]="date" [required]="true" [style]="{width: '100%'}" dateFormat="dd MM yy"
+                            name="date"></p-calendar>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-label">Date d’expédition prévue</label>
+            <div class="col-input">
+                <p-calendar (ngModelChange)="validateDeliveryDate()" [(ngModel)]="dateExp" [required]="true"
+                            [style]="{width: '100%'}"
+                            dateFormat="dd MM yy" name="dateExp"></p-calendar>
+                <span *ngIf="!isDeliveryDateValid" style="color: red">La date de livraison doit être supérieure à la date de commande ou égale à la date de commande.</span>
+            </div>
+            <div class="error-message"></div>
+        </div>
+
+        <!-- Deuxième partie du formulaire -->
+        <p style="font-size:medium; margin-top: 30px; font-weight: bold">Tableau d’articles</p>
+        <table class="article-table">
+            <thead>
+            <tr>
+                <th>DÉTAILS DE L’ARTICLE</th>
+                <th style="width: 150px;">QUANTITÉ</th>
+                <th style="width: 150px;">PRIX (FCFA)</th>
+                <th>TAXE (%)</th>
+                <th>MONTANT (FCFA)</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let article of articles; let i = index">
+                <td>
+                    <p-dropdown (onChange)="onArticleChange($event, i); "
+                                (onClear)="onArticleClear(i)"
+                                [(ngModel)]="article.produitId"
+                                [filterBy]="'nom'"
+                                [filter]="true"
+                                [name]="'article-' + i + '-id'"
+                                [options]="articleOptions"
+                                [required]="true" [showClear]="true"
+                                [style]="{width: '200px'}"
+                                appendTo="body"
+                                optionLabel="nom" optionValue="id"
+                                placeholder="Sélectionner un article"></p-dropdown>
+                    <div *ngIf="article.produitId" class="flex flex-column align-items-center justify-content-end">
+                        <button (click)="op.toggle($event)"
+                                [label]="article.magasin ? article.magasin.magasinNom! : 'Sélectionner magasin'"
+                                class="custom-button2"
+                                icon="pi pi-shopping-cart" pButton
+                                type="button"
+                        ></button>
+                        <p-overlayPanel #op [showCloseIcon]="true" [style]="{ width: '600px' }">
+                            <div style="height: 30px; font-size: 20px; justify-content: center; margin-left: 20px ">
+                                Entrépots
+                            </div>
+                            <ng-template pTemplate="content">
+                                <p-table
+                                    (onRowSelect)="magasinSelect($event, op, i)"
+                                    [(selection)]="article.magasin"
+                                    [paginator]="true"
+                                    [rows]="5"
+                                    [value]="article.stocks!"
+                                    responsiveLayout="scroll"
+                                    selectionMode="single">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th rowspan="2">
+                                                <input (input)="filterMagasins()" [(ngModel)]="searchQuery"
+                                                       name="search_magasin"
+                                                       pInputText
+                                                       placeholder="Rechercher un magasin..."
+                                                />
+                                            </th>
+                                            <th colspan="3" style="text-align: center; color: #8c8989">Stock Physique
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th style="color: #8c8989">Stock Disponible</th>
+                                            <th style="color: #8c8989">Stock Engagé</th>
+                                            <th style="color: #8c8989">Disponible à la Vente</th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template let-stock pTemplate="body">
+                                        <tr [pSelectableRow]="stock">
+                                            <td>{{ stock.magasinNom }}</td>
+                                            <td>{{ stock.stock_physique_dispo | customNumber}}</td>
+                                            <td>{{ stock.stock_physique_engage | customNumber}}</td>
+                                            <td>{{ stock.stock_physique_dispo_vente | customNumber}}</td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
+                            </ng-template>
+                        </p-overlayPanel>
+                    </div>
+
+                </td>
+                <td>
+                    <p-inputNumber (onInput)="onQuantiteChange($event, i)" [(ngModel)]="article.quantite"
+                                   mode="decimal"  [minFractionDigits]="0"  [maxFractionDigits]="2"
+                                   [min]="1" [name]="'article-' + i + '-quantite'" [showButtons]="true"
+                                   [style]="{'width': '150px', 'min-width': '120px'}" locale="de-DE" pInputNumber>
+                    </p-inputNumber>
+                    <div *ngIf="article.produitId && article.magasin"
+                         style="font-size: 13px">
+                        <span [ngStyle]="{ color: article.stockDisponible > 0 ? 'blue' : 'red' }">
+                            Stock disponible : {{ article.stockDisponible | customNumber}}
+                          </span>
+                    </div>
+
+                </td>
+                <td>
+                    <p-inputNumber (onInput)="onPrixChange($event, i)" [(ngModel)]="article.produitPrix"
+                                   [minFractionDigits]="0"
+                                   [min]="0" [name]="'article-' + i + '-prix'" [showButtons]="true"
+                                   [style]="{'width': '150px', 'min-width': '120px'}" locale="de-DE" pInputNumber>
+                    </p-inputNumber>
+                </td>
+                <td>
+                    <p-dropdown (onChange)="onTaxeChange($event, i)"
+                                [(ngModel)]="article.taxe"
+                                [filterBy]="'libelle'"
+                                [filter]="true"
+                                [name]="'article-' + i + '-taxe'"
+                                [options]="taxes"
+                                [showClear]="true"
+                                [style]="{width: '200px'}" appendTo="body"
+                                placeholder="Sélectionner une taxe">
+                        <ng-template let-taxes pTemplate="item">
+                            <div class="flex align-items-center fournisseurs-item">
+                                <div>{{ taxes?.label }} &nbsp;&nbsp; [{{ taxes?.value }}%]</div>
+                            </div>
+                        </ng-template>
+                        <ng-template let-taxes pTemplate="selectedItem">
+                            <div>{{ taxes?.label }} &nbsp;&nbsp; [{{ taxes?.value }}%]</div>
+                        </ng-template>
+                    </p-dropdown>
+                </td>
+                <td style="width: 150px;">{{ article.montant.toFixed(2) | customNumber }}</td>
+                <td>
+                    <button (click)="supprimerLigne(i)"
+                            [disabled]="articles.length === 1"
+                            class="p-button-danger small-button"
+                            icon="pi pi-trash"
+                            pButton
+                            type="button"></button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="form-group row2">
+            <div class="actions">
+                <button *ngIf="droits.includes('AJOUTER_COMMANDE_CLIENT')" (click)="ajouterLigne()" class="p-button p-button-secondary custom-button small-button"
+                        icon="pi pi-plus" label="Ajouter une nouvelle ligne"
+                        pButton
+                        type="button"></button>
+            </div>
+
+            <div class="totals">
+                <div class="totals-row">
+                    <div>
+                        <label>Sous-total</label>
+                    </div>
+                    <div>
+                        <label>Remise</label>
+                    </div>
+                    <div>
+                        <label>Frais d’expédition</label>
+                    </div>
+                    <div>
+                        <label>Ajustement</label>
+                    </div>
+                    <div>
+                        <label style="font-weight: bold; font-size: 15px">Total</label>
+                    </div>
+                </div>
+                <div class="totals-row2">
+                    <div></div>
+                    <div class="jhb">
+                        <p-inputNumber (onInput)="onRemiseChange($event)" [(ngModel)]="remise"
+                                       [min]="0" mode="decimal"  [minFractionDigits]="0"  [maxFractionDigits]="2"
+                                       [showButtons]="true" locale="de-DE"
+                                       name="remise" pInputNumber styleClass="input-styling">
+                        </p-inputNumber>
+
+                        <p-dropdown (onChange)="calculerTotal()" [(ngModel)]="remiseType" [options]="remiseOptions"
+                                    [style]="{width: '90px'}"
+                                    name="remiseDropdown"></p-dropdown>
+                    </div>
+                    <div class="jhb2">
+                        <p-inputNumber (onInput)="onFraisExpeditionChange($event)" [(ngModel)]="fraisExpedition"
+                                       [showButtons]="true"
+                                       locale="de-DE"
+                                       name="fraisExpedition"
+                                       pInputNumber styleClass="input-styling">
+                        </p-inputNumber>
+                    </div>
+                    <div class="jhb2">
+                        <p-inputNumber (onInput)="onAjustementChange($event)" [(ngModel)]="ajustement"
+                                       [showButtons]="true" locale="de-DE"
+                                       name="ajustement" mode="decimal"  [minFractionDigits]="2" [maxFractionDigits]="2"
+                                       pInputNumber styleClass="input-styling">
+                        </p-inputNumber>
+                    </div>
+                    <div></div>
+                </div>
+                <div class="totals-row3">
+                    <div><span>{{ sousTotal | customNumber}}</span></div>
+                    <div>(-){{remise | customNumber}}</div>
+                    <div>{{fraisExpedition | customNumber}}</div>
+                    <div>{{ajustement| customNumber}}</div>
+                    <div><span style="font-weight: bold; font-size: 15px">{{ total | customNumber}}</span></div>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="errorMessage" style="color: red; margin-top: 10px;">
+            {{ errorMessage }}
+        </div>
+
+        <div style="bottom: 0; position: fixed; width: 100%" class="layout-footer p-d-flex p-ai-center p-p-4 p-shadow-z">
+            <span style="font-weight: bold">
+
+                 <button  type="submit"  class="btn btn-primary">
+                    <span >Enregistrer</span>
+
+                </button>
+                <button type="button" (click)="cancel()" class="btn btn-secondary" >Annuler</button>
+            </span>
+        </div>
+
+    </form>
+        <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                         position="top" >
+            <p-footer style="display: flex;">
+                <button class="btnannulate" (click)="cd.reject()"
+                ><i class="pi pi-close"></i>Annuler</button>
+                <button class="btnvalidate" (click)="cd.accept()"
+                ><i class="pi pi-confirm"></i>Confirmer</button>
+            </p-footer>
+        </p-confirmDialog>
+</div>
+
+
+<div *ngIf="!createOrModify" style="display: flex; ">
+    <div [ngClass]="{'shrink': isSecondaryActive}" class="card primary" style="height: 100%;">
+        <div class="header55">
+            <h1>Toutes les commandes client</h1>
+            <div class="header-actions">
+                <button *ngIf="droits.includes('AJOUTER_COMMANDE_CLIENT')" (click)="createModify({})" class="p-button-primary small-button" pButton><i
+                    class="pi pi-plus"></i>Nouveau
+                </button>
+                <button class="p-button-secondary small-button p-button-icon-only" icon="pi pi-ellipsis-v"
+                        pButton></button>
+            </div>
+        </div>
+        <p-table #dt
+                 [globalFilterFields]="['date_commande','numero','clientNom','statutfacture']"
+                 [loading]="loading" [paginator]="true" [rowHover]="true"
+                 selectionMode="single" [(selection)]="bonCommande" dataKey="id"
+                 [rowsPerPageOptions]="[25,50,100]" [rows]="25"
+                 [value]="bonCommandes"
+                 responsiveLayout="scroll">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher" class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr class="large-row">
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Date
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            N° de commande client
+                        </div>
+                    </th>
+
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            N° référence
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Client
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Facturé
+                        </div>
+                    </th>
+
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Livré
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Montant
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template let-bon pTemplate="body">
+                <tr (click)="onRowSelect(bon)" [pSelectableRow]="bon" class="large-row" style="padding-top: 10px; padding-bottom: 10px;">
+                    <td>{{bon.date_commande | customDate}}</td>
+                    <td>{{ bon.numero}}</td>
+                    <td>{{ bon.numero_reference }}</td>
+                    <td>{{ bon.clientNom }}</td>
+                    <td>
+                    <span [ngClass]="{
+                        'status-facture': bon.statutfacture === 'FACTURE',
+                        'status-partiellement-facture': bon.statutfacture === 'PARTIELLEMENT_FACTURE',
+                        'status-en-attente': bon.statutfacture === 'EN_ATTENTE'}">
+                        {{ formatStatus(bon.statutfacture) }}
+                    </span>
+                    </td>
+                    <td>
+                <span [ngClass]="{
+                    'status-en-attente': bon.statutlivraison === 'EN_ATTENTE',
+                    'status-partiellement-livree': bon.statutlivraison === 'PARTIELLEMENT_LIVREE',
+                    'status-livree': bon.statutlivraison === 'LIVREE'
+                }">
+                    {{ formatStatus(bon.statutlivraison) }}
+                </span>
+                    </td>
+                    <td>{{ bon.montant_total | customNumber}} FCFA</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="summary">
+                <div class="flex align-items-center justify-content-between">
+                    Au total il y'a {{bonCommandes.length}} Commande(s) cliente.
+                </div>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+
+        <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                         position="top">
+            <p-footer>
+                <button (click)="cd.reject()" class="p-button-help" icon="pi pi-times" label="Annuler"
+                        pButton type="button"></button>
+                <button (click)="cd.accept()" class="p-button-primary" icon="pi pi-check" label="Confirmer"
+                        pButton type="button"></button>
+            </p-footer>
+        </p-confirmDialog>
+    </div>
+    <div [ngClass]="{'active': isSecondaryActive}" class="card secondary" style="height: 100%;">
+        <div class="headerfact">
+            <div class="facture-header">
+                <h5>{{bonCommande.numero}}</h5>
+                <span class="close-button" (click)="close()">&#10006;</span>
+            </div>
+            <div class="actions">
+                <button  (click)="createModify(bonCommande)" *ngIf="!hasFacture && droits.includes('MODIFIER_COMMANDE_CLIENT')" class="btn">
+                    <i class="pi pi-pencil"></i> Modifier
+                </button>
+                <button (click)="generatePDF()" class="btn">
+                    <i class="pi pi-file-pdf"></i> PDF/Impression <i class="fas fa-caret-down"></i>
+                </button>
+                <button (click)="make_a_livraison(bonCommande.id!)" *ngIf="!allQuantitiesMatch3 && droits.includes('AJOUTER_LIVRAISON')" class="btn">
+                    <i class="pi pi-receipt"></i> Bon de Livraison
+                </button>
+                <button (click)="convertToFacture(bonCommande.id!)" *ngIf="!allQuantitiesMatch2 && droits.includes('AJOUTER_FACTURE_CLIENT')" class="btn">
+                    <i class="pi pi-receipt"></i> Convertir en facture client
+                </button>
+                <button (click)="deleteElement(bonCommande)" *ngIf="!hasFacture && droits.includes('SUPPRIMER_COMMANDE_CLIENT')" class="btn"
+                ><i class="pi pi-trash"></i>Supprimer
+                </button>
+                <button class="btn">
+                    <i class="pi pi-ellipsis-v"></i>
+                </button>
+            </div>
+        </div>
+        <p-accordion>
+            <p-accordionTab>
+                <ng-template pTemplate="header">
+                    Avis de livraisons <span class="badge">{{ bonCommande.livraisons?.length }}</span>
+                </ng-template>
+                <ng-template pTemplate="content">
+                    <p-table [value]="bonCommande.livraisons!">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>N° de réception</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template let-livraison pTemplate="body">
+                            <tr>
+                                <td>{{ livraison.numero }}</td>
+                                <td>{{ livraison.dateLivraison | customDate }}</td>
+                                <td>
+                                    <button (click)="viewLivraison(livraison)" class="p-button-text" icon="pi pi-eye"
+                                            pButton
+                                            type="button"></button>
+                                    <button pButton type="button" icon="pi pi-trash" class="p-button-text" (click)="deleteLivraison(livraison)"></button>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </ng-template>
+            </p-accordionTab>
+        </p-accordion>
+        <p-accordion>
+            <p-accordionTab>
+                <ng-template pTemplate="header">
+                    Factures <span class="badge">{{ bonCommande.factures?.length }}</span>
+                </ng-template>
+                <ng-template pTemplate="content">
+                    <p-table [value]="bonCommande.factures!">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>N° de facture</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-facture>
+                            <tr>
+                                <td>{{ facture.numero }}</td>
+                                <td>{{ facture.date_facture | customDate }}</td>
+                                <td>
+                                    <button pButton type="button" icon="pi pi-eye" class="p-button-text" (click)="viewFacture(facture)"></button>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </ng-template>
+            </p-accordionTab>
+        </p-accordion>
+        <br>
+        <h6>Vue en mode PDF
+            <p-inputSwitch [(ngModel)]="checked"/>
+        </h6>
+        <div *ngIf="!checked" class="bon-commande-detail">
+            <div class="main-content">
+                <div class="info-section">
+                    <div class="info-block">
+                        <div class="bc">COMMANDE CLIENTE</div>
+                        <div style=" margin-top: 5px;"><strong>N° de commande client</strong> :  {{bonCommande.numero}}
+                        </div>
+                                <br/>
+                                <br/>
+                        <div class="div-right-left">
+                            <div class="div-right">
+                                <div>Facture</div>
+                                <div>Livraison</div>
+                            </div>
+                            <div class="div-left">
+                                <div>
+            <span [ngClass]="{
+                'status-en-attente': bonCommande.statutfacture === 'EN_ATTENTE',
+                'status-partiellement-facture': bonCommande.statutfacture === 'PARTIELLEMENT_FACTURE',
+                'status-facture': bonCommande.statutfacture === 'FACTURE'
+            }">
+                {{ formatStatus(bonCommande.statutfacture) }}
+            </span>
+                                </div>
+                                <div>
+            <span [ngClass]="{
+                'status-en-attente': bonCommande.statutlivraison === 'EN_ATTENTE',
+                'status-partiellement-livree': bonCommande.statutlivraison === 'PARTIELLEMENT_LIVREE',
+                'status-livree': bonCommande.statutlivraison === 'LIVREE'
+            }">
+                {{ formatStatus(bonCommande.statutlivraison) }}
+            </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="div-right-left">
+                            <div class="div-right">
+                                <div>N° de référence</div>
+                                <div>Date de la commande</div>
+                                <div>Date d'expédition prévue</div>
+                            </div>
+                            <div class="div-left">
+                                <div> {{ bonCommande.numero_reference ? bonCommande.numero_reference : 'non spécifié' }}</div>                                <div>{{bonCommande.date_commande | customDate}}</div>
+                                <div> {{bonCommande.date_expedition | customDate}}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="address-block">
+                    </div>
+                </div>
+
+                <div class="articles-section">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Articles et description</th>
+                            <th>Commandé</th>
+                            <th>Livré</th>
+                            <th>Facturé</th>
+                            <th>Magasin</th>
+                            <th>Prix</th>
+                            <th>Taxe</th>
+                            <th>Montant</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr *ngFor="let item of commandes">
+                            <td>{{ item.produitNom }}</td>
+                            <td>{{ item.quantite! | customNumber}}</td>
+                            <td>{{ item.quantiteLivree! | customNumber }}</td>
+                            <td>{{ item.quantitefacturee! | customNumber }}</td>
+                            <td>{{ item.magasinNom! }}</td>
+                            <td>{{ item.produitPrix! | customNumber}} FCFA</td>
+                            <td>{{ item.taxeLibelle}} ({{ item.taxeValue != null ? item.taxeValue : 0 }}) %</td>
+                            <td>
+                                {{
+                                (item.quantite! * item.produitPrix! *
+                                    (item.taxeValue != null ? (1 + item.taxeValue! / 100) : 1))
+                                    .toFixed(2) | customNumber
+                                }} FCFA
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="total-section">
+                    <div class="div-right-left2">
+                        <div class="div-right">
+                            <div>Sous-total:</div>
+                            <div>Remise:</div>
+                            <div>Frais d’expédition:</div>
+                            <div>Ajustement:</div>
+                            <div>Total:</div>
+                        </div>
+                        <div class="div-left">
+                            <div> {{bonCommande.sous_total | customNumber}} FCFA</div>
+                            <div>(-){{bonCommande.remise | customNumber}} FCFA</div>
+                            <div> {{bonCommande.frais_expedition | customNumber}} FCFA</div>
+                            <div> {{bonCommande.ajustement | customNumber}} FCFA</div>
+                            <div>  {{bonCommande.montant_total | customNumber}} FCFA</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="checked" class="commande-client" id="commandeClient">
+
+            <div class="title">
+                <div class="company-info">
+                    <div class="upload">
+                        <img *ngIf="societegetted.logo" alt="" height=50
+                             src="data:image/PNG; base64,{{societegetted.logo}}" style="margin-right: 1050px"
+                             width=50>
+                        <img *ngIf="!societegetted.logo" alt=""
+                             height=50 src="assets/layout/images/gstock.png" style="margin-right: 1050px" width=50>
+                    </div>
+                </div>
+                <div class="info">
+                    <p>{{societegetted.nom}}<br>Burkina Faso<br>{{ societegetted.tel }}<br>{{societegetted.email}}</p>
+                </div>
+            </div>
+            <div class="order-info" style="margin-top: -120px">
+                <p><strong>COMMANDE CLIENT</strong></p>
+                <p><strong>N° de commande client :</strong> {{bonCommande.numero}}</p>
+                <p><strong>Date de la commande :</strong> {{bonCommande.date_commande | customDate}}</p>
+                <p><strong>Date d'expédition prévue :</strong> {{bonCommande.date_expedition | customDate}}</p>
+            </div>
+            <div class="billing-info">
+                <p><strong>Facturer à :</strong><br>{{bonCommande.clientNom}} {{bonCommande.clientPrenom}}</p>
+            </div>
+            <div class="article-section">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Article & Description</th>
+                        <th>Quantité</th>
+                        <th>Prix</th>
+                        <th>Montant</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr *ngFor="let item of commandes">
+                        <td>{{ item.produitNom }}</td>
+                        <td>{{ item.quantite | customNumber}}</td>
+                        <td>{{ item.produitPrix | customNumber}} FCFA</td>
+                        <td>{{ item.quantite! * item.produitPrix! | customNumber}} FCFA</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="total-section">
+                <p><strong>Sous-total:</strong> {{ bonCommande.sous_total | customNumber}} FCFA</p>
+                <p><strong>Total:</strong> {{ bonCommande.montant_total | customNumber}} FCFA</p>
+            </div>
+        </div>
+    </div>
+</div>

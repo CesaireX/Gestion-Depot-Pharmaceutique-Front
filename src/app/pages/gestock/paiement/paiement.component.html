@@ -1,0 +1,176 @@
+<p-toast position="top-center"></p-toast>
+<div class="container1">
+    <div class="header2 p-shadow-2">
+        <h4 *ngIf="idfacture!=null" class="font-weight-bold text-primary m-0">Paiement pour facture {{factureSelected.numero}}</h4>
+        <h4 *ngIf="idcreance!=null" class="font-weight-bold text-primary m-0">Paiement pour Créance {{creanceSelected.numero}}</h4>
+        <h4 *ngIf="selectedFacturess.length>0" class="font-weight-bold text-primary m-0">Paiement de {{selectedFacturess.length}} Facture(s)</h4>
+        <div *ngIf="selectedFacturess.length > 0">
+        <span *ngFor="let facture of selectedFacturess; let i = index">
+        {{ facture.numero }}<span *ngIf="i < selectedFacturess.length - 1">, </span>
+        </span>
+        </div>
+        <button *ngIf="idfacture!=null" class="btnannulate" (click)="retour()"
+        ><i class="pi pi-close"></i>Retour à la facture</button>
+        <button *ngIf="idcreance!=null" class="btnannulate" (click)="retour()"
+        ><i class="pi pi-close"></i>Retour à la créance</button>
+    </div>
+
+
+    <form *ngIf="idPaiement==null" (ngSubmit)="saveRecu(recuform)" name="recuform" role="form" novalidate #recuform="ngForm">
+        <div class="form-group row" style="margin-top: 75px">
+            <label class="col-label" *ngIf="idfacture && factureSelected.fournisseurId">Nom du fournisseur<span style="color: red">*</span></label>
+            <label class="col-label" *ngIf="(idfacture && factureSelected.clientId) || idcreance">Nom du client<span style="color: red">*</span></label>
+            <div class="col-input" *ngIf="(idfacture && factureSelected.clientId)">
+                <input value="{{factureSelected.clientNom}} {{factureSelected.clientPrenom}}" class="form-control" [disabled]="true"/>
+            </div>
+
+            <div class="col-input" *ngIf="(idcreance)">
+                <input value="{{creanceSelected.clientNom}} {{creanceSelected.clientPrenom}}" class="form-control" [disabled]="true"/>
+            </div>
+
+            <div class="col-input" *ngIf="(idfacture && factureSelected.fournisseurId)">
+                <input value="{{factureSelected.fournisseurNom}} {{factureSelected.fournisseurPrenom}}" class="form-control" [disabled]="true"/>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-label">Date de paiement</label>
+            <div class="col-input">
+                <p-calendar [(ngModel)]="date" [required]="true" [style]="{width: '100%'}" dateFormat="dd MM yy"
+                            name="date"></p-calendar>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-label">N° du paiement <span style="color: red">*</span></label>
+            <div class="input-with-button">
+                <input disabled [(ngModel)]="newBonCommandeNumber" name="bonCommandeNumber" pInputText type="text">
+                <button (click)="customizeBonCommandeNumber()" class="icon-button" type="button">
+                    <i class="pi pi-cog" style="font-size: 1.5rem"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-label">Mode de paiement <span style="color: red">*</span></label>
+            <div class="col-input">
+                <p-dropdown
+                    [options]="mode_paiements" [(ngModel)]="recu.modePaiement"
+                    [showClear]="true" appendTo="body" [filter]="true" [filterBy]="'label'"
+                    [style]="{'width':'300px'}"
+                    name="mode_paiement"
+                    [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                    [required]="true">
+                </p-dropdown>
+            </div>
+        </div>
+
+        <div class="form-group row" *ngIf="recu.modePaiement == 'CHEQUE'">
+            <label class="col-label">Numéro du chèque<span style="color: red">*</span></label>
+            <div class="col-input">
+                <input name="adresse" type="text" pInputText [(ngModel)]="recu.numeroCheque" class="form-control" [required]="true"/>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-label">Montant à réglé <span style="color: red">*</span></label>
+            <div class="col-input">
+                <p-inputNumber type="number" id="montant" name="montant" pInputNumber [required]="true" (onInput)="actualiseReception($event)"
+                               locale="de-DE" [minFractionDigits]="0" [(ngModel)]="recu.montant" [style]="{'width': '300px'}" [min]="1">
+                </p-inputNumber>
+                <div *ngIf="idcreance!=null">
+                    <span
+                        *ngIf=" modifyrecu && recu.montant >creanceSelected.montant_restant_a_payer + montant_a_rajouter"
+                        style="color: red">le montant à régler ne peut pas excéder le reste à payer.
+                </span>
+                    <span *ngIf=" !modifyrecu && recu.montant >creanceSelected.montant_restant_a_payer"
+                          style="color: red">le montant à régler ne peut pas excéder le reste à payer.
+                </span>
+                </div>
+
+                <div *ngIf="idfacture!=null">
+                    <span
+                         *ngIf=" modifyrecu && recu.montant >factureSelected.reste + montant_a_rajouter"
+                         style="color: red">le montant à régler ne peut pas excéder le montant total.
+                    </span>
+                    <span *ngIf=" !modifyrecu && recu.montant >factureSelected.reste"
+                          style="color: red">le montant à régler ne peut pas excéder le montant total.
+                </span>
+                </div>
+
+                <span *ngIf=" recu.montant===0"
+                      style="color: red">le montant à régler doit forcément être supérieur à 0.
+                </span>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-label">Reste à payer</label>
+            <div class="col-input">
+                <p-inputNumber *ngIf="!modifyrecu && idcreance!=null" [disabled]="true" type="number" name="montant_restant_a_payer_creance_sans_modif" [required]="true"
+                               locale="de-DE" [minFractionDigits]="0" [(ngModel)]="creanceSelected.montant_restant_a_payer" [style]="{'width': '300px'}" [min]="0">
+                </p-inputNumber>
+
+                <p-inputNumber *ngIf="modifyrecu && idcreance!=null" [disabled]="true" type="number" name="montant_restant_a_paye_creance_avec_modif"
+                               locale="de-DE" [minFractionDigits]="0" [(ngModel)]="creanceSelected.montant_restant_a_payer + montant_a_rajouter" [style]="{'width': '300px'}" [min]="0" [required]="true">
+                </p-inputNumber>
+
+                <p-inputNumber *ngIf="!modifyrecu && idfacture!=null" [disabled]="true" type="number" name="montant_restant_a_payer_facture_sans_modif" [required]="true"
+                               locale="de-DE" [minFractionDigits]="0" [(ngModel)]="factureSelected.reste" [style]="{'width': '300px'}" [min]="0">
+                </p-inputNumber>
+
+                <p-inputNumber *ngIf="modifyrecu" [disabled]="true" type="number" name="montant_restant_a_paye_facture_avec_modif"
+                               locale="de-DE" [minFractionDigits]="0" [(ngModel)]="factureSelected.reste + montant_a_rajouter" [style]="{'width': '300px'}" [min]="0" [required]="true">
+                </p-inputNumber>
+
+                <p-inputNumber *ngIf="!modifyrecu && selectedFacturess.length>0" [disabled]="true" type="number" name="montant_restant_a_payer_factures_sans_modif" [required]="true"
+                               locale="de-DE" [minFractionDigits]="0" [(ngModel)]="totalReste" [style]="{'width': '300px'}" [min]="0">
+                </p-inputNumber>
+
+            </div>
+        </div>
+        <div>
+            <span style="font-weight: bold">
+
+                 <button (click)="savePaiement(recuform)" *ngIf="!modifyrecu && idfacture!=null" type="button" [disabled]="recuform.invalid || loading || recu.montant > factureSelected.reste" class="btnsave">
+                    <i *ngIf="loading" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                    <span *ngIf="!loading">Enregistrer le paiement</span>
+                    <span *ngIf="loading">Enregistrement...</span>
+                </button>
+
+                <button (click)="savePaiement(recuform)" *ngIf="modifyrecu && idfacture!=null" type="button" [disabled]="recuform.invalid || loading || recu.montant > factureSelected.reste + montant_a_rajouter" class="btnsave">
+                    <i *ngIf="loading" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                    <span *ngIf="!loading">Enregistrer le paiement</span>
+                    <span *ngIf="loading">Enregistrement...</span>
+                </button>
+
+                <button (click)="savePaiement(recuform)" *ngIf="!modifyrecu && idcreance!=null" type="button" [disabled]="recuform.invalid || loading || recu.montant > creanceSelected.montant_restant_a_payer" class="btnsave">
+                    <i *ngIf="loading" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                    <span *ngIf="!loading">Enregistrer le paiement</span>
+                    <span *ngIf="loading">Enregistrement...</span>
+                </button>
+
+                <button (click)="savePaiement(recuform)" *ngIf="modifyrecu && idcreance!=null" type="button" [disabled]="recuform.invalid || loading || recu.montant > creanceSelected.montant_restant_a_payer + montant_a_rajouter" class="btnsave">
+                    <i *ngIf="loading" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                    <span *ngIf="!loading">Enregistrer le paiement</span>
+                    <span *ngIf="loading">Enregistrement...</span>
+                </button>
+
+                <button (click)="savePaiement(recuform)" *ngIf="selectedFacturess.length>0" type="button" [disabled]="recuform.invalid || loading" class="btnsave">
+                    <i *ngIf="loading" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                    <span *ngIf="!loading">Enregistrer le paiement</span>
+                    <span *ngIf="loading">Enregistrement...</span>
+                </button>
+            </span>
+        </div>
+    </form>
+</div>
+<p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                 position="top" >
+    <p-footer style="display: flex;">
+        <button class="btnannulate" (click)="cd.reject()"
+        ><i class="pi pi-close"></i>Annuler</button>
+        <button class="btnvalidate" (click)="cd.accept()"
+        ><i class="pi pi-confirm"></i>Confirmer</button>
+    </p-footer>
+</p-confirmDialog>

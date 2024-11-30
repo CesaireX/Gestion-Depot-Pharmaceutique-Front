@@ -1,0 +1,351 @@
+<br>
+<div class="grid dashboard">
+    <div class="col-12 md:col-8">
+        <div class="card h-full">
+            <div class="p-2 h-full flex flex-column justify-content-between">
+                <div class="flex aling-items-center justify-content-between mb-3" *ngIf="droits.includes('VOIR_DIV1')">
+                    <div
+                        class="flex gap-3 flex-column justify-content-between w-full md:flex-row md:align-items-center" >
+                        <div class="flex gap-3 align-items-center">
+                            <div class="text-4xl">👋</div>
+                            <div class="flex flex-column gap-1 text-600">
+                                <span class="text-2xl font-semibold">Bienvenue à vous,<span class="text-color"> {{username}} !</span></span>
+                                <span>Outil de gestion de stock <!--<span class="font-bold text-primary">@{{societyname}}</span>--></span>
+                            </div>
+                        </div>
+<!--
+                        <div class="flex align-items-center gap-2">
+                            <button pButton pRipple type="button" label="Primary" icon="pi pi-plus"
+                                class="p-button-outlined" label="Nouvel approvisionnement" (click)="addEntree()"></button>
+                            <button pButton pRipple type="button" label="Primary" icon="pi pi-minus"
+                                label="Nouvelle vente" (click)="addSortie()"></button>
+                            <button pButton pRipple type="button" label="Primary" icon="pi pi-sync"
+                                    class="p-button-outlined" label="Nouveau tansfert de stock" (click)="addTransfert()"></button>
+                        </div>
+-->
+                    </div>
+                </div>
+                <div class="flex flex-column gap-2 text-primary mt-4 md:mt-0" *ngIf="droits.includes('VOIR_DIV2')">
+                    <span class="font-bold text-sm">Votre tableau de bord</span>
+                    <div class="grid grid-nogutter font-medium">
+                        <span class="col-6 text-6xl md:col-3 flex align-items-center">{{fournisseur |customNumber}} <span
+                                class="text-base ml-2">Fournisseur(s)</span></span>
+                        <span class="col-6 text-6xl md:col-3 flex align-items-center">{{client |customNumber}} <span
+                                class="text-base ml-2">Client(s)</span></span>
+                        <span class="col-6 text-6xl md:col-3 flex align-items-center">{{magasin |customNumber}} <span
+                                class="text-base ml-2">Magasin(s)</span></span>
+                        <span class="col-6 text-6xl md:col-3 flex align-items-center">{{produit |customNumber}} <span
+                                class="text-base ml-2">Articles</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 md:col-4">
+        <div
+            class="h-full bg-primary flex justify-content-between align-items-center pl-5 py-3 border-round-md overflow-hidden">
+            <div class="flex flex-column justify-content-center">
+                <div><span class="font-bold text-white text-sm">Rentabilisez votre temps avec nous!</span></div>
+                <div>
+                    <h5 class="font-bold text-white mt-1 text-4xl m-0">Gestion de stock</h5>
+                </div>
+                <div><button pButton pRipple type="button" icon="pi pi-database" label="Plus d'infos sur nous"
+                        class="p-button-outlined bg-white mt-3"></button></div>
+            </div>
+            <div><img class="-mr-3" [draggable]="false" src="assets/layout/images/dashboard/stock.jpeg" width="180px" alt="">
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card h-full" *ngIf="droits.includes('VOIR_DIV3')">
+
+            <div class="container-fluid">
+                <div class="p-2 h-full w-full flex flex-column justify-content-between">
+                    <h5 class="font-bold text-primary" style="color: cornflowerblue; text-align: center">Situation journalière (Aujourd'hui)</h5>
+                </div>
+            </div>
+
+            <div class="flex flex-column gap-3">
+                <div class="flex flex-column lg:flex-row gap-3 justify-content-between flex-1">
+                    <div [ngClass]="{'bg-green-800':layoutService.config.colorScheme  === 'dark'}"
+                         class="flex flex-column p-3 bg-purple-100 w-full justify-content-between border-round-md">
+                        <div class="flex justify-content-between">
+                            <div class="flex flex-column gap-1">
+                                <span class="text-900 text-4xl">{{totalentreeday |customNumber}} FCFA</span>
+                                <span class="text-700">Factures fournisseurs</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div [ngClass]="{'bg-green-800':layoutService.config.colorScheme  === 'dark'}"
+                         class="flex flex-column p-3 bg-orange-100 w-full justify-content-between border-round-md">
+                        <div class="flex justify-content-between">
+                            <div class="flex flex-column gap-1">
+                                <span class="text-900 text-4xl">{{totalliquidesortiday |customNumber}} FCFA</span>
+                                <span class="text-700">Paiements effectués</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div [ngClass]="{'bg-red-800':layoutService.config.colorScheme  === 'dark'}"
+                         class="flex flex-column p-3 bg-red-100 w-full justify-content-between border-round-md">
+                        <div class="flex justify-content-between">
+                            <div class="flex flex-column gap-1">
+                                <span class="text-900 text-4xl">{{totaldepenseday |customNumber}} FCFA</span>
+                                <span class="text-700">Dépenses</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div [ngClass]="{'bg-blue-800':layoutService.config.colorScheme  === 'dark'}"
+                         class="flex flex-column p-3 bg-blue-100 w-full justify-content-between border-round-md">
+                        <div class="flex justify-content-between">
+                            <div class="flex flex-column gap-1">
+                                <span class="text-900 text-4xl">{{totalfactureday |customNumber}} FCFA</span>
+                                <span class="text-700">Factures clientes</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div [ngClass]="{'bg-yellow-800':layoutService.config.colorScheme  === 'dark'}"
+                         class="flex flex-column p-3 gap-3 bg-green-100 w-full justify-content-between border-round-md">
+                        <div class="flex justify-content-between">
+                            <div class="flex flex-column gap-1">
+                                <span class="text-900 text-4xl">{{totalliquideday |customNumber}} FCFA</span>
+                                <span class="text-700">Paiements reçus</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card flex justify-content-between align-items-center"  *ngIf="droits.includes('VOIR_DIV4')">
+            <div class="p-1 h-full w-full flex flex-column justify-content-between">
+                <div class="container-fluid">
+                                <div class="p-2 h-full w-full flex flex-column justify-content-between">
+                                    <h5 class="font-bold text-primary" style="color: cornflowerblue; text-align: center">Vos indicateurs</h5>
+                                    <div style="text-align: center">
+                                        <p-calendar (ngModelChange)="updateDash()" [(ngModel)]="date" [showIcon]="true" view="year" dateFormat="yy" inputId="yearpicker"></p-calendar>
+                                        <p-calendar (ngModelChange)="updateDash()" [(ngModel)]="date" [showIcon]="true" view="month" dateFormat="mm/yy" inputId="yearpicker"></p-calendar>
+                                    </div>
+                    </div>
+
+                <div class="flex align-items-center justify-content-between mb-3">
+                    <span style="margin: 20px" class="font-bold text-primary">Factures fournisseurs: {{totalentree |customNumber}} FCFA</span>
+                    <span style="margin: 20px" class="font-bold text-primary">Paiements effectués: {{totalliquidesorti |customNumber}} FCFA</span>
+                    <span style="margin: 20px" class="font-bold text-primary">Dépenses: {{totaldepense |customNumber}} FCFA</span>
+                    <span style="margin: 20px" class="font-bold text-primary">Factures clientes: {{totalfacture |customNumber}} FCFA</span>
+                    <span style="margin: 20px" class="font-bold text-primary">Paiements reçu: {{totalliquide |customNumber}} FCFA</span>
+
+                </div>
+                <div class="grid">
+                    <div class="col-12 md:col-12">
+                        <div class="flex flex-column gap-3 border-round-md border-1 h-full surface-border p-4">
+                            <div class="flex justify-content-between align-items-center">
+                                <div class="flex align-items-center gap-3">
+                                    <div>
+                                        <i class="pi pi-chart-bar text-primary text-3xl"></i>
+                                    </div>
+                                    <div class="flex flex-column justify-content-between gap-1">
+                                        <span class="font-bold text-900">Mouvements de stocks et caisse</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-column gap-2 h-58rem overflow-auto -mb-8 relative">
+                                <p>Abscisse: Jours</p>
+                                <p>ordonnée: Montant </p>
+                                <p-chart height="450" type="line" [data]="ordersChart" [options]="basicOptions"></p-chart>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12" *ngIf="droits.includes('VOIR_DIV5')">
+        <div class="card flex justify-content-between align-items-center">
+            <div class="p-2 h-full w-full flex flex-column justify-content-between">
+                <div class="flex align-items-center justify-content-between mb-3">
+                    <span class="font-semibold text-lg text-900">Votre espace de travail</span>
+                </div>
+                <div class="grid">
+                    <div class="col-12 md:col-6">
+                        <div class="flex flex-column gap-3 border-round-md border-1 h-full surface-border py-4">
+                            <p-table [value]="bestclients" responsiveLayout="stack" [breakpoint]="'960px'" [tableStyle]="{'min-width': '10rem'}">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Top (5) des meilleurs clients</h5>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header" let-columns>
+                                    <tr>
+                                        <th>N°</th>
+                                        <th>Client</th>
+                                        <th>Somme</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-client let-rowIndex="rowIndex">
+                                    <tr>
+                                        <td><span class="p-column-title"></span>{{rowIndex+1}}</td>
+                                        <td><span class="p-column-title"></span> <i class="pi pi-star-fill" [ngClass]="'text-primary'"></i>{{client.clientnom}}</td>
+                                        <td style="color: green"><span class="p-column-title"></span>{{client.somme  |customNumber}} FCFA</td>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+                    <div class="col-12 md:col-6">
+                        <div class="flex flex-column gap-3 border-round-md border-1 h-full surface-border py-4">
+                            <p-table [value]="bestfrs" responsiveLayout="stack" [breakpoint]="'960px'" [tableStyle]="{'min-width': '10rem'}">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Top (5) des meilleurs fournisseurs</h5>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header" let-columns>
+                                    <tr>
+                                        <th>N°</th>
+                                        <th>Fournisseurs</th>
+                                        <th>Somme</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-frs let-rowIndex="rowIndex">
+                                    <tr>
+                                        <td><span class="p-column-title"></span>{{rowIndex+1}}</td>
+                                        <td><span class="p-column-title"></span> <i class="pi pi-star-fill" [ngClass]="'text-primary'"></i>{{frs.fournisseurnom}}</td>
+                                        <td style="color: green"><span class="p-column-title"></span>{{frs.somme  |customNumber}} FCFA</td>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12"  *ngIf="droits.includes('VOIR_DIV6')">
+        <div class="card flex justify-content-between align-items-center">
+            <div class="p-2 h-full w-full flex flex-column justify-content-between">
+                <div class="flex align-items-center justify-content-between mb-3">
+                    <span class="font-semibold text-lg text-900">Mouvement de stock</span>
+                </div>
+                <div class="grid">
+                    <div class="col-12 md:col-6">
+                        <div class="border-1 surface-border p-3 border-round-md flex flex-column gap-3">
+                            <p-table #dtentree [value]="list_entrees_stock" styleClass="p-datatable-gridlines" [columns]="cols"
+                                     responsiveLayout="scroll"
+                                     [rows]="25" [globalFilterFields]="['produitNom', 'produitPrix']" [rows]="25" [paginator]="true"
+                                     [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true"
+                                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                                     [rowHover]="true"
+                                     dataKey="id">
+
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Récentes entrées de stock</h5>
+                                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dtentree, $event)"
+                                   placeholder="rechercher une entrée..."
+                                   class="w-full sm:w-auto"/>
+                        </span>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="libelle">Date d'entrée
+                                            <p-sortIcon field="libelle"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="libelle">Désignation du produit
+                                            <p-sortIcon field="libelle"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="libelle">Magasin d'entrée
+                                            <p-sortIcon field="libelle"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="libelle">Fournisseur du produit
+                                            <p-sortIcon field="libelle"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="libelle">Prix unitaire
+                                            <p-sortIcon field="libelle"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="description">Quantité entrée
+                                            <p-sortIcon field="description"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="description">Prix total
+                                            <p-sortIcon field="description"></p-sortIcon>
+                                        </th>
+                                    </tr>
+                                </ng-template>
+
+                                <ng-template let-entree_stock pTemplate="body">
+                                    <tr>
+                                        <td style="width:10%; min-width:10rem;">{{entree_stock.date_entree | customDate}}</td>
+                                        <td style="width:30%; min-width:10rem;">{{entree_stock.produitNom}}</td>
+                                        <td style="width:30%; min-width:10rem;">{{entree_stock.magasinNom}}</td>
+                                        <td style="width:30%; min-width:10rem;">{{entree_stock.fournisseurNom}}</td>
+                                        <td style="width:15%; min-width:10rem;">{{entree_stock.produitPrix  |customNumber}} FCFA</td>
+                                        <td style="width:15%; min-width:10rem;">{{entree_stock.quantite  |customNumber}}</td>
+                                        <td style="width:15%; min-width:10rem;">{{entree_stock.quantite * entree_stock.produitPrix  |customNumber}} FCFA</td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+                    <div class="col-12 md:col-6">
+                        <div class="border-1 surface-border p-3 border-round-md flex flex-column gap-3">
+                            <p-table #dtsortie [value]="list_sorties_stock" styleClass="p-datatable-gridlines" [columns]="cols"
+                                     responsiveLayout="scroll"
+                                     [rows]="25" [globalFilterFields]="['produitNom', 'produitPrix']" [rows]="25" [paginator]="true"
+                                     [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true"
+                                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                                     [rowHover]="true"
+                                     dataKey="id">
+
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Récentes sorties de stock</h5>
+                                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFiltersortie(dtsortie, $event)"
+                                   placeholder="rechercher une sortie..."
+                                   class="w-full sm:w-auto"/>
+                        </span>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="libelle">Date de sortie
+                                            <p-sortIcon field="libelle"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="libelle">Désignation du produit
+                                            <p-sortIcon field="libelle"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="libelle">Prix unitaire
+                                            <p-sortIcon field="libelle"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="description">Quantité sortie
+                                            <p-sortIcon field="description"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="description">Prix total
+                                            <p-sortIcon field="description"></p-sortIcon>
+                                        </th>
+                                    </tr>
+                                </ng-template>
+
+                                <ng-template let-sortie_stock pTemplate="body">
+                                    <tr>
+                                        <td style="width:10%; min-width:10rem;">{{sortie_stock.date_sortie | customDate}}</td>
+                                        <td style="width:30%; min-width:10rem;">{{sortie_stock.produitNom}}</td>
+                                        <td style="width:15%; min-width:10rem;">{{sortie_stock.produitPrix  |customNumber}} FCFA</td>
+                                        <td style="width:15%; min-width:10rem;">{{sortie_stock.quantite  |customNumber}}</td>
+                                        <td style="width:15%; min-width:10rem;">{{sortie_stock.quantite * sortie_stock.produitPrix  |customNumber}} FCFA</td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>

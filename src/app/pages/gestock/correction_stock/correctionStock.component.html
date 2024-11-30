@@ -1,0 +1,545 @@
+<p-toast position="top-center"></p-toast>
+<div *ngIf="chrgmt" class="spinner-overlay">
+    <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
+</div>
+<div *ngIf="!display" style="display: flex">
+    <div [ngClass]="{'shrink': isSecondaryActive}" class="card primary" style="height: 100%;">
+        <div class="header55">
+            <h1>Gestion des corrections de stock</h1>
+            <div class="header-actions">
+                <button class="p-button-primary small-button" (click)="onDisplayDialog()" *ngIf="droits.includes('VOIR_CORRECTION_STOCK_AJOUTER')"
+                ><i class="pi pi-plus"></i>Nouveau</button>
+
+                <button class="p-button-secondary small-button p-button-icon-only" icon="pi pi-ellipsis-v"
+                        pButton></button>
+            </div>
+        </div>
+        <p-table #dt [globalFilterFields]="['libelle']" [loading]="loading" [paginator]="true" [rowHover]="true"
+                 [rowsPerPageOptions]="[25,50,100]" [rows]="25"
+                 [value]="correctionStocks"
+                 responsiveLayout="scroll">
+            <ng-template pTemplate="caption">
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Date
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Réference
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Désignation
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Catégories
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Unité
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Magasin
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Stock Actuel
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Différence
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template let-correctionStock pTemplate="body">
+                <tr (click)="onRowSelect(correctionStock)" class="large-row" style="padding-top: 10px; padding-bottom: 10px;">
+                    <td>{{correctionStock.dateCorrection | customDate }}</td>
+                    <td>{{correctionStock.produitReference}}</td>
+                    <td>{{correctionStock.produitNom}}</td>
+                    <td>{{correctionStock.categorie}}</td>
+                    <td>{{correctionStock.unite}}</td>
+                    <td>{{correctionStock.magasinNom}}</td>
+                    <td>{{correctionStock.stockTheorique | customNumber}}</td>
+                    <td *ngIf="correctionStock.diff>=0">
+                        <p-tag [severity]="getSeverity(correctionStock)">
+                            +{{correctionStock.diff | customNumber}}</p-tag>
+                    </td>
+                    <td *ngIf="correctionStock.diff<0">
+                        <p-tag [severity]="getSeverity(correctionStock)">{{correctionStock.diff | customNumber}}</p-tag>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucune Correction de Stock disponible</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+    </div>
+    <div [ngClass]="{'active': isSecondaryActive}" class="card secondary" style="height: 100%;">
+        <div class="headerfact">
+            <div>
+<!--
+                <h5>{{selectedItem.produitNom}}</h5>
+-->
+            </div>
+            <div class="actions">
+                <button pTooltip="Supprimer ou annuler la correction de stock" *ngIf="droits.includes('VOIR_CORRECTION_STOCK_SUPPRIMER')" (click)="deleteElement(selectedItem)" class="btn"
+                ><i class="pi pi-times"></i>Annuler
+                </button>
+            </div>
+        </div>
+
+        <div class="bon-commande-detail">
+            <div class="container">
+                <h5>Détails de la Correction de Stock</h5>
+                <div class="form-group row align-items-center">
+                    <label class="col-sm-3 col-form-label"><strong> Date : </strong> </label>
+                    <div class="col-sm-9 ml-7">
+                        <p>{{ selectedItem?.dateCorrection | customDate }}</p>
+                    </div>
+                </div>
+                <div class="form-group row align-items-center">
+                    <label class="col-sm-3 col-form-label"><strong>Magasin : </strong></label>
+                    <div class="col-sm-9 ml-7">
+                        <p>{{ selectedItem?.magasinNom }}</p>
+                    </div>
+                </div>
+
+                <div class="form-group row align-items-center">
+                    <label class="col-sm-3 col-form-label"><strong>Produit : </strong></label>
+                    <div class="col-sm-9 ml-7">
+                        <p>{{ selectedItem?.produitNom }}</p>
+                    </div>
+                </div>
+                <div class="form-group row align-items-center">
+                    <label class="col-sm-3 col-form-label"><strong>Produit : </strong></label>
+                    <div class="col-sm-9 ml-7">
+                        <p>{{ selectedItem?.unite }}</p>
+                    </div>
+                </div>
+
+                <div class="form-group row align-items-center">
+                    <label class="col-sm-3 col-form-label"><strong>Stock Théorique : </strong></label>
+                    <div class="col-sm-9 ml-7">
+                        <p>{{ selectedItem?.stockTheorique | customNumber }}</p>
+                    </div>
+                </div>
+
+                <div class="form-group row align-items-center">
+                    <label class="col-sm-3 col-form-label"><strong>Différence : </strong></label>
+                    <div class="col-sm-9 ml-7">
+                        <p *ngIf="selectedItem?.diff>=0">
+                            <p-tag [severity]="getSeverity(selectedItem!)">
+                                +{{selectedItem?.diff | customNumber}}</p-tag>
+                        </p>
+                        <td *ngIf="selectedItem?.diff<0">
+                            <p-tag [severity]="getSeverity(selectedItem!)">{{selectedItem?.diff | customNumber}}</p-tag>
+                        </td>
+                    </div>
+                </div>
+
+                <div class="form-group row align-items-center">
+                    <label class="col-sm-3 col-form-label"><strong>Raison : </strong></label>
+                    <div class="col-sm-9 ml-7">
+                        <p>{{ selectedItem?.raison }}</p>
+                    </div>
+                </div>
+                <div class="form-group row align-items-center">
+                    <label class="col-sm-3 col-form-label"><strong>Correcteur : </strong></label>
+                    <div class="col-sm-9 ml-7">
+                        <p>{{ selectedItem?.userCorrection }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div *ngIf="display" class="container1" style="height: 100%;">
+    <div class="header-special" >
+        <p style="font-size: large; margin-bottom: 25px">
+            <i class="pi pi-verified" style="font-size: 1.5rem"></i>
+            Correction de stock
+        </p>
+        <button  (click)="closeSection(editForm)"     tooltipPosition="left"
+                 pTooltip="Retour sur la liste"  class="p-button-primary small-button p-button-icon-only" icon="pi pi-arrow-left" pButton></button>
+    </div>
+    <form name="editForm" role="form" novalidate #editForm="ngForm" style="margin-bottom: 55px">
+        <h5>Informations générales</h5>
+        <div class="form-group row align-items-center">
+            <label style="color: red" class="col-sm-3 col-form-label">Selectionner le Magasin</label>
+            <div class="col-sm-9 ml-7">
+                <p-dropdown (onChange)="loadProductByMagasin()" [(ngModel)]="magasinSelected"
+                            [autoDisplayFirst]="false" [emptyFilterMessage]="'Aucun element trouvé'" [filterBy]="'nom'"
+                            [filter]="true" [options]="magasins" [required]="true" [showClear]="true"
+                            [style]="{width: '300px'}"  placeholder="Sélectionner un magasin"
+                            appendTo="body" name="magasin"
+                            optionLabel="nom"
+                            (onClear)="clearDropdown()"
+                >
+                </p-dropdown>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label style="color: red" class="col-sm-3 col-form-label">Selectionner le Produit</label>
+            <div class="col-sm-9 ml-7">
+                <p-dropdown (onChange)="stockTheorique(); calculDif1()"
+                            [(ngModel)]="produitSelected" [autoDisplayFirst]="false"
+                            [disabled]="magasinSelected==null" [emptyFilterMessage]="'Aucun element trouvé'" [filterBy]="'nom'"
+                            [filter]="true" [options]="produits" [required]="true" [showClear]="true"
+                            [style]="{width: '300px'}"
+                            appendTo="body" name="produit" placeholder="Sélectionner un produit"
+                            optionLabel="nom">
+                </p-dropdown>            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Stock Théorique</label>
+            <div class="col-sm-9 ml-7">
+                <p-inputNumber class="form-control"  [(ngModel)]="correctionStock.stockTheorique" [disabled]="true"
+                               mode="decimal" [maxFractionDigits]="2"
+                                [required]="true" [style]="{'width': '100%'}" locale="de-DE" [minFractionDigits]="0" pInputNumber
+                                 name="stockTheorique">
+
+                </p-inputNumber>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label style="color: red" class="col-sm-3 col-form-label">Stock Physique</label>
+            <div class="col-sm-9 ml-7">
+                <p-inputNumber  class="form-control" [disabled]="produitSelected==null" type="number" id="stockPhysiquek" name="stockPhysique" pInputNumber
+                               [(ngModel)]="correctionStock.stockPhysique" [style]="{'width': '100%'}" [min]="0"
+                                mode="decimal"  [maxFractionDigits]="2"
+                               locale="de-DE" [minFractionDigits]="0" (onInput)="calculDif($event)"  [showButtons]="true">
+                </p-inputNumber>            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Difference</label>
+            <div class="col-sm-9 ml-7">
+                <input class="form-control" [(ngModel)]="correctionStock.diff" [disabled]="true" [required]="true"
+                       name="diff"
+                       pInputText style="font-weight:bold;" type="number"/>            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Raison</label>
+            <div class="col-sm-9 ml-7">
+ <textarea class="form-control" [(ngModel)]="correctionStock.raison" name="description" pInputText
+           type="text"></textarea>
+            </div>
+        </div>
+    </form>
+
+    <div class="layout-footer p-d-flex p-ai-center p-p-4 p-shadow-z" style="bottom: 0; position: fixed; width: 100%">
+            <span style="font-weight: bold">
+                <button (click)="save(editForm)"  [disabled]="editForm.invalid || loading" class="btn btn-primary" type="Submit">
+                    <i *ngIf="loading && display" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                    <span *ngIf="!loading || !display">Enregistrer</span>
+                    <span *ngIf="loading && display">Enregistrement...</span>
+                </button>
+
+                <button (click)="annuler()" class="btn btn-secondary" type="button">Annuler</button>
+            </span>
+    </div>
+</div>
+<p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                 position="top">
+    <p-footer style="display: flex;">
+        <button (click)="cd.reject()" class="btnannulate"
+        ><i class="pi pi-close"></i>Annuler
+        </button>
+        <button (click)="cd.accept()" class="btnvalidate"
+        ><i class="pi pi-confirm"></i>Confirmer
+        </button>
+    </p-footer>
+</p-confirmDialog>
+
+
+
+
+
+
+
+<!--
+<div class="container-fluid">
+    <h5 class="mark" pTooltip="Il s'agit de la gestion des corrections de stock de votre entreprise"
+        style="text-align: center" tooltipPosition="top">Gestion
+        des corrections
+        de stock</h5>
+    <div class="p-2 h-full w-full flex flex-column justify-content-between">
+        <div class="flex align-items-center justify-content-between mb-3">
+            <div class="p-col-6">
+            </div>
+            <div *ngIf="droits.includes('VOIR_CORRECTION_STOCK_AJOUTER')" class="flex align-items-center gap-2 ">
+                <button (click)="onDisplayDialog()" class="p-button-outlined w-full sm:w-auto flex-order-0 sm:flex-order-1" icon="pi pi-plus"
+                        label="Nouvelle correction" pButton
+                        pRipple></button>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <p-toast position="top-center"></p-toast>
+        <p-table #dt [value]="correctionStocks" [paginator]="true" [loading]="loading" [rows]="25"
+                 responsiveLayout="scroll" [rowHover]="true"
+                 [rowsPerPageOptions]="[25,50,100]"
+                 [globalFilterFields]="['dateCorrection','produitReference', 'produitNom', 'categorie', 'unite', 'magasinNom']">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher " class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 8rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Date
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Référence
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Désignation
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Catégories
+                        </div>
+                    </th>
+                    <th style="min-width: 8rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Unité
+                        </div>
+                    </th>
+                    <th style="min-width:12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Magasin
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Stock Actuel
+                        </div>
+                    </th>
+
+                    <th style="min-width: 12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Différence
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Utilisateur
+                        </div>
+                    </th>
+                    <th style="border-left: none;">
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-correctionStock>
+                <tr>
+                    <td>{{correctionStock.dateCorrection | customDate }}</td>
+                    <td>{{correctionStock.produitReference}}</td>
+                    <td>{{correctionStock.produitNom}}</td>
+                    <td>{{correctionStock.categorie}}</td>
+                    <td>{{correctionStock.unite}}</td>
+                    <td>{{correctionStock.magasinNom}}</td>
+                    <td>{{correctionStock.stockTheorique | customNumber}}</td>
+                    <td *ngIf="correctionStock.diff>=0">
+                        <p-tag [severity]="getSeverity(correctionStock)">
+                            +{{correctionStock.diff | customNumber}}</p-tag>
+                    </td>
+                    <td *ngIf="correctionStock.diff<0">
+                        <p-tag [severity]="getSeverity(correctionStock)">{{correctionStock.diff | customNumber}}</p-tag>
+                    </td>
+                    <td>{{correctionStock.userCorrection}}</td>
+                    <td style="border-left: none;">
+                        <p-menu #menu [model]="menuitems" [popup]="true" appendTo="body"></p-menu>
+                        <div class="flex justify-content-end">
+                            <button (click)="selectedItem = correctionStock" (click)="menu.toggle($event)" class="p-button-text p-button-rounded text-900"
+                                    icon="pi pi-ellipsis-h" pButton
+                                    pRipple></button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="10" style="text-align: center">Aucune correction de stock disponible.</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="10" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+        <p-dialog [(visible)]="display" [modal]="true" [style]="{width: '50vw'}" class="p-fluid" header="Détail ">
+            <p-header>
+                <span class="font-weight-bold text-primary p-2">Correction de Stock</span>
+            </p-header>
+            <form #editForm="ngForm" (ngSubmit)="save(editForm)" class="p-mb-3" name="editForm" novalidate role="form">
+
+                <div class="form-columns">
+                    <div class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label class="font-medium text-900">Sélectionner le Magasin<span
+                                style="color: red">*</span></label>
+                            <p-dropdown (onChange)="loadProductByMagasin()" [(ngModel)]="magasinSelected"
+                                        [autoDisplayFirst]="false" [emptyFilterMessage]="'Aucun element trouvé'" [filterBy]="'nom'"
+                                        [filter]="true" [options]="magasins" [required]="true" [showClear]="true"
+                                        [style]="{width: '100%'}"
+                                        appendTo="body" name="magasin"
+                                        optionLabel="nom">
+                            </p-dropdown>
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label class="font-medium text-900">Sélectionner le Produit <span
+                                style="color: red">*</span></label>
+                            <p-dropdown (onChange)="stockTheorique(); calculDif1()"
+                                        [(ngModel)]="produitSelected" [autoDisplayFirst]="false"
+                                        [disabled]="magasinSelected==null" [emptyFilterMessage]="'Aucun element trouvé'" [filterBy]="'nom'"
+                                        [filter]="true" [options]="produits" [required]="true" [showClear]="true"
+                                        [style]="{width: '100%'}"
+                                        appendTo="body" name="produit"
+                                        optionLabel="nom">
+                            </p-dropdown>
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label style="font-weight:bold;">Stock Théorique</label>
+                            &lt;!&ndash;<input  [(ngModel)]="correctionStock.stockTheorique" [disabled]="true"
+                                   [required]="true" name="stockTheorik"
+                                   pInputText type="number"/>&ndash;&gt;
+                            <p-inputNumber  [(ngModel)]="correctionStock.stockTheorique" [disabled]="true"
+                                           [required]="true" locale="de-DE" [minFractionDigits]="0"
+                                            locale="de-DE" [minFractionDigits]="0" name="stockTheorique">
+
+                            </p-inputNumber>
+
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label style="font-weight:bold;">Stock Physique</label>
+                         &lt;!&ndash;   <input (input)="calculDif()" [(ngModel)]="correctionStock.stockPhysique" [disabled]="produitSelected==null"
+                                   [required]="true" name="produitSelected"
+                                   pInputText type="number"/>&ndash;&gt;
+                            <p-inputNumber [disabled]="produitSelected==null" type="number" id="stockPhysique" name="stockPhysique" pInputNumber
+                                           [(ngModel)]="correctionStock.stockPhysique" [style]="{'width': '100%'}" [min]="0"
+                                           locale="de-DE" [minFractionDigits]="0" (onInput)="calculDif($event)"  [showButtons]="true">
+                            </p-inputNumber>
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label style="font-weight:bold;">Différence</label>
+                            <input [(ngModel)]="correctionStock.diff" [disabled]="true" [required]="true"
+                                   name="diff"
+                                   pInputText style="font-weight:bold;" type="number"/>
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label style="font-weight:bold;">Raison</label>
+                            <textarea [(ngModel)]="correctionStock.raison" name="description" pInputText
+                                      type="text"></textarea>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="grid p-fluid mt-0">
+                    <div class="field col-12 md:col-6"></div>
+                    <div class="field col-12 md:col-3">
+                        <button (click)="annuler()" class="p-button-secondary p-mr-2 p-mb-2 font-weight-bold" icon="pi pi-fw pi-times" label="Annuler" pButton
+                                pRipple
+                                type="button">
+                        </button>
+                    </div>
+                    <div class="field col-12 md:col-3">
+                        <button [disabled]="editForm.invalid" class="p-button-primary p-mr-2 p-mb-2 font-weight-bold" icon="pi pi-fw pi-check" label="Enregistrer"
+                                pButton
+                                pRipple type="Submit">
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </p-dialog>
+
+        <p-dialog [(visible)]="display2" [modal]="true" [style]="{width: '50vw'}" class="p-fluid" header="Détail ">
+
+            <div class="form-columns">
+
+                <div class="field col-12 md:col-12">
+                    <p><span
+                        style="font-weight:bold;">Date :</span> {{selectedItem?.dateCorrection | customDate}}
+                    </p>
+                    <p><span style="font-weight:bold;">Référence :</span> {{selectedItem?.produitReference}}</p>
+                    <p><span style="font-weight:bold;">Désignation :</span> {{selectedItem?.produitNom}}</p>
+                    <p><span style="font-weight:bold;">Catégorie :</span> {{selectedItem?.categorie}}</p>
+                    <label><span style="font-weight:bold;">Unité de mesure :</span> {{selectedItem?.unite}}</label>
+                    <p><span style="font-weight:bold;">Magasin</span> {{selectedItem?.magasinNom}}</p>
+                    &lt;!&ndash;   <p ><span style="font-weight:bold;">Prix unitaite HT(FcFa) :</span> {{selectedItem?.prixht}}</p>
+                       <p ><span style="font-weight:bold;">Taxe :</span> {{selectedItem?.taxehauteur}}%</p>&ndash;&gt;
+                    <p><span style="font-weight:bold;">Stock Actuel :</span> {{selectedItem?.stockTheorique}}</p>
+                    <p><span style="font-weight:bold;">Différence :</span>
+                        {{selectedItem?.diff}}
+                    </p>
+                    <p><span style="font-weight:bold;">Utilisateur :</span> {{selectedItem?.userCorrection}}</p>
+                    <p><span style="font-weight:bold;">Motif :</span> {{selectedItem?.raison}}</p>
+                </div>
+
+            </div>
+
+        </p-dialog>
+        <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle">
+            <p-footer>
+                <button (click)="cd.reject()" class="p-button-secondary" icon="pi pi-times" label="NON"
+                        pButton type="button"></button>
+                <button (click)="cd.accept()" class="p-button-danger" icon="pi pi-check" label="OUI"
+                        pButton type="button"></button>
+            </p-footer>
+        </p-confirmDialog>
+
+    </div>
+
+
+</div>
+-->

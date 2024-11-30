@@ -1,0 +1,43 @@
+
+body {
+    font-family: Arial, sans-serif;
+
+}
+.status {
+    span {
+        display: inline-block;
+        padding: 4px 8px;
+        color: #fff;
+        border-radius: 3px;
+        font-size: 0.875em;
+        text-transform: uppercase;
+        margin-top: 15px;
+        margin-bottom: 25px;
+    }
+}
+
+.status-en-attente {
+    background-color: #6c757d; /* Gris pour en attente */
+    color: #fff;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    font-size: 0.875em;
+}
+
+.status-partiellement-recue,
+.status-partiellement-reglee {
+    background-color: #f0ad4e;
+    color: #fff;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    font-size: 0.875em;/* Orange pour partiellement reçu / facturé */
+}
+
+.status-recue,
+.status-reglee {
+    background-color: #007bff;
+    color: #fff;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    font-size: 0.875em;/* Bleu pour reçu / facturé */
+}

@@ -1,0 +1,573 @@
+<p-toast position="top-center"></p-toast>
+<div *ngIf="chrgmt" class="spinner-overlay">
+    <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
+</div>
+<div *ngIf="!displayForm" style="display: flex">
+    <div class="card primary" [ngClass]="{'shrink': isSecondaryActive}" style="height: 100%;">
+        <div class="header55">
+            <h1>Clients</h1>
+            <div class="header-actions">
+                <button class="p-button-primary small-button" (click)="add(null)" *ngIf="droits.includes('AJOUTER_CLIENT')"
+                ><i class="pi pi-plus"></i>Nouveau</button>
+                <!-- Votre bouton d'options -->
+                <button #optionsButton class="p-button-secondary small-button p-button-icon-only" icon="pi pi-ellipsis-v"
+                        pButton type="button" (click)="op.toggle($event, optionsButton)"></button>
+
+                <!-- Overlay Panel pour les options -->
+                <p-overlayPanel #op>
+                    <div class="button-group">
+                        <button [disabled]="clients.length === 0" type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportClientListPDF()" class="p-button-success mr-2" label="Export Excel"></button>
+                        <button [disabled]="clients.length === 0" type="button" pButton pRipple icon="pi pi-file-pdf" (click)="exportClientListPDF()" class="p-button-warning mr-2" label="Export PDF"></button>
+                    </div>
+                </p-overlayPanel>
+
+            </div>
+
+        </div>
+        <p-table #dt [value]="clients" [paginator]="true" [loading]="loading" [rows]="25"
+                 responsiveLayout="scroll" [rowHover]="true"
+                 [rowsPerPageOptions]="[25,50,100]" selectionMode="single" [(selection)]="selectedItem" [metaKeySelection]="metaKey" dataKey="id"
+                 [globalFilterFields]="['nom','prenom', 'telephone', 'cnib', 'Entreprise']">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher" class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Nom
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Prénom(s)
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Entreprise
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem;  background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Téléphone
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Adresse
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            CNIB
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-client>
+                <tr (click)="onRowSelect(client)" [pSelectableRow]="client">
+                    <td>{{client.nom}}</td>
+                    <td>{{client.prenom}}</td>
+                    <td>{{client.entreprise}}</td>
+                    <td *ngIf="client.telephone!=null">{{client.telephone | phoneNumber}}</td>
+                    <td *ngIf="client.telephone==null"></td>
+                    <td>{{client.adresse}}</td>
+                    <td>{{client.cinb}}</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="summary">
+                <div class="flex align-items-center justify-content-between">
+                    Au total il y'a {{clients.length}} Clients(s).
+                </div>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+        <p-dialog [(visible)]="display" [style]="{width: '50vw'}" header="Détail " [modal]="true" class="p-fluid">
+            <p-header>
+                <span class="font-weight-bold text-primary p-2">Enregistrement d'un client</span>
+            </p-header>
+            <form (ngSubmit)="save(editForm)" name="editForm" role="form" novalidate #editForm="ngForm" class="p-mb-3"
+                  >
+                <div class="form-columns">
+                    <div class="form-column">
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Nom du client<span style="color: red">*</span></label>
+                        <input name="nom" type="text" pInputText [(ngModel)]="client.nom" required/>
+                    </div>
+                    </div>
+                    <div class="form-column">
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Prénom(s)<span style="color: red">*</span></label>
+                        <input name="prenom" type="text" pInputText name="prenom" [(ngModel)]="client.prenom" required/>
+                    </div>
+                    </div>
+                    <div class="form-column">
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Entreprise</label>
+                        <input  type="text" pInputText name="entreprise"
+                               [(ngModel)]="client.entreprise"/>
+                    </div>
+                    </div>
+                    <div class="form-column">
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Téléphone</label>
+                        <input  type="text" pInputText name="telephone" [(ngModel)]="client.telephone" appPhoneNumber/>
+                    </div>
+                    </div>
+                    <div class="form-column">
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Adresse</label>
+                        <input name="adresse" type="text" pInputText name="adresse" [(ngModel)]="client.adresse"/>
+                    </div>
+                    </div>
+                    <div class="form-column">
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">CINB</label>
+                        <input name="cinb" type="text" pInputText name="cinb" [(ngModel)]="client.cinb"/>
+                    </div>
+                    </div>
+
+                </div>
+
+                <div class="grid p-fluid mt-0">
+                    <div class="field col-12 md:col-6"></div>
+                    <div class="field col-12 md:col-3">
+                        <button pButton pRipple label="Annuler" (click)="annuler()" type="button"
+                                class="p-button-secondary p-mr-2 p-mb-2 font-weight-bold"
+                                icon="pi pi-fw pi-times">
+                        </button>
+                    </div>
+                    <div class="field col-12 md:col-3">
+                        <button pButton pRipple label="Enregistrer" icon="pi pi-fw pi-check"
+                                class="p-button-primary p-mr-2 p-mb-2 font-weight-bold"
+                                type="Submit" [disabled]="editForm.invalid">
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </p-dialog>
+
+    </div>
+    <div class="card secondary" [ngClass]="{'active': isSecondaryActive}">
+        <div class="headerfact">
+            <div class="facture-header">
+                <h5>{{selectedItem?.nom}} {{selectedItem?.prenom}}</h5>
+                <span class="close-button" (click)="close()">&#10006;</span>
+            </div>
+            <div class="actions">
+                <button class="btn" *ngIf="droits.includes('MODIFIER_CLIENT')" (click)="add(selectedItem)"
+                ><i class="pi pi-pencil"></i>Modifier</button>
+
+                <button *ngIf="droits.includes('SUPPRIMER_CLIENT')" class="btn" (click)="deleteElement(selectedItem)"
+                ><i class="pi pi-trash"></i>Supprimer</button>
+            </div>
+        </div>
+        <div class="folder-tabs">
+            <ng-container *ngFor="let tab of tabs; let i = index">
+                <div
+                    class="folder-tab"
+                    [class.active]="i === selectedTab"
+                    (click)="selectTab(i)"
+                    *ngIf="!(tab.label === 'Transactions' && !droits.includes('VOIR_CLIENT_TRANSACTION'))">
+                    {{ tab.label }}
+                </div>
+            </ng-container>
+        </div>
+        <div class="folder-content">
+            <ng-container *ngIf="selectedTab !== null">
+
+                <div *ngIf="selectedTab === 0">
+                    <div class="container">
+                        <div class="container-custom">
+                            <!-- Left Panel -->
+                            <div class="left-panel">
+                                <div class="profile-container">
+                                    <img src="assets/demo/images/avatar/user2.png" alt="Profile Picture" class="profile-picture" width="50px" height="50px">
+                                    <div class="user-details">
+                                        <h5 class="user-name">{{selectedItem?.nom}} {{selectedItem?.prenom}}</h5>
+                                        <p class="user-email">{{selectedItem?.mail}}</p>
+                                        <p class="user-phone">{{selectedItem?.telephone}}</p>
+                                    </div>
+                                </div>
+                                <br><br>
+                                <div class="mb-3">
+                                    <h6>Entreprise</h6>
+                                    <p>{{selectedItem?.entreprise}}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <h6>Adresse</h6>
+                                    <p>{{selectedItem?.adresse}}</p>
+                                </div>
+                            </div>
+                            <!-- Right Panel -->
+                            <div *ngIf="droits.includes('VOIR_CLIENT_HISTORIQUE')" class="right-panel">
+                                <div class="mb-3">
+                                    <h6>Historique du client</h6>
+                                    <div class="timeline-container">
+                                        <div class="timeline-item" *ngFor="let event of clienthistoriques">
+                                            <div class="timeline-date">
+                                                <span>{{ event.date | customDate}}</span>
+                                            </div>
+                                            <div class="timeline-content">
+                                                <h3>{{ event.type }}</h3>
+                                                <p>{{ event.numero }}</p>
+                                                <a href="#">Etablit par {{ event.faitPar }}</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="selectedTab === 1">
+                    <br>
+                    <p-accordion>
+                        <p-accordionTab>
+                            <ng-template pTemplate="header">
+                                Commandes clients <span class="badge">{{ transactions?.boncommandeDTOS?.length }}</span>
+                            </ng-template>
+                            <ng-template pTemplate="content">
+                                <p-table #dt [globalFilterFields]="['nom','magasinLibelle','categorieLibelle','seuil','uniteMesureLibelle','prix','quantite','total','description']" [loading]="loading" [paginator]="true" [rowHover]="true"
+                                         [rowsPerPageOptions]="[25,50,100]" [rows]="25"
+                                         [value]="transactions?.boncommandeDTOS!"
+                                         responsiveLayout="scroll">
+                                    <ng-template pTemplate="header">
+                                        <tr class="large-row">
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    Date
+                                                </div>
+                                            </th>
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    N° de commande client
+                                                </div>
+                                            </th>
+
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    N° réference
+                                                </div>
+                                            </th>
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    Client
+                                                </div>
+                                            </th>
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    Statut
+                                                </div>
+                                            </th>
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    Montant
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template let-bon pTemplate="body">
+                                        <tr style="padding-top: 10px; padding-bottom: 10px;"  class="large-row">
+                                            <td>{{bon.date_commande | customDate}}</td>
+                                            <td>{{ bon.numero}}</td>
+                                            <td>{{ bon.numero_reference }}</td>
+                                            <td>{{ bon.clientNom }} {{ bon.clientPrenom }}</td>
+                                            <td>{{ bon.statut }}</td>
+                                            <td>{{ bon.montant_total }}</td>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="emptymessage">
+                                        <tr>
+                                            <td colspan="7" style="text-align: center">Aucun bon de commande lié à ce client</td>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="loadingbody">
+                                        <tr>
+                                            <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
+                            </ng-template>
+                        </p-accordionTab>
+                    </p-accordion>
+                    <p-accordion>
+                        <p-accordionTab>
+                            <ng-template pTemplate="header">
+                                Créances clients <span class="badge">{{ transactions?.creanceDTOS?.length }}</span>
+                            </ng-template>
+                            <ng-template pTemplate="content">
+                                <p-table #dt [globalFilterFields]="['nom','magasinLibelle','categorieLibelle','seuil','uniteMesureLibelle','prix','quantite','total','description']" [loading]="loading" [paginator]="true" [rowHover]="true"
+                                         [rowsPerPageOptions]="[25,50,100]" [rows]="25"
+                                         [value]="transactions?.creanceDTOS!"
+                                         responsiveLayout="scroll">
+                                    <ng-template pTemplate="header">
+                                        <tr class="large-row">
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    Client
+                                                </div>
+                                            </th>
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    Montant de la créance
+                                                </div>
+                                            </th>
+
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    Motif de la créance
+                                                </div>
+                                            </th>
+
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    Reste à payer
+                                                </div>
+                                            </th>
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    Date de la créance
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template let-creance pTemplate="body">
+                                        <tr style="padding-top: 10px; padding-bottom: 10px;"  class="large-row">
+                                            <td>{{ creance.clientNom }} {{ creance.clientPrenom }}</td>
+                                            <td>{{ creance.montant_creance }}</td>
+                                            <td *ngIf="creance.motif!=null">{{ creance.motif }}</td>
+                                            <td *ngIf="creance.motif==null">---</td>
+                                            <td *ngIf="creance.montant_restant_a_payer!==0" style="color: red">{{ creance.montant_restant_a_payer |customNumber}}</td>
+                                            <td *ngIf="creance.montant_restant_a_payer===0"  style="color: green">Créance Réglée</td>
+                                            <td>{{ creance.date_creance | customDate}}</td>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="emptymessage">
+                                        <tr>
+                                            <td colspan="7" style="text-align: center">Aucune créance liée à ce client</td>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="loadingbody">
+                                        <tr>
+                                            <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
+                            </ng-template>
+                        </p-accordionTab>
+                    </p-accordion>
+                    <p-accordion>
+                        <p-accordionTab>
+                            <ng-template pTemplate="header">
+                                Factures<span class="badge">{{ transactions?.facturesDTOS?.length }}</span>
+                            </ng-template>
+                            <ng-template pTemplate="content">
+                                <p-table #dt [globalFilterFields]="['nom','magasinLibelle','categorieLibelle','seuil','uniteMesureLibelle','prix','quantite','total','description']" [loading]="loading" [paginator]="true" [rowHover]="true"
+                                         [rowsPerPageOptions]="[25,50,100]" [rows]="25"
+                                         [value]="transactions?.facturesDTOS!"
+                                         responsiveLayout="scroll">
+                                    <ng-template pTemplate="header">
+                                        <tr class="large-row">
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    Client
+                                                </div>
+                                            </th>
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    Montant de la facture
+                                                </div>
+                                            </th>
+
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    Reste à payer
+                                                </div>
+                                            </th>
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    Date de la facture
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template let-facture pTemplate="body">
+                                        <tr style="padding-top: 10px; padding-bottom: 10px;"  class="large-row">
+                                            <td>{{ facture.clientNom }} {{ facture.clientPrenom }}</td>
+                                            <td>{{ facture.montant_total }}</td>
+                                            <td style="color: red">{{ facture.reste |customNumber}}</td>
+                                            <td>{{ facture.date_facture | customDate}}</td>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="emptymessage">
+                                        <tr>
+                                            <td colspan="7" style="text-align: center">Aucune facture liée à ce client</td>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="loadingbody">
+                                        <tr>
+                                            <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
+                            </ng-template>
+                        </p-accordionTab>
+                    </p-accordion>
+                    <p-accordion>
+                        <p-accordionTab>
+                            <ng-template pTemplate="header">
+                                Paiements<span class="badge">{{ transactions?.recuDTOS?.length }}</span>
+                            </ng-template>
+                            <ng-template pTemplate="content">
+                                <p-table #dt [globalFilterFields]="['nom','magasinLibelle','categorieLibelle','seuil','uniteMesureLibelle','prix','quantite','total','description']" [loading]="loading" [paginator]="true" [rowHover]="true"
+                                         [rowsPerPageOptions]="[25,50,100]" [rows]="25"
+                                         [value]="transactions?.recuDTOS!"
+                                         responsiveLayout="scroll">
+                                    <ng-template pTemplate="header">
+                                        <tr class="large-row">
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    Numéro
+                                                </div>
+                                            </th>
+
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    Montant reçu
+                                                </div>
+                                            </th>
+
+                                            <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    Date du paiement
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template let-recu pTemplate="body">
+                                        <tr style="padding-top: 10px; padding-bottom: 10px;"  class="large-row">
+                                            <td>{{ recu.numero }}</td>
+                                            <td>{{ recu.montant }}</td>
+                                            <td>{{ recu.date_paiement | customDate}}</td>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="emptymessage">
+                                        <tr>
+                                            <td colspan="7" style="text-align: center">Aucun paiement liée à ce client</td>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="loadingbody">
+                                        <tr>
+                                            <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
+                            </ng-template>
+                        </p-accordionTab>
+                    </p-accordion>
+                </div>
+            </ng-container>
+            <!--        <button (click)="visualize()" mat-raised-button color="primary">Submit</button>-->
+        </div>
+    </div>
+
+</div>
+<div *ngIf="displayForm" style="height: 100%;" class="container1">
+    <div class="header-special" >
+        <p style="font-size: large; margin-bottom: 25px">
+            <i class="pi pi-user" style="font-size: 1.5rem"></i>
+            Enregistrement d'un client
+        </p>
+        <button (click)="closeSection(editForm)" tooltipPosition="left"
+                pTooltip="Retour sur la liste" class="p-button-primary small-button p-button-icon-only" icon="pi pi-arrow-left" pButton></button>
+    </div>
+
+    <form (ngSubmit)="save(editForm)" name="editForm" role="form" novalidate #editForm="ngForm" class="container">
+
+        <h5>Informations générales</h5>
+
+        <div class="form-group row align-items-center">
+            <label style="color: red" class="col-sm-3 col-form-label">Nom du client</label>
+            <div class="col-sm-9 ml-7">
+                <input name="nom" type="text" pInputText [(ngModel)]="client.nom" required class="form-control"/>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label style="color: red" class="col-sm-3 col-form-label">Prénom(s)</label>
+            <div class="col-sm-9 ml-7">
+                <input name="prenom" type="text" pInputText [(ngModel)]="client.prenom" required class="form-control"/>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Entreprise</label>
+            <div class="col-sm-9 ml-7">
+                <input type="text" pInputText [(ngModel)]="client.entreprise" name="entreprise" class="form-control"/>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Téléphone</label>
+            <div class="col-sm-9 ml-7">
+                <input type="tel" pInputText [(ngModel)]="client.telephone" name="telephone" appPhoneNumber class="form-control"/>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Adresse</label>
+            <div class="col-sm-9 ml-7">
+                <input name="adresse" type="text" pInputText [(ngModel)]="client.adresse" class="form-control"/>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">CINB</label>
+            <div class="col-sm-9 ml-7">
+                <input name="cinb" type="text" pInputText [(ngModel)]="client.cinb" class="form-control"/>
+            </div>
+        </div>
+
+    </form>
+
+    <div style="bottom: 0; position: fixed; width: 100%" class="layout-footer p-d-flex p-ai-center p-p-4 p-shadow-z">
+            <span style="font-weight: bold">
+
+                <button *ngIf="createormodif" (click)="SaveChoice(editForm, 'continuer')" type="button" [disabled]="editForm.invalid || loading" class="btn btn-primary">
+                    <i *ngIf="loading && display" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                    <span *ngIf="!loading || !display">Enregistrer et continuer</span>
+                    <span *ngIf="loading && display">Enregistrement...</span>
+                </button>
+
+                 <button (click)="SaveChoice(editForm, 'enregistrer')" type="button" [disabled]="editForm.invalid || loading" class="btn btn-primary">
+                    <i *ngIf="loading && !display" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                    <span *ngIf="!loading || display">Enregistrer et terminer</span>
+                    <span *ngIf="loading && !display">Enregistrement...</span>
+                </button>
+
+                <button type="button" class="btn btn-secondary" (click)="annulate()" >Annuler</button>
+            </span>
+    </div>
+</div>
+<p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                 position="top" >
+    <p-footer style="display: flex;">
+        <button class="btnannulate" (click)="cd.reject()"
+        ><i class="pi pi-close"></i>Annuler</button>
+        <button class="btnvalidate" (click)="cd.accept()"
+        ><i class="pi pi-confirm"></i>Confirmer</button>
+    </p-footer>
+</p-confirmDialog>

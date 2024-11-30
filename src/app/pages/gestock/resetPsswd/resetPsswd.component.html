@@ -1,0 +1,68 @@
+<div class="h-screen flex w-full surface-ground">
+    <p-toast position="top-center"></p-toast>
+    <div  class="flex flex-1 flex-column surface-ground  align-items-center justify-content-center">
+        <div class="w-11 sm:w-30rem">
+            <div  class="flex flex-column">
+                <div style="height:56px; width:56px"
+                     class="bg-primary-50 border-circle flex align-items-center justify-content-center">
+                    <i class="pi pi-sign-in text-primary text-4xl"></i>
+                </div>
+                <div class="mt-4">
+                    <h1 class="m-0 text-primary font-semibold text-4xl">
+                        Réinitialisez votre mot de passe!
+                    </h1>
+                    <span class="block text-700 mt-2"></span>
+                </div>
+            </div>
+            <form name="editForm" role="form" novalidate #editForm="ngForm">
+                <div class="flex flex-column gap-3 mt-6">
+                    <div *ngIf="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</div>
+
+                    <div class="p-inputgroup">
+                        <span class="p-inputgroup-addon"><i class="pi pi-key"></i></span>
+                        <p-password
+                            placeholder="Nouveau mot de passe"
+                            name="password"
+                            [(ngModel)]="password"
+                            [toggleMask]="true"
+                            [required]="true"
+                            [style]="{'width': '100%', 'font-size': '1.2rem', 'padding': '0.5rem'}">
+                        </p-password>
+                    </div>
+
+                    <div class="p-inputgroup">
+                        <span class="p-inputgroup-addon"><i class="pi pi-key"></i></span>
+                        <p-password
+                            placeholder="Confirmez le mot de passe"
+                            name="confirmPassword"
+                            [(ngModel)]="confirmPassword"
+                            [toggleMask]="true"
+                            [required]="true"
+                            [style]="{'width': '100%', 'font-size': '1.2rem', 'padding': '0.5rem'}">
+                        </p-password>
+                    </div>
+
+                    <div>
+                        <button
+                            pButton
+                            pRipple
+                            class="w-full"
+                            [disabled]="editForm.invalid"
+                            (click)="resetPsswd(editForm)"
+                            label="Réinitialiser le mot de passe"
+                            type="Submit"
+                            [style]="{'font-size': '1.2rem', 'padding': '0.8rem'}">
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div [style.background]="'url(assets/layout/images/pages/accessDenied-bg.jpg)'"
+         class="hidden lg:flex flex-1 align-items-center justify-content-center bg-cover">
+        GSTOCK
+        <img src="../../../../assets/layout/images/vector_logo.png" alt="">
+    </div>
+</div>
+
+<app-config [minimal]="true"></app-config>

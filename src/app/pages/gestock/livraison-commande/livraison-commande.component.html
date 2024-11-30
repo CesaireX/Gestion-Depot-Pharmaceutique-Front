@@ -1,0 +1,313 @@
+<p-toast position="top-center"></p-toast>
+<div *ngIf="chrgmt" class="spinner-overlay">
+    <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
+</div>
+<div *ngIf="createOrModify" class="container1">
+   <div class="header-special">
+       <p *ngIf="!id" style="font-size:large; margin-bottom: 25px"><i class="pi pi-send" style="font-size: 1.5rem"></i>
+           Bon de livraison des commandes</p>
+       <p *ngIf="id!=null" style="font-size:large; margin-bottom: 25px"><i class="pi pi-send" style="font-size: 1.5rem"></i>
+           Bon de livraison à la commande de {{client?.nom}} {{client?.prenom}}, Commande N° {{selectedBon?.numero}}</p>
+       <button (click)="cancel()" tooltipPosition="left"
+               pTooltip="Retour sur la liste" class="p-button-primary small-button p-button-icon-only" icon="pi pi-arrow-left" pButton></button>
+   </div>
+    <p-messages [(value)]="messages!" [enableService]="false" [style]="{width: '50%'}"></p-messages>
+    <form #bonCommand="ngForm" (ngSubmit)="onSubmit(bonCommand)" name="bonCommand" style="margin-bottom: 60px" novalidate role="form">
+        <!-- Première partie du formulaire -->
+        <div class="form-group row" style="margin-top: 15px" *ngIf="!id">
+            <label class="col-label">Nom du client<span style="color: red">*</span></label>
+            <div class="col-input">
+                <p-dropdown
+                    [disabled]="selectedBoolean"
+                    [(ngModel)]="client" [filterBy]="'nom'" [filter]="true"
+                            [options]="clients" (onChange)="loadBonByClient($event)"
+                            [required]="true" [showClear]="true" [style]="{width: '100%'}"
+                            appendTo="body" name="client" optionLabel="nom"
+                            placeholder="Sélectionner un client">
+                    <ng-template let-clients pTemplate="item">
+                        <div class="flex align-items-center clients-item">
+                            <div>{{ clients?.nom }} &nbsp;&nbsp; {{ clients?.prenom }}</div>
+
+                        </div>
+                    </ng-template>
+                    <ng-template let-clients pTemplate="selectedItem">
+
+                        {{ clients?.nom }}&nbsp;&nbsp; {{ clients?.prenom }}
+
+                    </ng-template>
+                </p-dropdown>
+            </div>
+        </div>
+
+        <div class="form-group row" *ngIf="!id">
+            <label class="col-label" style="color: red">N° de bon de commande<span style="color: red">*</span></label>
+            <div class="input-with-button">
+
+                <p-dropdown
+                    [options]="bonCommandes"
+                    [disabled]="!client || selectedBoolean || id!=null"
+                    [(ngModel)]="selectedBon"
+                    optionLabel="numero"
+                    [required]="true"
+                    [showClear]="true"
+                    [style]="{width: '100%'}"
+                    (onChange)="loadCommandesByBonCommande(selectedBon?.id!)"
+                    appendTo="body"
+                    name="bonCommandes"
+                    placeholder="Sélectionner un bon de commande">
+                </p-dropdown>
+
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-label" style="color: red">N° du bon de livraison<span style="color: red">*</span></label>
+            <div class="input-with-button">
+                <input [disabled]="true" [(ngModel)]="newBonCommandeNumber" id="bonCommandeNumber" name="bonCommandeNumber" pInputText type="text">
+                <button (click)="customizeBonCommandeNumber()" class="icon-button" type="button">
+                    <i class="pi pi-cog" style="font-size: 1.5rem"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-label" style="color: red">Date de livraison<span style="color: red">*</span></label>
+            <div class="col-input">
+                <p-calendar [disabled]="!client" [(ngModel)]="date" [required]="true" [style]="{width: '100%'}" dateFormat="dd MM yy"
+                            name="date"></p-calendar>
+            </div>
+        </div>
+
+        <!-- Deuxième partie du formulaire -->
+        <p *ngIf="client" style="font-size:medium; margin-top: 30px; font-weight: bold">Tableau d’articles</p>
+        <table class="article-table" *ngIf="client">
+            <thead>
+            <tr>
+                <th>ARTICLES ET DESCRIPTION</th>
+                <th>COMMANDÉ</th>
+                <th>DÉJA LIVRÉ</th>
+                <th>QUANTITÉ À LIVRER</th>
+                <th>MAGASIN DE SORTIE</th>
+                <th>ACTION</th>
+            </tr>
+            </thead>
+            <tbody>
+            <ng-container *ngIf="commandes.length > 0; else noArticles">
+                <tr *ngFor="let commande of commandes; let i = index">
+                    <td>{{ commande.produitNom }}</td>
+                    <td>{{ commande.quantite }}</td>
+                    <td>{{ commande.quantiteLivreetowatch ?? 0 }}</td>
+                    <td style="width: 150px;" [ngClass]="{'invalid-input': commande.isInvalid}">
+                        <p-inputNumber [name]="'article-' + i + '-prix'" pInputNumber [showButtons]="true"
+                                       mode="decimal" [maxFractionDigits]="2"
+                                       [(ngModel)]="commande.quantiteLivree" [style]="{'width': '100%'}" [min]="1"
+                                       locale="de-DE" [minFractionDigits]="0" (onInput)="onQuantityChange(commande, $event)">
+                        </p-inputNumber>
+                        <div *ngIf="commande.isInvalid" class="error-message">
+                            Quantité reçue invalide
+                        </div>
+                    </td>
+                    <td>
+                        <p-dropdown [options]="magasins" [disabled]="true" [(ngModel)]="commande.magasin" optionLabel="nom"
+                                    [required]="true" [showClear]="true" [style]="{width: '100%'}"
+                                    appendTo="body" name="magasin"
+                                    placeholder="Sélectionner un magasin">
+                        </p-dropdown>
+                    </td>
+                    <td>
+                        <button (click)="supprimerLigne(i)"
+                                [disabled]="commandes.length === 1"
+                                class="p-button-danger small-button"
+                                icon="pi pi-trash"
+                                pButton
+                                type="button"></button>
+                    </td>
+                </tr>
+            </ng-container>
+            <ng-template #noArticles>
+                <tr>
+                    <td colspan="6" style="text-align: center">Aucun article disponible</td>
+                </tr>
+            </ng-template>
+            </tbody>
+        </table>
+
+        <div *ngIf="errorMessage" style="color: red; margin-top: 10px;">
+            {{ errorMessage }}
+        </div>
+
+        <div style="bottom: 0; position: fixed; width: 100%" class="layout-footer p-d-flex p-ai-center p-p-4 p-shadow-z">
+            <span style="font-weight: bold">
+
+                 <button  type="submit" [disabled]="!isValidForm() || !bonCommand.valid || commandes.length===0 || !isValidCommandes()" class="btn btn-primary">
+                     Enregistrer
+                </button>
+                <button type="button" (click)="cancel()" class="btn btn-secondary" >Annuler</button>
+
+
+            </span>
+        </div>
+    </form>
+        <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                         position="top" >
+            <p-footer style="display: flex;">
+                <button class="btnannulate" (click)="cd.reject()"
+                ><i class="pi pi-close"></i>Annuler</button>
+                <button class="btnvalidate" (click)="cd.accept()"
+                ><i class="pi pi-confirm"></i>Confirmer</button>
+            </p-footer>
+        </p-confirmDialog>
+</div>
+
+
+<div *ngIf="!createOrModify" style="display: flex; ">
+    <div [ngClass]="{'shrink': isSecondaryActive}" class="card primary" style="height: 100%;">
+        <div class="header55">
+            <h1>Tous les bons de livraison</h1>
+            <div class="header-actions">
+                <button *ngIf="droits.includes('AJOUTER_LIVRAISON')" (click)="createModify({})" class="p-button-primary small-button" pButton><i
+                        class="pi pi-plus"></i>Nouveau
+                </button>
+                <button class="p-button-secondary small-button p-button-icon-only" icon="pi pi-ellipsis-v"
+                        pButton></button>
+            </div>
+        </div>
+        <p-table #dt [globalFilterFields]="['dateLivraison','numero','boncommandeNumero','clientNom','clientPrenom']" [loading]="loading" [paginator]="true" [rowHover]="true"
+                 [rowsPerPageOptions]="[25,50,100]" [rows]="25"
+                 [value]="livraisons" [loading]="loading"
+                 selectionMode="single" [(selection)]="livraison" dataKey="id"
+                 responsiveLayout="scroll">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher" class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr class="large-row">
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Date
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            N° d'avis de réception d'achat
+                        </div>
+                    </th>
+
+                    <th  style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            N° de la commande client
+                        </div>
+                    </th>
+                    <th *ngIf="!isSecondaryActive" style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Nom du client
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template let-recept pTemplate="body">
+                <tr (click)="onRowSelect(recept)" style="padding-top: 10px; padding-bottom: 10px;"  class="large-row">
+                    <td>{{recept.dateLivraison | customDate}}</td>
+                    <td>{{ recept.numero}}</td>
+                    <td>{{ recept.boncommandeNumero}}</td>
+                    <td *ngIf="!isSecondaryActive">{{ recept.clientNom}} {{ recept.clientPrenom}}</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucun bon de commande disponible.</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+
+        <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                         position="top">
+            <p-footer>
+                <button (click)="cd.reject()" class="p-button-help" icon="pi pi-times" label="Annuler"
+                        pButton type="button"></button>
+                <button (click)="cd.accept()" class="p-button-primary" icon="pi pi-check" label="Confirmer"
+                        pButton type="button"></button>
+            </p-footer>
+        </p-confirmDialog>
+    </div>
+    <div [ngClass]="{'active': isSecondaryActive}" class="card secondary" style="height: 100%;">
+        <div class="headerfact">
+            <div class="facture-header">
+                <h5>{{livraison.numero}}</h5>
+                <span class="close-button" (click)="close()">&#10006;</span>
+            </div>
+            <div class="actions">
+                <button *ngIf="droits.includes('MODIFIER_LIVRAISON')"  (click)="createModify(livraison)" class="btn">
+                    <i class="pi pi-pencil"></i> Modifier
+                </button>
+                <button class="btn" *ngIf="droits.includes('SUPPRIMER_LIVRAISON')" (click)="deleteElement(livraison)" >
+                    <i class="pi pi-trash"></i> Supprimer
+                </button>
+                <button class="btn">
+                    <i class="pi pi-file-pdf"></i> PDF/Impression <i class="fas fa-caret-down"></i>
+                </button>
+<!--                <button class="btn">
+                    <i class="pi pi-receipt"></i> Convertir en facture client
+                </button>-->
+            </div>
+        </div>
+        <div class="bon-commande-detail">
+            <div class="main-content">
+                <div class="info-section">
+                    <div class="info-block">
+                        <div class="bc">BON DE LIVRAISON</div>
+                        <div style=" margin-top: 5px;"><strong>Numéro de réception</strong> :  {{livraison.numero}}
+                        </div>
+                        <br>
+                        <div class="div-right-left">
+                            <div class="div-right">
+                                <div>N° DE COMMANDE CLIENTE</div>
+                                <div>DATE</div>
+                            </div>
+                            <div class="div-left">
+                                <div (click)="viewBon(livraison)" *ngIf="livraison.boncommandeNumero" class="link-like"> {{livraison.boncommandeNumero}}</div>
+                                <div>{{livraison.dateLivraison| customDate}}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="address-block">
+                        <div class="client">NOM DU CLIENT</div>
+                        <br>
+                        <div class="clientname">{{livraison.clientNom}} {{livraison.clientPrenom}}</div>
+                    </div>
+                </div>
+
+                <div class="articles-section">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Ordre</th>
+                            <th>ARTICLES ET DESCRIPTION	</th>
+                            <th>QUANTITÉ</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr *ngFor="let item of livraison.ligneLivraisonClient; let i = index;">
+                            <td>{{ i + 1 }}</td>
+                            <td>{{ item.articleName }}</td>
+                            <td>{{ item.quantiteLivree! }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

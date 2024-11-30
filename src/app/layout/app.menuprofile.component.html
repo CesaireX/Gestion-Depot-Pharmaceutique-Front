@@ -1,0 +1,213 @@
+<div>
+
+</div>
+
+
+<div class="layout-menu-profile">
+    <button class="p-link" (click)="toggleMenu()" pTooltip="Profile" [tooltipDisabled]="isTooltipDisabled">
+        <img src="assets/demo/images/avatar/user2.png" alt="avatar" style="width: 32px; height: 32px;">
+        <span>
+            <strong>{{this.username}}</strong>
+
+        </span>
+        <i class="layout-menu-profile-toggler pi pi-fw" [ngClass]="{'pi-angle-down': menuProfilePosition === 'start' || isHorizontal, 'pi-angle-up': menuProfilePosition === 'end' && !isHorizontal}"></i>
+    </button>
+
+    <ul *ngIf="menuProfileActive" [@menu]="isHorizontal ? 'overlay' : 'inline'">
+        <!--  <li pTooltip="Settings" [tooltipDisabled]="isTooltipDisabled" [routerLink]="['/profile/create']">
+              <button class="p-link" [routerLink]="['/documentation']">
+                  <i class="pi pi-cog pi-fw"></i>
+                  <span>Settings</span>
+              </button>
+          </li>
+          <li pTooltip="Profile" [tooltipDisabled]="isTooltipDisabled">
+              <button class="p-link" [routerLink]="['/documentation']" [routerLink]="['/documentation']">
+                  <i class="pi pi-file-o pi-fw"></i>
+                  <span>Profile</span>
+              </button>
+          </li>
+          <li pTooltip="Support" [tooltipDisabled]="isTooltipDisabled">
+              <button class="p-link" [routerLink]="['/documentation']">
+                  <i class="pi pi-compass pi-fw"></i>
+                  <span>Support</span>
+              </button>
+          </li>-->
+        <li pTooltip="Mon compte" [tooltipDisabled]="isTooltipDisabled" >
+            <button *ngIf="droits.includes('MODIFIER_MON_COMPTE')" class="p-link" (click) ="add(this.utilisa)">
+                <i class="pi pi-pencil"></i>
+                <span>Mon compte</span>
+            </button>
+        </li>
+        <li pTooltip="Déconnexion" [tooltipDisabled]="isTooltipDisabled" >
+            <button class="p-link" (click) ="handleLogout()">
+                <i class="pi pi-power-off"></i>
+                <span>Déconnexion</span>
+            </button>
+        </li>
+         <li *ngIf="droits.includes('MODIFIER_MON_MOT_DE_PASSE')" pTooltip="Déconnexion" [tooltipDisabled]="isTooltipDisabled">
+            <button class="p-link" (click) ="displayDialogChangePsswd()">
+                <i class="pi pi-key"></i>
+                <span>Changer le mot de Passe</span>
+            </button>
+        </li>
+
+    </ul>
+
+    <p-dialog [(visible)]="display" [style]="{width: '50vw'}" header="Détail " [modal]="true" class="p-fluid">
+        <p-header>
+            <span class="font-weight-bold text-primary p-2">Modification des informations personelles</span>
+        </p-header>
+        <form (ngSubmit)="save(editForm)" name="editForm" role="form" novalidate #editForm="ngForm" class="p-mb-3"
+              novalidate>
+
+            <div class="form-columns">
+                <div class="form-column">
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Nom <span style="color: red">*</span></label>
+                        <input name="nom" type="text" pInputText [(ngModel)]="utilisateur.nom" [required]="true"/>
+                    </div>
+                </div>
+                <div class="form-column">
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Prenom<span style="color: red">*</span></label>
+                        <input name="prenoms" type="text" pInputText name="prenoms" [(ngModel)]="utilisateur.prenoms" [required]="true"/>
+                    </div>
+                </div>
+                <div *ngIf="this.rolss.includes('ADMIN')" class="form-column">
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Nom d'utilisateur<span style="color: red">*</span></label>
+                        <input name="username" type="text" pInputText name="username" [(ngModel)]="utilisateur.username" [required]="true"/>
+                    </div>
+                </div>
+                <div class="form-column">
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Téléphone</label>
+                        <input name="telephone" type="number" pInputText name="telephone" [(ngModel)]="utilisateur.telephone" />
+                    </div>
+                </div>
+                <div class="form-column">
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Email</label>
+                        <input name="email" type="email" pInputText name="email" [(ngModel)]="utilisateur.email" />
+                    </div>
+                </div>
+               <!-- <div *ngIf="!this.rolss.includes('ADMIN')" class="form-column">
+                    <div  class="field col-12 md:col-12">
+                        <label class="font-medium text-900">Role <span style="color: red">*</span></label>
+                        <p-dropdown [options]="roles" [(ngModel)]="role" [required]="true"
+                                    [showClear]="true" appendTo="body" [filter]="true" [filterBy]="'role'" [style]="{width: '100%'}"
+                                    name="role" optionLabel="name"
+                                    [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                                    [required]="true">
+                        </p-dropdown>
+                    </div>
+                </div>-->
+                <div *ngIf="modif==false" class="form-column">
+                    <div class="field col-12 md:col-12">
+                        <div *ngIf="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</div>
+                        <label style="font-weight:bold;">Mot de passe<span style="color: red">*</span></label>
+                        <input name="password" type="password" pInputText [(ngModel)]="utilisateur.password" [required]="true"/>
+                    </div>
+                </div>
+                <div *ngIf="modif==false" class="form-column">
+                    <div class="field col-12 md:col-12">
+                        <div *ngIf="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</div>
+                        <label style="font-weight:bold;">Confirmez le mot de passe<span style="color: red">*</span></label>
+                        <input name="confirmPassword" type="password" pInputText [(ngModel)]="confirmPassword" [required]="true"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid p-fluid mt-0">
+                <div class="field col-12 md:col-6"></div>
+                <div class="field col-12 md:col-3">
+                    <button pButton pRipple label="Annuler" (click)="annuler()" type="button"
+                            class="p-button-secondary p-mr-2 p-mb-2 font-weight-bold"
+                            icon="pi pi-fw pi-times">
+                    </button>
+                </div>
+                <div class="field col-12 md:col-3">
+                    <button pButton pRipple [disabled]="editForm.invalid"  label="Enregistrer" icon="pi pi-fw pi-check"
+                            class="p-button-primary p-mr-2 p-mb-2 font-weight-bold"
+                            type="Submit">
+                    </button>
+                </div>
+            </div>
+        </form>
+    </p-dialog>
+    <p-dialog [(visible)]="display2" [style]="{width: '30vw'}" header="Détail " [modal]="true" class="p-fluid">
+        <p-header>
+            <span class="font-weight-bold text-primary p-2">Changement du mot de passe</span>
+        </p-header>
+        <form name="editForm2" role="form" novalidate #editForm2="ngForm"
+                novalidate>
+            <div class="flex flex-column gap-3 mt-6">
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon"><i class="pi pi-key"></i></span>
+<!--                    <input name="password" placeholder="Mot de passe actuel" type="password" pInputText [(ngModel)]="actuelPsswd" [required]="true"/>-->
+                    <p-password name="actuelPsswd"
+                                class="w-full"
+                                [feedback]="false"
+                                placeholder="Mot de passe actuel"
+                                [(ngModel)]="actuelPsswd"
+                                styleClass="p-password p-component p-inputwrapper p-input-icon-right"
+                                [style]="{'width':'100%'}"
+                                [inputStyle]="{'width':'100%'}"
+                                [toggleMask]="true"
+                                [required]="true"
+                    ></p-password>
+                </div>
+                <br>
+                <div *ngIf="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</div>
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon"><i class="pi pi-key"></i></span>
+<!--                    <input name="password" type="password" pInputText [(ngModel)]="password" [required]="true"/>-->
+                    <p-password name="password"
+                                class="w-full"
+                                [feedback]="false"
+                                placeholder="Nouveau mot de passe"
+                                [(ngModel)]="password"
+                                styleClass="p-password p-component p-inputwrapper p-input-icon-right"
+                                [style]="{'width':'100%'}"
+                                [inputStyle]="{'width':'100%'}"
+                                [toggleMask]="true"
+                                [required]="true"
+                    ></p-password>
+                </div>
+                <br>
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon"><i class="pi pi-key"></i></span>
+<!--
+                    <input name="passwordd" placeholder="Confirmez Mot de passe" type="password" pInputText [(ngModel)]="confirmPassword" [required]="true"/>
+-->
+                    <p-password name="confirmPassword"
+                                class="w-full"
+                                [feedback]="false"
+                                placeholder="Confirmez Mot de passe"
+                                [(ngModel)]="confirmPassword"
+                                styleClass="p-password p-component p-inputwrapper p-input-icon-right"
+                                [style]="{'width':'100%'}"
+                                [inputStyle]="{'width':'100%'}"
+                                [toggleMask]="true"
+                                [required]="true"
+                    ></p-password>
+                </div>
+                <br><br>
+                <div>
+                    <button pButton pRipple class="w-full"  [disabled]="editForm2.invalid" (click)="changePsswd(editForm2)" label="Changer le mot de passe" type="Submit"></button>
+                </div>
+
+            </div>
+        </form>
+    </p-dialog>
+        <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                         position="top" >
+            <p-footer style="display: flex;">
+                <button class="btnannulate" (click)="cd.reject()"
+                ><i class="pi pi-close"></i>Annuler</button>
+                <button class="btnvalidate" (click)="cd.accept()"
+                ><i class="pi pi-confirm"></i>Confirmer</button>
+            </p-footer>
+        </p-confirmDialog>
+    <p-toast position="top-center"></p-toast>
+</div>

@@ -1,0 +1,430 @@
+<!--     <div class="container-fluid">
+        <h5 style="text-align: center" class="mark"
+            pTooltip="Il s'agit de la gestion des Détails de votre entreprise" tooltipPosition="top">Votre
+            société</h5>
+                    <div class="p-2 h-full w-full flex flex-column justify-content-between">
+                        <div class="flex align-items-center justify-content-between mb-3">
+                            <div class="p-col-6">
+                            </div>
+                            <div class="flex align-items-center gap-2 ">
+                               <button *ngIf="droits.includes('AJOUTER_SOCIETE')" (click)="onDisplayDialog()" pButton pRipple label="Ajouter"
+                                       icon="pi pi-plus-circle"></button>
+                            </div>
+                        </div>
+        </div>
+        <div class="card">
+        <p-toast position="top-center"></p-toast>
+        <p-table #dt [value]="societes" [paginator]="true" [loading]="loading" [rows]="25"
+                 responsiveLayout="scroll" [rowHover]="true"
+                 [rowsPerPageOptions]="[25,50,100]"
+                 [globalFilterFields]="['nom', 'slogan', 'tel', 'fixe', 'email']">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher société" class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 1rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Logo de l'entreprise
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Nom
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Slogan
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Téléphone
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Fixe
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Email
+                        </div>
+                    </th>
+                    <th style="border-left: none;">
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-societe>
+                <tr>
+                    <td>
+                        <img *ngIf="societe.logo" src="data:image/PNG; base64,{{societe.logo}}" width="50px" height="50px">
+                        <img *ngIf="!societe.logo" src="assets/layout/images/gstock.png" width="50px" height="50px">
+                    </td>
+                    <td>{{societe.nom}}</td>
+                    <td>{{societe.slogan}}</td>
+                    <td>{{societe.tel}}</td>
+                    <td>{{societe.fixe}}</td>
+                    <td>{{societe.email}}</td>
+                    <td style="border-left: none;">
+                        <p-menu #menu appendTo="body" [popup]="true" [model]="menuitems"></p-menu>
+                        <div class="flex justify-content-end">
+                            <button (click)="selectedItem = societe" (click)="menu.toggle($event)" pButton pRipple icon="pi pi-ellipsis-h" class="p-button-text p-button-rounded text-900"></button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucune société disponible</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+        <p-dialog [(visible)]="display" [style]="{width: '50vw'}" header="Détail " [modal]="true" class="p-fluid">
+            <p-header>
+                <span class="font-weight-bold text-primary p-2">Enregistrement de la Société</span>
+            </p-header>
+            <form  name="editForm" role="form" novalidate #editForm="ngForm" class="p-mb-3"
+                   novalidate>
+
+                <div style="text-align: center" class="upload">
+                    <img width = 100 height = 100 alt="" *ngIf="societe.logo" src="data:image/PNG; base64,{{societe.logo}}">
+                    <img *ngIf="!societe.logo" src="assets/layout/images/gstock.png" width = 100 height = 100 alt="">
+                    <div class="round">
+                        <input type="file" (change)="onFileChange($event)" accept="image/*">
+                        <i class = "pi pi-camera" style = "color: #fff;"></i>
+                    </div>
+                </div>
+
+                <div class="form-columns">
+
+                    <div class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label style="font-weight:bold;">Nom<span style="color: red">*</span></label>
+                            <input name="nom" type="text" pInputText [(ngModel)]="societe.nom" [required]="true"/>
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label style="font-weight:bold;">Téléphone</label>
+                            <input name="tel" type="text" pInputText [(ngModel)]="societe.tel"/>
+                        </div>
+                    </div>
+
+                    <div class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label style="font-weight:bold;">Fixe</label>
+                            <input name="fixe" type="text" pInputText  [(ngModel)]="societe.fixe"/>
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label style="font-weight:bold;">Slogan</label>
+                            <input name="ville" type="text" pInputText  [(ngModel)]="societe.slogan"/>
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label style="font-weight:bold;">Email></label>
+                            <input name="email" type="text" pInputText  [(ngModel)]="societe.email"/>
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label style="font-weight:bold;">Vos couleurs</label> <br>
+                            <p-colorPicker appendTo="body" name="principale" [(ngModel)]="societe.colorprincipale"></p-colorPicker>
+                            <p-colorPicker appendTo="body" name="secondaire" [(ngModel)]="societe.colorsecondaire"></p-colorPicker>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+                <div class="grid p-fluid mt-0">
+                    <div class="field col-12 md:col-6"></div>
+                    <div class="field col-12 md:col-3">
+                        <button pButton pRipple label="Annuler" (click)="annuler()" type="button"
+                                class="p-button-secondary p-mr-2 p-mb-2 font-weight-bold"
+                                icon="pi pi-fw pi-times">
+                        </button>
+                    </div>
+                    <div class="field col-12 md:col-3">
+                        <button pButton pRipple (click)="save(editForm)" label="Enregistrer" icon="pi pi-fw pi-check"
+                                class="p-button-primary p-mr-2 p-mb-2 font-weight-bold"
+                                type="Submit" [disabled]="editForm.invalid">
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </p-dialog>
+
+
+
+        <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle">
+            <p-footer>
+                <button (click)="cd.reject()" class="p-button-secondary" icon="pi pi-times" label="NON"
+                        pButton type="button"></button>
+                <button (click)="cd.accept()" class="p-button-danger" icon="pi pi-check" label="OUI"
+                        pButton type="button"></button>
+            </p-footer>
+        </p-confirmDialog>
+    </div>
+
+
+</div>
+ -->
+
+ <p-toast position="top-center"></p-toast>
+<div class="spinner-overlay" *ngIf="chrgmt">
+    <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
+</div>
+<div *ngIf="!displayForm" style="display: flex">
+    <div class="card primary" [ngClass]="{'shrink': isSecondaryActive}" style="height: 100%;">
+        <div class="header55">
+            <h1>Votre société</h1>
+            <div class="header-actions">
+<!--                <button class="p-button-secondary small-button p-button-icon-only" icon="pi pi-ellipsis-v"
+                        pButton></button>-->
+            </div>
+        </div>
+        <p-table #dt [value]="societes" [paginator]="true" [loading]="loading" [rows]="25"
+                 responsiveLayout="scroll" [rowHover]="true"
+                 [rowsPerPageOptions]="[25,50,100]">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Logo de l'entreprise
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Nom
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                           Slogan
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem;  background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Téléphone
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Fixe
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Email
+                        </div>
+                    </th>
+                    <th style="border-left: none; background-color: rgb(236,236,236)">
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template let-societe pTemplate="body">
+                <tr>
+                    <td>
+                        <img *ngIf="societe.logo" src="data:image/PNG; base64,{{societe.logo}}" width="50px" height="50px">
+                        <img *ngIf="!societe.logo" src="assets/layout/images/gstock.png" width="50px" height="50px">
+                    </td>
+                    <td>{{societe.nom}}</td>
+                    <td>{{societe.slogan}}</td>
+                    <td>{{societe.tel}}</td>
+                    <td>{{societe.fixe}}</td>
+                    <td>{{societe.email}}</td>
+                    <td style="border-left: none;">
+                        <p-menu #menu [model]="menuitems" [popup]="true" appendTo="body"></p-menu>
+                        <div class="flex justify-content-end">
+                            <button (click)="selectedItem = societe" (click)="menu.toggle($event)" class="p-button-text p-button-rounded text-900" icon="pi pi-ellipsis-h"
+                                    pButton pRipple></button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucune Société disponible</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+ </div>
+    <div class="card secondary" [ngClass]="{'active': isSecondaryActive}" style="height: 100%;">
+        <div class="headerfact">
+            <div class="title">
+                <h1>{{selectedItem?.nom}}</h1>
+            </div>
+            <div class="actions">
+                <button class="btn" (click)="add(selectedItem)"
+                ><i class="pi pi-pencil"></i>Modifier</button>
+
+                <button class="btn" (click)="deleteElement(selectedItem)"
+                ><i class="pi pi-trash"></i>Supprimer</button>
+            </div>
+        </div>
+        <div class="folder-tabs">
+            <div
+                class="folder-tab"
+                *ngFor="let tab of tabs; let i = index"
+                [class.active]="i === selectedTab"
+                (click)="selectTab(i)">
+                {{ tab.label }}
+            </div>
+        </div>
+        <div class="folder-content">
+            <ng-container *ngIf="selectedTab !== null">
+
+                <div *ngIf="selectedTab === 0">
+                    <div class="container">
+                        <div class="container-custom">
+                            <!-- Left Panel -->
+                            <div class="left-panel">
+                                <div class="profile-container">
+                                    <img src="assets/demo/images/avatar/user.png" alt="Profile Picture" class="profile-picture" width="50px" height="50px">
+                                    <div class="user-details">
+                                        <h5 class="user-name">{{selectedItem?.nom}} {{selectedItem?.prenom}}</h5>
+                                        <p class="user-email">{{selectedItem?.mail}}</p>
+                                        <p class="user-phone">{{selectedItem?.telephone}}</p>
+                                    </div>
+                                </div>
+                                <br><br>
+                                <div class="mb-3">
+                                    <h6>Entreprise</h6>
+                                    <p>{{selectedItem?.entreprise}}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <h6>Adresse</h6>
+                                    <p>{{selectedItem?.adresse}}</p>
+                                </div>
+                            </div>
+                            <!-- Right Panel -->
+
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="selectedTab === 1">
+                </div>
+                <div *ngIf="selectedTab === 2">
+                    <p>Content of Tab 3</p>
+                </div>
+            </ng-container>
+        </div>
+    </div>
+
+</div>
+<div *ngIf="displayForm" style="height: 100%;" class="container1">
+
+    <div class="header-special">
+        <p style="font-size: large; margin-bottom: 25px">
+            <i class="pi pi-shopping-bag" style="font-size: 1.5rem"></i>
+            Enregistrement d'une société
+        </p>
+        <button (click)="closeSection(editForm)" class="p-button-primary small-button p-button-icon-only" icon="pi pi-arrow-left" pButton></button>
+    </div>
+
+    <form (ngSubmit)="save(editForm)" name="editForm" role="form" novalidate #editForm="ngForm" class="container">
+
+        <div class="form-group row">
+            <label style="color: red" class="col-label">Logo</label>
+            <div class="col-sm-9 ml-7">
+            <div  class="upload">
+                    <img width = 100 height = 100 alt="" *ngIf="societe.logo" src="data:image/PNG; base64,{{societe.logo}}">
+                    <img *ngIf="!societe.logo" src="assets/layout/images/gstock.png" width = 100 height = 100 alt="">
+                    <div class="round">
+                        <input type="file" (change)="onFileChange($event)" accept="image/*">
+                        <i class = "pi pi-camera" style = "color: #fff;"></i>
+                    </div>
+                </div>
+                </div>
+        </div>
+        <div class="form-group row">
+            <label style="color: red" class="col-label">Nom de la société</label>
+            <div class="col-sm-9 ml-7">
+                <input name="prenom" type="text" pInputText [(ngModel)]="societe.nom" required class="form-control"/>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-label">Slogan</label>
+            <div class="col-sm-9 ml-7">
+                <input type="text" pInputText [(ngModel)]="societe.slogan" name="entreprise" class="form-control"/>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-label">Téléphone</label>
+            <div class="col-sm-9 ml-7">
+                <input type="text" pInputText [(ngModel)]="societe.tel" name="telephone" appPhoneNumber class="form-control"/>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-label">Fixe</label>
+            <div class="col-sm-9 ml-7">
+                <input name="adresse" type="text" pInputText [(ngModel)]="societe.fixe" class="form-control"/>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-label">Email</label>
+            <div class="col-sm-9 ml-7">
+                <input name="cinb" type="text" pInputText [(ngModel)]="societe.email" class="form-control"/>
+            </div>
+        </div>
+<!--        <div class="form-group row">
+                <label class="col-label">Vos couleurs</label> <br>
+                <p-colorPicker appendTo="body" name="principale" [(ngModel)]="societe.colorprincipale"></p-colorPicker>
+                <p-colorPicker appendTo="body" name="secondaire" [(ngModel)]="societe.colorsecondaire"></p-colorPicker>
+        </div>-->
+
+
+    </form>
+
+    <div style="bottom: 0; position: fixed; width: 100%" class="layout-footer p-d-flex p-ai-center p-p-4 p-shadow-z">
+            <span style="font-weight: bold">
+
+                 <button (click)="SaveChoice(editForm, 'enregistrer')" type="button" [disabled]="editForm.invalid || loading" class="btn btn-primary">
+                    <i *ngIf="loading && !display" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                    <span *ngIf="!loading || display">Enregistrer et terminer</span>
+                    <span *ngIf="loading && !display">Enregistrement...</span>
+                </button>
+
+                <button type="button" class="btn btn-secondary" (click)="annulate()" >Annuler</button>
+            </span>
+    </div>
+</div>
+<p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                 position="top" >
+    <p-footer style="display: flex;">
+        <button class="btnannulate" (click)="cd.reject()"
+        ><i class="pi pi-close"></i>Annuler</button>
+        <button class="btnvalidate" (click)="cd.accept()"
+        ><i class="pi pi-confirm"></i>Confirmer</button>
+    </p-footer>
+</p-confirmDialog>
+

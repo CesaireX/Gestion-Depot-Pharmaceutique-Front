@@ -1,0 +1,53 @@
+.float-right {
+    float: right !important;
+}
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+.ui-toast {
+    width: auto;
+}
+
+.custom-toast {
+    display: flex;
+    align-items: center;
+    background-color: #d4edda; /* Couleur de fond verte */
+    border-left: 6px solid #28a745; /* Bordure verte sur la gauche */
+    color: #155724; /* Couleur du texte */
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Ombre portée */
+}
+
+.custom-toast-icon {
+    background-color: #28a745; /* Couleur de fond de l'icône */
+    color: white; /* Couleur de l'icône */
+    padding: 10px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    font-size: 20px; /* Taille de l'icône */
+}
+
+.custom-toast-message {
+    display: flex;
+    flex-direction: column;
+}
+
+.custom-toast-summary {
+    font-weight: bold; /* Style du résumé */
+    margin-bottom: 5px;
+}
+
+.custom-toast-detail {
+    font-size: 14px; /* Taille de la police des détails */
+}

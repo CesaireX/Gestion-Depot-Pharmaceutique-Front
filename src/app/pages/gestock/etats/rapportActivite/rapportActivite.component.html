@@ -1,0 +1,241 @@
+<div class="inventory-container">
+    <div class="header">
+        <div>
+            <h6>Rapport d'activité</h6>
+            <p>• À la date du {{today}}</p>
+        </div>
+        <div class="flex radio-buttons">
+            <p-radioButton name="selectedType" value="rapport" [(ngModel)]="selectedType" label="Rapport Activité"></p-radioButton>&nbsp;&nbsp;
+            <p-radioButton name="selectedType" value="etat" [(ngModel)]="selectedType" label="Etat Activité"></p-radioButton>&nbsp;&nbsp;
+        </div>
+        <div class="flex">
+            <button type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportExcel()"
+                    class="p-button-success mr-2" pTooltip="XLS" tooltipPosition="bottom"></button>
+            <button type="button" pButton pRipple icon="pi pi-file-pdf" (click)="exportPDF()"
+                    class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>
+        </div>
+    </div>
+
+    <div class="filters">
+        <div class="filter-group">
+            <label>Filtre par :</label>
+            <div>
+                <p-radioButton name="jour" value=0 [(ngModel)]="check"  inputId="jour" label="Jour" (onClick)="checkValue()"></p-radioButton>&nbsp;
+                <p-radioButton name="periode" value=1 [(ngModel)]="check" inputId="periode" label="Période" (onClick)="checkValue()"></p-radioButton>
+            </div>
+        </div>
+        <div class="filter-group"  *ngIf="check==0">
+            <label>Date :</label>
+            <p-calendar appendTo="body" [(ngModel)]="dateJournee" name="dateJournee" dateFormat="dd/mm/yy" (ngModelChange)="onDateChange()"  [showIcon]="true" [ngModelOptions]="{ standalone: true }"></p-calendar>
+        </div>
+        <div class="filter-group" *ngIf="check==1">
+            <label>Période :</label>
+            <p-calendar [(ngModel)]="selectedPeriod" (ngModelChange)="onPeriodChange()" selectionMode="range" [showIcon]="true"  dateFormat="dd/mm/yy"></p-calendar>
+        </div>
+        <!--
+        <button pButton type="button" label="+ More Filters" class="p-button-outlined more-filters"></button>
+-->
+        <button pButton type="button"  (click)="getRapport()"  class="execute-report"><i class="pi pi-sync"></i>Charger</button>
+    </div>
+
+    <div class="card">
+        <div style="display : flex; align-items: center; align-content: center; justify-content: center">
+            <h5 *ngIf="selectedType === 'rapport'">Rapport Activité</h5>
+            <h5 *ngIf="selectedType === 'etat'">Etat Activité</h5>
+        </div>
+
+        <div *ngIf="selectedType === 'rapport'" class="flex align-items-center justify-content-between mb-3">
+            <div class="col-12 right-div">
+                <span class="bold-text label">Montant des Ventes:</span>
+                <span class="bold-text value">{{rapportActivite.montantVente | customNumber}} FCFA</span><br><hr>
+
+                <span class="bold-text label">Montant Encaissé:</span>
+                <span class="bold-text value">{{rapportActivite.montantEncaisse | customNumber}} FCFA</span><br><hr>
+
+                <span class="bold-text label">Montant des Dépenses:</span>
+                <span class="bold-text value">{{rapportActivite.montantDepense | customNumber}} FCFA</span><br><hr>
+
+                <span class="bold-text label">Reste:</span>
+                <span class="bold-text value">{{rapportActivite.reste | customNumber}} FCFA</span><br><hr>
+            </div>
+        </div>
+
+        <div *ngIf="selectedType === 'etat'" class="flex align-items-center justify-content-between mb-3">
+            <div class="col-12 right-div">
+                <span class="bold-text label">Total Crédit:</span>
+                <span class="bold-text value">{{rapportActivite.totalCredit | customNumber}} FCFA</span><br><hr>
+
+                <span class="bold-text label">Montant des Ventes:</span>
+                <span class="bold-text value">{{rapportActivite.montantVente | customNumber}} FCFA</span><br><hr>
+
+                <span class="bold-text label">Montant Encaissé:</span>
+                <span class="bold-text value">{{rapportActivite.montantEncaisse | customNumber}} FCFA</span><br><hr>
+
+                <span class="bold-text label">Etat:</span>
+                <span class="bold-text value">{{rapportActivite.etat | customNumber}} FCFA</span><br><hr>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+<!--
+<div class="card">
+    <div class="container-fluid">
+        <p-tabView>
+            <p-tabPanel header="Rapport d'activité">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card flex justify-content-between align-items-center">
+                            <div class="p-2 h-full w-full flex flex-column justify-content-between">
+                                <h5  style="color: cornflowerblue; text-align: center">Rapport d'activité</h5>
+                                <br> <br>
+                                &lt;!&ndash;<div style="text-align: center" >
+                                    <label class="required-input bold-label">Type de Filtre<span class="required-icon"></span></label>&nbsp; &nbsp; &nbsp; &nbsp;
+                                    <p-radioButton name="jour" value=0 [(ngModel)]="check" inputId="jour" (onClick)="checkValue()"></p-radioButton>
+                                    <label id="jour" for="jour" class="ml-2">Jour</label> &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;
+                                    <p-radioButton name="periode" value=1 [(ngModel)]="check" inputId="periode" (onClick)="checkValue()"></p-radioButton>
+                                    <label id="periode" for="periode" class="ml-2">Période</label>
+                                </div>&ndash;&gt;
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-12">
+                    <form (ngSubmit)="getRapport()">
+
+                        <div class="grid formgrid p-fluid">
+
+
+                            <div *ngIf="check==0" class="field mb-4 col-3">
+                                <label style="font-weight:bold;">Date de journée:</label>
+                                <p-calendar appendTo="body" [(ngModel)]="dateJournee"
+                                            name="dateJournee" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                                            [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                                ></p-calendar>
+                            </div>
+
+                            <div *ngIf="check==1" class="field mb-4 col-2">
+                                <label style="font-weight:bold;">Date de début:</label>
+                                <p-calendar appendTo="body" [(ngModel)]="dateDebut"
+                                            name="dateDebut" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                                            [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                                ></p-calendar>
+                            </div>
+
+                            <div *ngIf="check==1" class="field mb-4 col-2">
+                                <label style="font-weight:bold;">Date de fin:</label>
+                                <p-calendar appendTo="body" [(ngModel)]="dateFin"
+                                            name="dateDebut" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                                            [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                                ></p-calendar>
+                            </div>
+                            <div class="field mb-2 col-2">
+                                <button  type="submit"
+                                         style="margin-top: 25px" pButton  pRipple label="Charger"
+                                         icon="pi pi-plus-circle">
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <br>
+
+                <div class="flex align-items-center justify-content-between mb-3">
+                    <div class="flex">
+                        <button type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportExcel()"
+                                class="p-button-success mr-2" pTooltip="XLS" tooltipPosition="bottom"></button>
+                        <button type="button" pButton pRipple icon="pi pi-file-pdf" (click)="reportTojasper()"
+                                class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>
+                    </div>
+                    <div class="col-12 right-div">
+                        <span class="bold-text">Montant des Ventes  {{montantVente! | customNumber}}  FCFA</span><br><hr>
+                        <span class="bold-text">Montant Encaissé  {{montantEncaisse! | customNumber}}  FCFA</span><br><hr>
+                        <span class="bold-text">Montant des Dépenses {{montantDepense! | customNumber}}  FCFA</span><br><hr>
+                        <span class="bold-text">Reste {{reste! | customNumber}}  FCFA</span><br><hr>
+                    </div>
+                </div>
+            </p-tabPanel>
+            <p-tabPanel header="Etat">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card flex justify-content-between align-items-center">
+                            <div class="p-2 h-full w-full flex flex-column justify-content-between">
+                                <h5  style="color: cornflowerblue; text-align: center">Rapport d'activité</h5>
+                                <br> <br>
+                                &lt;!&ndash;<div style="text-align: center" >
+                                    <label class="required-input bold-label">Type de Filtre<span class="required-icon"></span></label>&nbsp; &nbsp; &nbsp; &nbsp;
+                                    <p-radioButton name="jour" value=0 [(ngModel)]="check" inputId="jour" (onClick)="checkValue()"></p-radioButton>
+                                    <label id="jour" for="jour" class="ml-2">Jour</label> &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;
+                                    <p-radioButton name="periode" value=1 [(ngModel)]="check" inputId="periode" (onClick)="checkValue()"></p-radioButton>
+                                    <label id="periode" for="periode" class="ml-2">Période</label>
+                                </div>&ndash;&gt;
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-12">
+                    <form (ngSubmit)="getRapport()">
+
+                        <div class="grid formgrid p-fluid">
+
+
+                            <div *ngIf="check==0" class="field mb-4 col-3">
+                                <label style="font-weight:bold;">Date de journée:</label>
+                                <p-calendar appendTo="body" [(ngModel)]="dateJournee"
+                                            name="dateJournee" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                                            [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                                ></p-calendar>
+                            </div>
+
+                            <div *ngIf="check==1" class="field mb-4 col-2">
+                                <label style="font-weight:bold;">Date de début:</label>
+                                <p-calendar appendTo="body" [(ngModel)]="dateDebut"
+                                            name="dateDebut" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                                            [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                                ></p-calendar>
+                            </div>
+
+                            <div *ngIf="check==1" class="field mb-4 col-2">
+                                <label style="font-weight:bold;">Date de fin:</label>
+                                <p-calendar appendTo="body" [(ngModel)]="dateFin"
+                                            name="dateDebut" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                                            [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                                ></p-calendar>
+                            </div>
+                            <div class="field mb-2 col-2">
+                                <button  type="submit"
+                                         style="margin-top: 25px" pButton  pRipple label="Charger"
+                                         icon="pi pi-plus-circle">
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <br>
+
+                <div class="flex align-items-center justify-content-between mb-3">
+                    <div class="flex">
+                        <button type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportExcel2()"
+                                class="p-button-success mr-2" pTooltip="XLS" tooltipPosition="bottom"></button>
+                        <button type="button" pButton pRipple icon="pi pi-file-pdf" (click)="reportTojasper2()"
+                                class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>
+                    </div>
+                    <div class="col-12 right-div">
+                        <span class="bold-text">Total Crédit  {{totalCredit! | customNumber}}  FCFA</span><br><hr>
+                        <span class="bold-text">Montant des Ventes  {{montantVente! | customNumber}}  FCFA</span><br><hr>
+                        <span class="bold-text">Montant Encaissé  {{montantEncaisse! | customNumber}}  FCFA</span><br><hr>
+                        <span class="bold-text">Etat {{etat! | customNumber}}  FCFA</span><br><hr>
+                    </div>
+                </div>
+            </p-tabPanel>
+        </p-tabView>
+    </div>
+</div>
+-->

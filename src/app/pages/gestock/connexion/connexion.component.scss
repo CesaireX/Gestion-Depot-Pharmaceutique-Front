@@ -1,0 +1,133 @@
+.float-right {
+    float: right !important;
+}
+
+.upload{
+    width: 100px;
+    position: relative;
+    margin: auto;
+}
+
+.upload img{
+    border-radius: 50%;
+    border: 6px solid #eaeaea;
+}
+
+.upload .round{
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin-bottom: -30px;
+    background: rgba(0, 21, 255, 0.42);
+    width: 102px;
+    height: 32px;
+    line-height: 33px;
+    text-align: center;
+    //border-radius: 10%;
+    overflow: hidden;
+}
+
+.upload .round input[type = "file"]{
+    position: absolute;
+    transform: scale(2);
+    opacity: 0;
+}
+
+input[type=file]::-webkit-file-upload-button{
+    cursor: pointer;
+}
+
+.login-body {
+    background: linear-gradient(180deg, #052a72 0%, #2a3a52 100%);
+    color: #c3ccdd;
+    height: 100vh;
+}
+
+.upload{
+    width: 100px;
+    position: relative;
+    margin: auto;
+}
+
+.login-body .login-wrapper {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    height: 100vh;
+}
+.login-body .login-wrapper .login-panel {
+    width: 30%;
+    height: 100%;
+    text-align: center;
+    padding: 40px 20px;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -ms-flex-direction: column;
+    flex-direction: column;
+}
+.login-body .login-wrapper .login-panel .logo img {
+    height: 45px;
+}
+.login-body .login-wrapper .login-panel .login-form > p {
+    font-weight: 600;
+    margin: 0;
+    color: #c3ccdd;
+    margin-bottom: 32px;
+}
+.login-body .login-wrapper .login-panel .login-form > p > a {
+    color: #f4f7f9;
+    cursor: pointer;
+}
+.login-body .login-wrapper .login-panel .login-form > input {
+    width: 85%;
+    max-width: 310px;
+    margin-bottom: 20px;
+    background-color: #F6F9FE;
+    color: #515C66;
+}
+.login-body .login-wrapper .login-panel .login-form > input::placeholder {
+    color: #515C66;
+}
+.login-body .login-wrapper .login-panel .login-form > button {
+    width: 85%;
+    max-width: 310px;
+}
+.login-body .login-wrapper .login-panel p {
+    font-weight: 600;
+    margin: 0;
+    color: #c3ccdd;
+}
+.login-body .login-wrapper .login-panel p > a {
+    color: #f4f7f9;
+}
+
+@media (max-width: 992px) {
+    .login-body .login-wrapper .login-panel {
+        width: 100%;
+    }
+}
+
+.texte-stylise {
+    font-family: 'Helvetica Now Display ExtraBold', sans-serif;
+    font-size: 1.3em;
+    letter-spacing: 0.1em;
+    line-height: 0.3em;
+    color: #052a72;
+    background-color: #FFFFFF;
+    padding: 0.3em;
+    justify-content: flex-start !important;
+}
+
+/* Media query pour ajuster le style sur les petits écrans */
+@media only screen and (max-width: 600px) {
+    .texte-stylise {
+        font-size: 1.5em; /* Ajuster la taille de la police pour les petits écrans */
+    }
+}

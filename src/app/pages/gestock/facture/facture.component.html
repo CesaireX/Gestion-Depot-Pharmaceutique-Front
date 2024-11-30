@@ -1,0 +1,473 @@
+<div class="container-fluid">
+    <h5 style="text-align: center" class="mark"
+        pTooltip="Il s'agit de la gestion des Factures de votre entreprise" tooltipPosition="top">Vos différentes
+        factures</h5>
+    <div class="p-2 h-full w-full flex flex-column justify-content-between">
+        <div class="flex align-items-center justify-content-between mb-3">
+            <div class="p-col-6">
+            </div>
+            <div class="flex align-items-center gap-2 ">
+                <button *ngIf="clientselected!=null" [disabled]="factures.length===0" (click)="onDisplayDialogGeneral()"
+                        pButton pRipple class="p-button-outlined w-full sm:w-auto flex-order-0 sm:flex-order-1"
+                        icon="pi pi-plus"
+                        label="Paiement général"></button>
+                <button *ngIf="droits.includes('AJOUTER_SORTIE_STOCK')" (click)="addsortie()" pButton pRipple
+                        class="p-button-outlined w-full sm:w-auto flex-order-0 sm:flex-order-1"
+                        icon="pi pi-plus"
+                        label="Nouvelle facture"></button>
+            </div>
+        </div>
+    </div>
+
+    <p-table *ngIf="sortiebool" [value]="sortiesList" dataKey="id">
+        <ng-template pTemplate="caption" styleClass="custom-background">
+            <div style="background-color: rgba(3,16,59,0.82);"
+                 class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                <h5 style="color: white" class="m-0">Détail de la facture sélectionnée FACTURE
+                    N°{{ selectedFacture.numero }}</h5>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+            <tr>
+                <th pSortableColumn="libelle">Date de sortie
+                    <p-sortIcon field="libelle"></p-sortIcon>
+                </th>
+                <th pSortableColumn="libelle">Désignation du produit
+                    <p-sortIcon field="libelle"></p-sortIcon>
+                </th>
+                <th pSortableColumn="libelle">Magasin de sortie
+                    <p-sortIcon field="libelle"></p-sortIcon>
+                </th>
+                <th pSortableColumn="libelle">Prix unitaire
+                    <p-sortIcon field="libelle"></p-sortIcon>
+                </th>
+                <th pSortableColumn="libelle">Taxe appliquée
+                    <p-sortIcon field="libelle"></p-sortIcon>
+                </th>
+                <th pSortableColumn="description">Quantité sortie
+                    <p-sortIcon field="description"></p-sortIcon>
+                </th>
+                <th pSortableColumn="description">Prix total
+                    <p-sortIcon field="description"></p-sortIcon>
+                </th>
+            </tr>
+        </ng-template>
+
+        <ng-template let-sortie pTemplate="body">
+            <tr>
+                <td style="width:10%; min-width:10rem;">{{ sortie.date_sortie | customDate }}</td>
+                <td style="width:30%; min-width:10rem;">{{ sortie.produitNom }}</td>
+                <td style="width:30%; min-width:10rem;">{{ sortie.magasinNom }}</td>
+                <td style="width:15%; min-width:10rem;">{{ sortie.produitPrix | customNumber}}
+                    FCFA
+                </td>
+                <td *ngIf="sortie.taxehauteur!=null" style="width:15%; min-width:10rem;">{{ sortie.taxehauteur }}%</td>
+                <td *ngIf="sortie.taxehauteur==null" style="width:15%; min-width:10rem;">---</td>
+                <td style="width:15%; min-width:10rem;">{{ sortie.quantite | customNumber}}</td>
+                <td style="width:15%; min-width:10rem;">{{ sortie.totalSortie |customNumber}}
+                    FCFA
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+    <br><br>
+    <div class="card">
+        <p-toast position="top-center"></p-toast>
+        <p-table #dt selectionMode="single" [(selection)]="selectedFacture" [value]="factures" [paginator]="true"
+                 [loading]="loading" [rows]="25"
+                 responsiveLayout="scroll" [rowHover]="true"
+                 [rowsPerPageOptions]="[25,50,100]"
+                 [globalFilterFields]="['createdDate', 'createdBy', 'numero', 'clientNom', 'clientPrenom', 'magasinNom']"
+                 dataKey="id">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <p-dropdown [options]="clients" (onChange)="getfacturesbyclients($event)"
+                                pTooltip="Selectionnez un client dont vous souhaitez liquider plusieurs factures"
+                                tooltipPosition="top"
+                                [(ngModel)]="clientselected" [showClear]="true" optionLabel="nom"
+                                appendTo="body" [filter]="true" [filterBy]="'nom'" [style]="{width: '200%'}"
+                                name="client" placeholder="Selectionner un client"
+                                [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                                [required]="true">
+                        <ng-template let-clients pTemplate="item">
+                            <div class="flex align-items-center clients-item">
+                                <div>{{ clients?.nom }} {{ clients?.prenom }}</div>
+
+                            </div>
+                        </ng-template>
+                        <ng-template let-item pTemplate="selectedItem">
+
+                            {{ item?.nom }} {{ item?.prenom }}
+
+                        </ng-template>
+                    </p-dropdown>
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher une facture" class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width: 3rem; border-right: none;"></th>
+                    <th style="min-width: 7rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Date de la facturation
+                        </div>
+                    </th>
+                    <th style="min-width: 8rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Etablie par
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Numéro de la facture
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Client
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Magasin de sortie
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Montant de la facture
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Reste à payer
+                        </div>
+                    <th style="border-left: none;">
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-facture let-expanded="expanded">
+                <tr [pSelectableRow]="facture" (click)="OnSelectFacture(facture)">
+                    <td style="border-right: none;">
+                        <button (click)="getRecuByFactureId(facture.id)" type="button" pButton pRipple
+                                pTooltip="Afficher les reçus" tooltipPosition="top"
+                                [pRowToggler]="facture" class="p-button-text p-button-rounded p-button-plain"
+                                [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'">
+                        </button>
+                    </td>
+                    <td>{{facture.createdDate | customDate}}</td>
+                    <td>{{facture.createdBy}}</td>
+                    <td>FACTURE N°{{facture.numero}}</td>
+                    <td>{{facture.clientNom}} {{facture.clientPrenom}}</td>
+                    <td>{{facture.magasinNom}}</td>
+                    <td>{{facture.montant_total | customNumber}} FCFA</td>
+                    <td *ngIf="facture.reste!==0" style="color: red">{{facture.reste | customNumber}} FCFA</td>
+                    <td *ngIf="facture.reste===0" style="color: green"> Facture Réglée</td>
+                    <td style="border-left: none;">
+                        <p-menu #menu appendTo="body" [popup]="true" [model]="menuitems"></p-menu>
+                        <div class="flex justify-content-end">
+                            <button (click)="selectedItem = facture" (click)="menu.toggle($event)" pButton pRipple
+                                    icon="pi pi-ellipsis-h" class="p-button-text p-button-rounded text-900"></button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="rowexpansion" let-facture>
+                <tr>
+                    <td colspan="10">
+                        <div class="p-3">
+                            <p-table [value]="facture.listRecus" dataKey="id">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="libelle">Numéro
+                                            <p-sortIcon field="libelle"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="libelle">Date de paiement
+                                            <p-sortIcon field="libelle"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="libelle">Établie par
+                                            <p-sortIcon field="libelle"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="libelle">Montant versé
+                                            <p-sortIcon field="libelle"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="libelle">Mode de paiement
+                                            <p-sortIcon field="libelle"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="libelle">Action
+                                            <p-sortIcon field="libelle"></p-sortIcon>
+                                        </th>
+                                    </tr>
+                                </ng-template>
+
+                                <ng-template let-recu pTemplate="body">
+                                    <tr>
+                                        <td style="width:25%; min-width:10rem;">REÇU N°{{recu.numero}}</td>
+                                        <td style="width:15%; min-width:5rem;">{{recu.createdDate}}</td>
+                                        <td style="width:25%; min-width:10rem;">{{recu.createdBy}}</td>
+                                        <td style="width:25%; min-width:10rem; color: #008074">{{recu.montant | customNumber}} FCFA</td>
+                                        <td style="width:25%; min-width:10rem;">{{recu.modePaiement}}</td>
+                                        <td style="width:35%; min-width:15rem;justify-content: center">
+                                            <button type="button" pButton pRipple icon="pi pi-eye"
+                                                    class="p-button-rounded p-button-success mr-2"
+                                                    (click)="reportrecu(recu.id)"></button>
+                                            <button type="button" pButton pRipple icon="pi pi-pencil"
+                                                    class="p-button-rounded p-button-warning mr-2"
+                                                    (click)="modifyRecu(recu, facture)"></button>
+                                            <button type="button" pButton pRipple icon="pi pi-trash"
+                                                    class="p-button-rounded p-button-danger mr-2"
+                                                    (click)="deleteRecu(recu)"></button>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="emptymessage">
+                                    <tr>
+                                        <td colspan="10">Aucun reçu disponible.</td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="10" style="text-align: center">Aucune Facture disponible.</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="10" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+        <p-dialog [(visible)]="display" [style]="{width: '50vw'}" header="Détail " [modal]="true" class="p-fluid">
+            <p-header>
+                <span class="font-weight-bold text-primary p-2">Mise à jour d'une facture</span>
+            </p-header>
+            <form (ngSubmit)="save(editForm)" name="editForm" role="form" novalidate #editForm="ngForm" class="p-mb-3"
+                  novalidate>
+
+                <div class="grid p-fluid mt-3">
+
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Numéro de la facture<span style="color: red">*</span></label>
+                        <input [disabled]="true" name="numero" type="text" pInputText [(ngModel)]="facture.numero"/>
+                    </div>
+
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Mouvement de la facture<span
+                            style="color: red">*</span></label>
+                        <input [disabled]="true" name="mouvement" type="text" pInputText
+                               [(ngModel)]="facture.mouvement"/>
+                    </div>
+
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Fournisseur<span style="color: red">*</span></label>
+                        <input [disabled]="true" name="fournisseur" type="text" pInputText
+                               [(ngModel)]="facture.fournisseurNom"/>
+                    </div>
+
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Magasin<span style="color: red">*</span></label>
+                        <input [disabled]="true" name="magasin" type="text" pInputText
+                               [(ngModel)]="facture.magasinNom"/>
+                    </div>
+
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Remise sur la facture</label>
+                        <input name="remise" type="number" pInputText [(ngModel)]="facture.remise"/>
+                    </div>
+                </div>
+
+                <div class="grid p-fluid mt-0">
+                    <div class="field col-12 md:col-6"></div>
+                    <div class="field col-12 md:col-3">
+                        <button pButton pRipple label="Annuler" (click)="annuler()" type="button"
+                                class="p-button-secondary p-mr-2 p-mb-2 font-weight-bold"
+                                icon="pi pi-fw pi-times">
+                        </button>
+                    </div>
+                    <div class="field col-12 md:col-3">
+                        <button pButton pRipple label="Enregistrer" icon="pi pi-fw pi-check"
+                                class="p-button-primary p-mr-2 p-mb-2 font-weight-bold"
+                                type="Submit" [disabled]="true">
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </p-dialog>
+
+        <p-dialog [(visible)]="activepaiementbool" [style]="{width: '50vw'}" header="Détail " [modal]="true"
+                  class="p-fluid">
+            <p-header *ngIf="!modifyrecu">
+                <span
+                    class="font-weight-bold text-primary p-2">Continuer le paiement de la facture du client {{ factureSelected.clientNom }} {{ factureSelected.clientPrenom }}</span>
+            </p-header>
+            <p-header *ngIf="modifyrecu">
+                <span class="font-weight-bold text-primary p-2">Modifier le reçu N° {{ recu.numero }}</span>
+            </p-header>
+            <form (ngSubmit)="saveRecu(recuform)" name="recuform" role="form" novalidate #recuform="ngForm"
+                  class="p-mb-3"
+                  novalidate>
+
+                <div class="grid p-fluid mt-3">
+
+                    <div class="field col-12 md:col-12">
+                        <label class="font-medium text-900">Mode de paiement <span style="color: red">*</span></label>
+                        <p-dropdown
+                            [options]="mode_paiements" [(ngModel)]="recu.modePaiement"
+                            [showClear]="true" appendTo="body" [filter]="true" [filterBy]="'label'"
+                            [style]="{width: '100%'}"
+                            name="mode_paiement"
+                            [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                            [required]="true">
+                        </p-dropdown>
+                    </div>
+                    <div class="field col-12 md:col-12" *ngIf="recu.modePaiement == 'CHEQUE'">
+                        <label class="font-medium text-900">Numéro chèque</label>
+                        <input [(ngModel)]="recu.numeroCheque" appendTo="body"  name="numeroCheque" type="text" pInputText/>
+
+
+                    </div>
+
+                    <div class="field col-12 md:col-12">
+                        <label class="font-medium text-900">Montant versé <span style="color: red">*</span></label>
+                        <!--<input type="number" pInputText name="montant_versé"
+                               [(ngModel)]="recu.montant" [required]="true"/>-->
+                        <p-inputNumber type="number" id="montant" name="montant" pInputNumber
+                                       locale="de-DE" [minFractionDigits]="0" [(ngModel)]="recu.montant" [style]="{'width': '100%'}" [min]="1">
+                        </p-inputNumber>
+                        <span *ngIf=" modifyrecu && recu.montant >factureSelected.reste + montant_a_rajouter"
+                              style="color: red">le montant versé ne peut pas exceder le montant total</span>
+                        <span *ngIf=" !modifyrecu && recu.montant >factureSelected.reste" style="color: red">le montant versé ne peut pas exceder le montant total</span>
+                        <span *ngIf=" recu.montant===0"
+                              style="color: red">le montant versé doit forcément etre supérieur à 0</span>
+                    </div>
+
+                    <div class="field col-12 md:col-12">
+                        <label *ngIf="!modifyrecu" style="font-weight:bold;">Reste à payer<span
+                            style="color: red">*</span></label>
+                        <label *ngIf="modifyrecu" style="font-weight:bold;">Total à payer en considérant que le paiement
+                            ci dessus ne compte pas<span style="color: red">*</span></label>
+                        <!--<input *ngIf="!modifyrecu" [disabled]="true" name="magasin" type="text" pInputText
+                               [value]="factureSelected.reste"/>-->
+                        <p-inputNumber *ngIf="!modifyrecu" [disabled]="true" type="number" id="reste" name="reste" pInputNumber
+                                       locale="de-DE" [minFractionDigits]="0" [(ngModel)]="factureSelected.reste" [style]="{'width': '100%'}" [min]="0">
+                        </p-inputNumber>
+
+                        <!--<input *ngIf="modifyrecu" [disabled]="true" name="magasin" type="text" pInputText
+                               [value]="factureSelected.reste + montant_a_rajouter"/> -->
+
+                        <p-inputNumber *ngIf="modifyrecu" [disabled]="true" type="number" id="reste2" name="reste2" pInputNumber
+                                       locale="de-DE" [minFractionDigits]="0" [(ngModel)]="factureSelected.reste + montant_a_rajouter" [style]="{'width': '100%'}" [min]="0">
+                        </p-inputNumber>
+                    </div>
+
+                </div>
+
+                <div class="grid p-fluid mt-0">
+                    <div class="field col-12 md:col-6"></div>
+                    <div class="field col-12 md:col-3">
+                        <button pButton pRipple label="Annuler" (click)="annuler()" type="button"
+                                class="p-button-secondary p-mr-2 p-mb-2 font-weight-bold"
+                                icon="pi pi-fw pi-times">
+                        </button>
+                    </div>
+                    <div *ngIf="!modifyrecu" class="field col-12 md:col-3">
+                        <button pButton pRipple label="Enregistrer" icon="pi pi-fw pi-check"
+                                class="p-button-primary p-mr-2 p-mb-2 font-weight-bold"
+                                type="Submit"
+                                [disabled]="recuform.invalid || recu.montant > factureSelected.reste">
+                        </button>
+                    </div>
+                    <div *ngIf="modifyrecu" class="field col-12 md:col-3">
+                        <button pButton pRipple label="Enregistrer" icon="pi pi-fw pi-check"
+                                class="p-button-primary p-mr-2 p-mb-2 font-weight-bold"
+                                type="Submit"
+                                [disabled]="recuform.invalid || recu.montant > factureSelected.reste + montant_a_rajouter">
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </p-dialog>
+
+        <p-dialog [(visible)]="displayPaiementG" [style]="{width: '50vw'}" header="Détail " [modal]="true"
+                  class="p-fluid">
+            <p-header>
+                <span class="font-weight-bold text-primary p-2">Paiement général de {{ total_factures }} facture(s) impayée(s) du client {{ clientselected?.nom }} {{ clientselected?.prenom }}</span>
+            </p-header>
+            <form (ngSubmit)="saveManyRecus()" name="manyrecuform" role="form" #manyrecuform="ngForm" class="p-mb-3"
+                  novalidate>
+
+                <div class="grid p-fluid mt-3">
+
+                    <div class="field col-12 md:col-12">
+                        <label class="font-medium text-900">Mode de paiement <span style="color: red">*</span></label>
+                        <p-dropdown
+                            [options]="mode_paiements" [(ngModel)]="recu.modePaiement"
+                            [showClear]="true" appendTo="body" [filter]="true" [filterBy]="'label'"
+                            [style]="{width: '100%'}"
+                            name="mode_paiement_total"
+                            [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                            [required]="true">
+                        </p-dropdown>
+                    </div>
+                    <div class="field col-12 md:col-12" *ngIf="recu.modePaiement == 'CHEQUE'">
+                        <label class="font-medium text-900">Numéro chèque</label>
+                        <input [(ngModel)]="recu.numeroCheque" appendTo="body"  name="numeroCheque" type="text" pInputText/>
+
+
+                    </div>
+                    <div class="field col-12 md:col-12">
+                        <label class="font-medium text-900">Montant versé <span style="color: red">*</span></label>
+                        <!-- <input type="number" pInputText name="montant_versé_total"
+                               [(ngModel)]="recu.montant" [max]="total_a_payer" [required]="true"/> -->
+                        <p-inputNumber type="number" id="montant_versé_total" name="montant_versé_total" pInputNumber [required]="true"
+                                       locale="de-DE" [minFractionDigits]="0" [(ngModel)]="recu.montant" [style]="{'width': '100%'}" [max]="total_a_payer">
+                        </p-inputNumber>
+                    </div>
+
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Reste à payer<span style="color: red">*</span></label>
+                        <input [disabled]="true" name="magasin" type="text" pInputText [value]="total_a_payer"/>
+                    </div>
+
+                </div>
+
+                <div class="grid p-fluid mt-0">
+                    <div class="field col-12 md:col-6"></div>
+                    <div class="field col-12 md:col-3">
+                        <button pButton pRipple label="Annuler" (click)="annuler()" type="button"
+                                class="p-button-secondary p-mr-2 p-mb-2 font-weight-bold"
+                                icon="pi pi-fw pi-times">
+                        </button>
+                    </div>
+                    <div class="field col-12 md:col-3">
+                        <button pButton pRipple label="Enregistrer" icon="pi pi-fw pi-check"
+                                class="p-button-primary p-mr-2 p-mb-2 font-weight-bold"
+                                type="Submit" [disabled]="manyrecuform.invalid ">
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </p-dialog>
+        <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle">
+            <p-footer>
+                <button (click)="cd.reject()" class="p-button-secondary" icon="pi pi-times" label="NON"
+                        pButton type="button"></button>
+                <button (click)="cd.accept()" class="p-button-danger" icon="pi pi-check" label="OUI"
+                        pButton type="button"></button>
+            </p-footer>
+        </p-confirmDialog>
+
+    </div>
+
+</div>
+
+

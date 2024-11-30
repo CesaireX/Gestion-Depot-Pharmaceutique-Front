@@ -1,0 +1,112 @@
+ <div style="display: flex">
+    <div class="card primary" style="height: 100%;">
+        <p-toast position="top-center"></p-toast>
+        <div class="spinner-overlay" *ngIf="chrgmt">
+            <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
+        </div>
+        <div class="header55">
+        <h1>Taxes</h1>
+        <div class="header-actions">
+            <button *ngIf="droits.includes('VOIR_TAXE_AJOUTER')" class="p-button-primary small-button" (click)="add(null)"
+            ><i class="pi pi-plus"></i>Nouveau</button>
+
+            <p-menu #menu appendTo="body" [popup]="true" [model]="items!"></p-menu>
+            <div class="flex justify-content-end">
+                <button (click)="menu.toggle($event)" pButton pRipple
+                        icon="pi pi-ellipsis-h" class="p-button-text p-button-rounded text-900"></button>
+            </div>
+
+        </div>
+    </div>
+        <p-table #dt [value]="taxes" [paginator]="true" [loading]="loading" [rows]="25"
+                 responsiveLayout="scroll" [rowHover]="true"
+                 [rowsPerPageOptions]="[25,50,100]"
+                 [globalFilterFields]="['libelle']">
+            <ng-template pTemplate="caption">
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Libellé
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Valeur
+                        </div>
+                    </th>
+                    <th style="border-left: none; background-color: rgb(236,236,236)">
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-taxe>
+                <tr>
+                    <td>{{ taxe.libelle }}</td>
+                    <td>{{ taxe.hauteur }} %</td>
+                    <td style="border-left: none;">
+
+                        <button *ngIf="droits.includes('VOIR_TAXE_MODIFIER')" (click)="add(taxe)"
+                                 class="p-button-primary small-button mr-2"
+                                 icon="pi pi-pencil" pTooltip="Modifier"
+                                 pButton
+                                 type="button"></button>
+
+                        <button *ngIf="droits.includes('VOIR_TAXE_SUPPRIMER')"  (click)="deleteElement(taxe)"
+                                 class="p-button-danger small-button"
+                                 icon="pi pi-trash" pTooltip="Supprimer"
+                                 pButton
+                                 type="button"></button>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucune taxe disponible.</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+        <p-dialog position="top" header="Créer une taxe" [modal]="true" [(visible)]="display" [style]="{ width: '35rem' }">
+            <form (ngSubmit)="save(editForm)" name="editForm" role="form" novalidate #editForm="ngForm" class="p-mb-3">
+                <div class="grid p-fluid mt-3">
+
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Libellé de la taxe</label>
+                        <input name="libelle" type="string" pInputText [(ngModel)]="taxe.libelle"/>
+                    </div>
+
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Taxe(En %)<span style="color: red">*</span></label>
+                        <input name="hauteur" type="number" pInputText [(ngModel)]="taxe.hauteur" required/>
+                    </div>
+                </div>
+
+                <div class="flex justify-content-end gap-2">
+                    <button type="button" (click)="annuler()" class="btn btn-secondary">
+                        Annuler
+                    </button>
+                    <button type="Submit" [disabled]="editForm.invalid" class="btn btn-primary">
+                        <i *ngIf="loading && display" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                        <span *ngIf="display">Enregistrer</span>
+                        <span *ngIf="loading && display">Enregistrement...</span>
+                    </button>
+                </div>
+            </form>
+        </p-dialog>
+    </div>
+</div>
+ <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                  position="top" >
+     <p-footer style="display: flex;">
+         <button class="btnannulate" (click)="cd.reject()"
+         ><i class="pi pi-close"></i>Annuler</button>
+         <button class="btnvalidate" (click)="cd.accept()"
+         ><i class="pi pi-confirm"></i>Confirmer</button>
+     </p-footer>
+ </p-confirmDialog>

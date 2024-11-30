@@ -1,0 +1,83 @@
+
+<div class="login-body">
+    <div class="login-wrapper">
+        <p-toast position="top-center"></p-toast>
+        <div *ngIf="mdpOublie==false" style="background-color: white; height: 550px "  class="login-panel">
+            <form *ngIf="!manySocieties" (ngSubmit)="connexion(editForm)" name="editForm" role="form" novalidate #editForm="ngForm"
+                  novalidate>
+                <img src="assets/layout/images/gstock.png" alt="poseidon-layout" width="40%" />
+                <br><br><br>
+                <div class="texte-stylise">Plateforme de gestion de stock</div>
+                <br><br><br>
+                <div class="flex flex-column gap-3 mt-6" style="margin-top: -250px">
+                    <div *ngIf="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</div>
+                    <div class="p-inputgroup">
+                        <span class="p-inputgroup-addon"><i class="pi pi-user"></i></span>
+                        <input name="username" [disabled]="loading"  placeholder="Nom d'utilisateur" type="text" pInputText  [(ngModel)]="authEntity.username" [required]="true">
+                    </div>
+                    <div class="p-inputgroup">
+                        <span class="p-inputgroup-addon"><i class="pi pi-key"></i></span>
+                        <!--                    <input  name="password" placeholder="Mot de passe" type="password" pInputText [(ngModel)]="authEntity.password" [required]="true"/>-->
+                        <p-password name="password"
+                                    class="w-full"
+                                    [feedback]="false"
+                                    placeholder="Mot de passe"
+                                    [(ngModel)]="authEntity.password"
+                                    styleClass="p-password p-component p-inputwrapper p-input-icon-right"
+                                    [style]="{'width':'100%'}"
+                                    [inputStyle]="{'width':'100%'}"
+                                    [toggleMask]="true" [disabled]="loading"
+                        ></p-password>
+                    </div>
+                    <p-progressSpinner *ngIf="loading" styleClass="w-2rem h-2rem" strokeWidth="4" fill="var(--surface-ground)"></p-progressSpinner>
+                    <div>
+                        <button pButton pRipple class="w-full"  [disabled]="editForm.invalid || loading" label="SE CONNECTER" type="Submit"></button>
+                    </div>
+                    <div>
+                        <button [disabled]="loading" pButton pRipple class="w-full p-button-text text-primary-500" label="Mot de passe oublié?" (click)="PasswordForgot()"></button>
+                    </div>
+                </div>
+            </form>
+            <div *ngIf="manySocieties" class="flex flex-column gap-3 mt-6">
+                <div class="p-inputgroup">
+                    <div style="margin-top: 40px; margin-left: 30px" class="upload" *ngFor="let society of societies">
+                        <img (click)="selecteSociety(society)" width = 100 height = 100 alt="" *ngIf="society.logo" src="data:image/PNG; base64,{{society.logo}}">
+                        <img (click)="selecteSociety(society)" *ngIf="!society.logo" src="assets/layout/images/gstock.png" width = 100 height = 100 alt="">
+                        <div class="round">
+                            <p style="color: white">{{society.nom}}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="mdpOublie==true" style="background-color: white; height: 550px "  class="login-panel">
+            <form name="editForm" role="form" novalidate #editForm="ngForm"
+                  novalidate>
+                <img src="assets/layout/images/gstock.png" alt="poseidon-layout" width="40%" />
+                <br><br><br>
+                <div style="font-family:'Helvetica Now Display ExtraBold', sans-serif;font-size:0.3em;letter-spacing:0.1em;line-height:0.3em;color:#052a72;background-color:#FFFFFF;padding:0.1em;
+                        justify-content: flex-start !important;">Plateforme de gestion de stock</div>
+                <br><br>
+                <span class="block text-700 mt-2" style="font-size: 20px">Changement de mot de passe</span>
+                <br><br><br>
+                <div class="flex flex-column gap-3 mt-6">
+                    <div class="p-inputgroup">
+                        <span class="p-inputgroup-addon"><i class="pi pi-send"></i></span>
+                        <input name="email" [disabled]="loading" placeholder="Adresse email de récuperation" type="email" pInputText [(ngModel)]="email" [required]="true" />
+                    </div>
+                    <p-progressSpinner *ngIf="loading" styleClass="w-2rem h-2rem" strokeWidth="4" fill="var(--surface-ground)"></p-progressSpinner>
+                    <div>
+                        <button pButton pRipple class="w-full"  [disabled]="editForm.invalid || loading" (click)="sendVerifyEmail()" label="Envoyer Email" type="Submit"></button>
+                    </div>
+
+                    <div>
+                        <button [disabled]="loading" pButton pRipple class="w-full p-button-text text-primary-500" label="SE CONNECTER" (click)="PasswordForgot2()"></button>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<app-config [minimal]="true"></app-config>

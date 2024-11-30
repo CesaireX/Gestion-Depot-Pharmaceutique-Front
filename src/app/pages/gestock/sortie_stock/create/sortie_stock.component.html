@@ -1,0 +1,435 @@
+<!--
+<div *ngIf="steps!=undefined" class="card">
+        <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                         position="top" >
+            <p-footer style="display: flex;">
+                <button class="btnannulate" (click)="cd.reject()"
+                ><i class="pi pi-close"></i>Annuler</button>
+                <button class="btnvalidate" (click)="cd.accept()"
+                ><i class="pi pi-confirm"></i>Confirmer</button>
+            </p-footer>
+        </p-confirmDialog>
+    <p-toast position="top-center"></p-toast>
+
+
+    <p-tabView styleClass="tabview-custom">
+        <p-tabPanel>
+            <ng-template pTemplate="header">
+                <i class="pi pi-calendar"></i>
+                <span>FACTURE</span>
+            </ng-template>
+
+            <div class="grid">
+                <div class="col-12 lg:col-12">
+                    <h6 style="color: cornflowerblue; text-align: center">MAGASIN ET CLIENT</h6><br>
+                    <form name="sortieform" role="form" novalidate #sortieform="ngForm"
+                          class="p-mb-3">
+                        <div class="grid formgrid p-fluid" style="justify-content: center">
+                        <div class="field mb-4 col-3">
+                            <label style="font-weight:bold;font-size:20px">Initialiser le numéro à partir de: </label></div>
+                        <div class="field mb-4 col-2">
+                            <input type="number" pInputText
+                                   [(ngModel)]="initialise" name="initialize"/>
+                        </div>
+                        </div>
+
+                        <br>
+
+                        <div class="grid formgrid p-fluid" style="justify-content: center">
+
+                            &lt;!&ndash;     <div *ngIf="facture && clientselected" class="field mb-4 col-3">
+                                     <label style="font-weight:bold;">Le numéro de la facture <span
+                                         style="color: red">*</span></label>
+                                     <input [disabled]="true" type="text" pInputText name="codefacture"
+                                            [(ngModel)]="facture.numero" [required]="true"/>
+                                 </div>&ndash;&gt;
+                            <div class="field mb-4 col-3">
+                                <label style="font-weight:bold;">Selectionnez la date de sortie <span
+                                    style="color: red">*</span></label>
+                                <p-calendar appendTo="body" [(ngModel)]="currentdate"
+                                            name="datesortie" dateFormat="dd/mm/yy"
+                                            [showIcon]="true" [ngModelOptions]="{ standalone: true }" [maxDate]="currentdate"
+                                            [required]="true"></p-calendar>
+                            </div>
+
+                            <div class="field mb-4 col-3">
+                                <label class="font-medium text-900">Selectionner le Magasin de livraison <span
+                                    style="color: red">*</span></label>
+                                <p-dropdown [options]="magasins" [(ngModel)]="magasinlivraisonselected"
+                                            [showClear]="true" optionLabel="nom"
+                                            appendTo="body" [filter]="true" [filterBy]="'nom'" [style]="{width: '100%'}"
+                                            name="magasin"
+                                            [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                                            [required]="true">
+                                </p-dropdown>
+                            </div>
+
+                            <div class="field mb-4 col-3" *ngIf="check ==0">
+                                <label class="font-medium text-900">Selectionner le client du produit<span
+                                    style="color: red">*</span></label>
+                                <p-dropdown [options]="clients" (onChange)="Clearcontent($event)"
+                                            [(ngModel)]="clientselected" [showClear]="true" optionLabel="nom"
+                                            appendTo="body" [filter]="true" [filterBy]="'nom'" [style]="{width: '100%'}"
+                                            name="client"
+                                            [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                                            [required]="true">
+                                    <ng-template let-clients pTemplate="item">
+                                        <div class="flex align-items-center clients-item">
+                                            <div>{{clients?.nom}} {{clients?.prenom}}</div>
+
+                                        </div>
+                                    </ng-template>
+                                    <ng-template let-item pTemplate="selectedItem">
+
+                                        {{item?.nom}} {{item?.prenom}}
+
+                                    </ng-template>
+                                </p-dropdown>
+                            </div>
+                        </div>
+                        <br>
+
+                        <div>
+                            <h6 style="color: cornflowerblue; text-align: center">PRODUITS</h6>
+                            <br>
+                        </div>
+
+                        <p-table *ngIf="produitselected" styleClass="p-datatable-gridlines" [value]="list_of_product"
+                                 [showCurrentPageReport]="true">
+                            <ng-template pTemplate="caption" styleClass="custom-background">
+                                <div style="background-color: rgba(3,16,59,0.82);"
+                                     class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                    <h5 style="color: white" class="m-0">Détail du produit sélectionné</h5>
+                                </div>
+                            </ng-template>
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th style="min-width: 10rem">
+                                        <div class="flex justify-content-between align-items-center">
+                                            Réference
+                                         </div>
+                                    </th>
+                                    <th style="min-width: 10rem">
+                                        <div class="flex justify-content-between align-items-center">
+                                            Catégorie
+                                        </div>
+                                    </th>
+                                    <th style="min-width: 10rem">
+                                        <div class="flex justify-content-between align-items-center">
+                                            Désignation
+                                        </div>
+                                    </th>
+                                    <th style="min-width: 10rem">
+                                        <div class="flex justify-content-between align-items-center">
+                                            Seuil d'alerte
+                                        </div>
+                                    </th>
+                                    <th style="min-width: 10rem">
+                                        <div class="flex justify-content-between align-items-center">
+                                            Unité de mesure
+                                        </div>
+                                    </th>
+                                    <th style="min-width: 10rem">
+                                        <div class="flex justify-content-between align-items-center">
+                                            Prix unitaire TTC
+                                        </div>
+                                    </th>
+                                    <th style="min-width: 10rem">
+                                        <div class="flex justify-content-between align-items-center">
+                                            Stock actuel
+                                        </div>
+                                    </th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-produit>
+                                <tr>
+                                    <td>{{produit.reference}}</td>
+                                    <td>{{produit.categorieLibelle}}</td>
+                                    <td>{{produit.nom}}</td>
+                                    <td>{{produit.seuil | customNumber}}</td>
+                                    <td>{{produit.uniteMesureLibelle}}</td>
+                                    <td>{{produit.prixventettc | customNumber}}</td>
+                                    <td *ngIf="magasinTotalProduit<0" style="color: red">{{magasinTotalProduit}}(Rupture de stock!)</td>
+                                    <td *ngIf="magasinTotalProduit<produit.seuil" style="color: red">{{magasinTotalProduit | customNumber}}</td>
+                                    <td *ngIf="magasinTotalProduit>produit.seuil" style="color: green">{{magasinTotalProduit | customNumber}}</td>
+                                    <td *ngIf="magasinTotalProduit==produit.seuil" style="color: #03177a">{{magasinTotalProduit | customNumber}}(Songez à approvisioner!)</td>
+
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="emptymessage">
+                                <tr>
+                                    <td colspan="7" style="text-align: center">Aucun produit séléctionné</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                        <br><br>
+
+                        <div style="justify-content: center" class="grid formgrid p-fluid">
+                            <div  *ngIf="check ==0" class="field mb-4 col-2">
+                                <label class="font-medium text-900">Magasin de sortie <span
+                                    style="color: red">*</span></label>
+                                <p-dropdown [disabled]="magasinlivraisonselected==null || clientselected==null"
+                                            [options]="magasins" (onChange)="OnchangeMagasin($event)" [(ngModel)]="magasinselected"
+                                            [showClear]="true" optionLabel="nom"
+                                            appendTo="body" [filter]="true" [filterBy]="'nom'" [style]="{width: '100%'}"
+                                            name="magasinsortie"
+                                            [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                                            [required]="true">
+                                </p-dropdown>
+                            </div>
+                            <div *ngIf="check== 0" class="field mb-4 col-2" >
+                                <label class="font-medium text-900">Produit <span style="color: red">*</span></label>
+                                <p-dropdown [disabled]="magasinselected==null || clientselected==null"
+                                            (onChange)="SelectProduct()" [options]="produits" [(ngModel)]="produitselected"
+                                            [showClear]="true" optionLabel="nom"
+                                            appendTo="body" [filter]="true" [filterBy]="'nom'" [style]="{width: '100%'}"
+                                            name="produit"
+                                            [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                                            [required]="true">
+                                </p-dropdown>
+                            </div>
+
+
+                            &lt;!&ndash;            <div class="field mb-4 col-2" *ngIf="magasinSelected">
+                                            <label class="font-medium text-900">Produit <span style="color: red">*</span></label>
+                                        <p-dropdown [disabled]="magasinselected==null || magasinSelected==null"
+                                                    [options]="produits" [(ngModel)]="produitselected"
+                                                    [showClear]="true" optionLabel="nom"
+                                                    appendTo="body" [filter]="true" [filterBy]="'nom'" [style]="{width: '100%'}"
+                                                    name="produit"
+                                                    [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                                                    [required]="true">
+                                        </p-dropdown>
+                                        </div>&ndash;&gt;
+
+                            <div class="field md-4 col-1">
+                                <label style="font-weight:bold;">Taxe(en %)</label>
+                                <p-dropdown [disabled]="magasinselected==null || clientselected==null || produitselected==null" id="taxe" [options]="taxes" [(ngModel)]="selectedTaxe"
+                                            optionLabel="hauteur" name="taxe" [filter]="true" (onChange)="actualiseTotal()"
+                                            placeholder="Appliquer une taxe" [showClear]="true"
+                                            [resetFilterOnHide]='true'
+                                            [style]="{'width':'100%'}">
+                                </p-dropdown>
+                            </div>
+
+                            <div *ngIf="sortie_stock && check== 0" class="field mb-4 col-2">
+                                <label class="font-medium text-900">Prix du produit <span style="color: red">*</span></label>
+                                <p-inputNumber [disabled]="!produitselected" type="text" pInputNumber
+                                       (onInput)="actualiseTotal1($event)" name="prix" [min]="0" [showButtons]="true" locale="de-DE" [minFractionDigits]="0"
+                                               [(ngModel)]="sortie_stock.produitPrix" [required]="true"></p-inputNumber>
+                            </div>
+                            &lt;!&ndash;   <div *ngIf="sortie_stock && magasinSelected" class="field mb-4 col-2">
+                                   <label class="font-medium text-900">Prix du produit <span style="color: red">*</span></label>
+                                   <input [disabled]="magasinselected==null || magasinSelected==null" type="text" pInputText
+                                           name="prix"
+                                          [(ngModel)]="sortie_stock.produitPrix" [required]="true"/>
+                               </div>&ndash;&gt;
+
+                            <div *ngIf="sortie_stock" class="field mb-4 col-1">
+                                <label class="font-medium text-900">Quantité <span style="color: red">*</span></label>
+                                <p-inputNumber [disabled]="!produitselected" type="text" pInputNumber
+                                       (onInput)="actualiseTotal2($event)" name="quantité"  locale="de-DE" [minFractionDigits]="0"
+                                       [(ngModel)]="sortie_stock.quantite" [required]="true" [min]="0" [showButtons]="true"></p-inputNumber>
+                            </div>
+
+                            <div *ngIf="sortie_stock && produitselected && clientselected" class="field mb-4 col-2">
+                                <label class="font-medium text-900">Prix total</label>
+                              &lt;!&ndash;  <input disabled type="text" pInputText name="total" style="width: 100px"
+                                       [(ngModel)]="total"/>&ndash;&gt;
+                                <p-inputNumber [disabled]="true" type="number" id="total" name="total" pInputNumber
+                                               locale="de-DE" [minFractionDigits]="0" [(ngModel)]="total" [style]="{'width': '100%'}" >
+                                </p-inputNumber>
+                            </div>
+
+                            <div class="field mb-4 col-1">
+                                <button *ngIf="droits.includes('AJOUTER_SORTIE_STOCK')" (click)="addsortie()" type="button"
+                                        style="margin-top: 25px" pButton [disabled]="total<=0 || sortieform.invalid" pRipple label="Ajouter"
+                                        icon="pi pi-plus-circle">
+                                </button>
+                            </div>
+                            <div class="field mb-4 col-1">
+                                <button pButton pRipple label="Vider" type="button"
+                                        class="p-button-secondary p-mr-2 p-mb-2 font-weight-bold" style="margin-top: 25px"
+                                        icon="pi pi-fw pi-times" (click)="Clearproductinformation()"
+                                        [disabled]="magasinTotalProduit<=0 ||sortieform.invalid">
+                                </button>
+                            </div>
+                        </div>
+
+                        <p-table #dt [value]="list_sorties_stock" styleClass="p-datatable-gridlines" [columns]="cols"
+                                 responsiveLayout="scroll"
+                                 [rows]="25" [globalFilterFields]="['produitNom', 'produitPrix', 'date_sortie', 'magasinNom']" [rows]="25" [paginator]="true"
+                                 [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true"
+                                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                                 [rowHover]="true"
+                                 dataKey="id">
+
+                            <ng-template pTemplate="caption">
+                                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                    <h5 class="m-0">Liste des sorties de stock</h5>
+                                    <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="rechercher une sortie..."
+                                   class="w-full sm:w-auto"/>
+                        </span>
+                                </div>
+                            </ng-template>
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th style="width: 3em">
+                                        <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                                    </th>
+                                    <th pSortableColumn="libelle">Date de sortie
+                                        <p-sortIcon field="libelle"></p-sortIcon>
+                                    </th>
+                                    <th pSortableColumn="libelle">Désignation du produit
+                                        <p-sortIcon field="libelle"></p-sortIcon>
+                                    </th>
+                                    <th pSortableColumn="libelle">Magasin de sortie
+                                        <p-sortIcon field="libelle"></p-sortIcon>
+                                    </th>
+                                    <th pSortableColumn="libelle">Prix unitaire
+                                        <p-sortIcon field="libelle"></p-sortIcon>
+                                    </th>
+                                    <th pSortableColumn="taxe">Taxe
+                                        <p-sortIcon field="taxe"></p-sortIcon>
+                                    </th>
+                                    <th pSortableColumn="description">Quantité sortie
+                                        <p-sortIcon field="description"></p-sortIcon>
+                                    </th>
+                                    <th pSortableColumn="description" *ngIf="clientselected">Prix total
+                                        <p-sortIcon field="description"></p-sortIcon>
+                                    </th>
+                                    <th style="border-left: none"></th>
+                                </tr>
+                            </ng-template>
+
+                            <ng-template let-sortie_stock pTemplate="body">
+                                <tr>
+                                    <td>
+                                        <p-tableCheckbox [value]="sortie_stock"></p-tableCheckbox>
+                                    </td>
+                                    <td style="width:10%; min-width:10rem;">{{sortie_stock.date_sortie | customDate}}</td>
+                                    <td style="width:30%; min-width:10rem;">{{sortie_stock.produitNom}}</td>
+                                    <td style="width:30%; min-width:10rem;">{{sortie_stock.magasinNom}}</td>
+                                    <td style="width:15%; min-width:10rem;">{{sortie_stock.produitPrix | customNumber}} FCFA</td>
+                                    <td *ngIf="sortie_stock.taxehauteur!=null" style="width:15%; min-width:10rem;">{{sortie_stock.taxehauteur}}%</td>
+                                    <td *ngIf="sortie_stock.taxehauteur==null" style="width:15%; min-width:10rem;">-&#45;&#45;</td>
+                                    <td style="width:15%; min-width:10rem;">{{sortie_stock.quantite | customNumber}}</td>
+                                    <td style="width:15%; min-width:10rem;">{{sortie_stock.totalSortie | customNumber}} FCFA</td>
+                                    <td style="width:15%; min-width:10rem; border-left: none">
+                                        <button *ngIf="droits.includes('MODIFIER_SORTIE_STOCK')" type="button" pButton pRipple icon="pi pi-pencil"
+                                                class="p-button-rounded p-button-success mr-2"
+                                                (click)="UpdateSortiecontent(sortie_stock)"></button>
+                                        <button *ngIf="droits.includes('SUPPRIMER_SORTIE_STOCK')" type="button" pButton pRipple icon="pi pi-trash"
+                                                class="p-button-rounded p-button-warning"
+                                                (click)="DeleteSortie(sortie_stock)"></button>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+
+                        <div class="grid p-fluid mt-0">
+                            <div class="field col-12 md:col-8"></div>
+                            <div class="field col-12 md:col-2">
+                                <button pButton pRipple label="Vider le contenu" (click)="Clearcontenu()" type="button"
+                                        class="p-button-secondary p-mr-2 p-mb-2 font-weight-bold"
+                                        icon="pi pi-fw pi-times" [disabled]="list_sorties_stock.length<1">
+                                </button>
+                            </div>
+                            <div class="field col-12 md:col-2">
+                                <button pButton pRipple label="Enregistrer" icon="pi pi-fw pi-check"
+                                        class="p-button-primary p-mr-2 p-mb-2 font-weight-bold"
+                                        type="Submit" (click)="saveSorties()" [disabled]="list_sorties_stock.length<1">
+                                </button>
+                            </div>
+                        </div>
+                        <p-dialog [(visible)]="displayFacture" [style]="{width: '40vw'}"  [modal]="true" class="p-fluid">
+                            <div class="grid p-fluid">
+                                <div class="field col-12 md:col-6"></div>
+                                <div class="field col-12 text-center p-d-flex"> &lt;!&ndash; Ajoutez la classe text-center et p-d-flex ici &ndash;&gt;
+                                    <button pButton pRipple label="Facture avec entête" (click)="saveAvecEntete()" type="button"
+                                            class="p-button-success p-mx-2 p-mb-2 font-weight-bold"
+                                            icon="pi pi-fw pi-eye">
+                                    </button><br><br>
+                                    <button pButton pRipple label="Facture sans entête" (click)="saveSansEntete()" type="button"
+                                            class="p-button-warning p-mx-2 p-mb-2 font-weight-bold"
+                                            icon="pi pi-fw pi-times">
+                                    </button>
+                                </div>
+                            </div>
+                        </p-dialog>
+                    </form>
+
+
+                </div>
+            </div>
+        </p-tabPanel>
+
+        <p-tabPanel [disabled]="list_sorties_stock.length<1" header="Header II">
+
+
+            <ng-template pTemplate="header">
+                <i class="pi pi-calendar"></i>
+                <span>PAIEMENT</span>
+            </ng-template>
+
+            <div class="grid ">
+                <div class="col-12 lg:col-12">
+                    <h6 style="color: cornflowerblue; text-align: center">PAIEMENT</h6><br>
+                    <div style="justify-content: center" class="grid formgrid p-fluid">
+                        <div *ngIf="recu!=undefined" class="field mb-4 col-4">
+                            <label class="font-medium text-900">Mode de paiement <span style="color: red">*</span></label>
+                            <p-dropdown [disabled]="magasinselected==null || clientselected==null"
+                                        [options]="mode_paiements" [(ngModel)]="recu.modePaiement"
+                                        [showClear]="true" appendTo="body" [filter]="true" [filterBy]="'label'" [style]="{width: '100%'}"
+                                        name="mode_paiement"
+                                        [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                                        [required]="true">
+                            </p-dropdown>
+                        </div>
+                        <div class="field mb-4 col-2" *ngIf="recu.modePaiement == 'CHEQUE'">
+                            <label class="font-medium text-900">Numéro chèque</label>
+                            <input [(ngModel)]="recu.numeroCheque" appendTo="body"  name="numeroCheque" type="text" pInputText/>
+
+
+                        </div>
+                        <div class="field mb-4 col-2">
+                            <label class="font-medium text-900">Montant versé</label>
+                            &lt;!&ndash;<input type="number" pInputText name="montant_versé"
+                                   [(ngModel)]="totalpayer" [max]="totalgeneral"/>&ndash;&gt;
+                            <p-inputNumber  type="number" id="montant_verse" name="montant_verse" pInputNumber [max]="totalgeneral"
+                                           locale="de-DE" [minFractionDigits]="0" [(ngModel)]="totalpayer" [style]="{'width': '100%'}" >
+                            </p-inputNumber>
+                        </div>
+
+                        <div class="field mb-4 col-2">
+                            <label class="font-medium text-900">Prix total</label>
+                            &lt;!&ndash;<input disabled type="text" pInputText name="total"
+                                   [(ngModel)]="totalgeneral"/>&ndash;&gt;
+                            <p-inputNumber [disabled]="true" type="number" id="total3" name="total3" pInputNumber
+                                           locale="de-DE" [minFractionDigits]="0" [(ngModel)]="totalgeneral" [style]="{'width': '100%'}" >
+                            </p-inputNumber>
+                        </div>
+
+                    </div>
+                    <div class="grid p-fluid mt-0">
+                        <div class="field col-12 md:col-10"></div>
+                        <div class="field col-12 md:col-2">
+                            <button pButton pRipple label="Enregistrer la facture" icon="pi pi-fw pi-check"
+                                    class="p-button-primary p-mr-2 p-mb-2 font-weight-bold"
+                                    type="Submit" (click)="saveSorties()" [disabled]="list_sorties_stock.length<1 && totalpayer>total">
+                            </button>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+        </p-tabPanel>
+    </p-tabView>
+
+</div>
+-->

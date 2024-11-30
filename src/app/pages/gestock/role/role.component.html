@@ -1,0 +1,191 @@
+<p-toast position="top-center"></p-toast>
+<div class="spinner-overlay" *ngIf="chrgmt">
+    <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
+</div>
+<div *ngIf="!display" style="display: flex">
+    <div [ngClass]="{'shrink': isSecondaryActive}" class="card primary" style="height: 100%;">
+        <div class="header55">
+            <h1>Gestion des rôles et des droits</h1>
+            <div class="header-actions">
+                <button *ngIf="droits.includes('AJOUTER_ROLE')" (click)="onDisplayDialog()" class="p-button-primary small-button" pButton><i
+                    class="pi pi-plus"></i>Nouveau
+                </button>
+                <button class="p-button-secondary small-button p-button-icon-only" icon="pi pi-ellipsis-v"
+                        pButton></button>
+            </div>
+        </div>
+        <p-table #dt [globalFilterFields]="['libelle']" [loading]="loading" [paginator]="true" [rowHover]="true"
+                 [rowsPerPageOptions]="[25,50,100]" [rows]="25"
+                 [value]="roles"
+                 responsiveLayout="scroll">
+            <ng-template pTemplate="caption">
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Role
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Description
+                        </div>
+                    </th>
+                    <th style="border-left: none; background-color: rgb(236,236,236)">
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template let-role pTemplate="body">
+                <tr (click)="onRowSelect(role)" class="large-row" style="padding-top: 10px; padding-bottom: 10px;">
+                    <td>{{ role.name }}</td>
+                    <td>{{ role.description }} </td>
+                    <td style="border-left: none;">
+                        <p-menu #menu [model]="menuitems" [popup]="true" appendTo="body"></p-menu>
+                        <div class="flex justify-content-end" style="margin-right: 60px">
+                            <!--   <button (click)="selectedItem = role" (click)="menu.toggle($event)" pButton pRipple
+                                       icon="pi pi-ellipsis-h" class="p-button-text p-button-rounded text-900"></button>-->
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucun rôle disponible</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+    </div>
+    <div [ngClass]="{'active': isSecondaryActive}" class="card secondary" style="height: 100%;">
+        <div class="headerfact">
+            <div>
+                <h5>{{role.name}}</h5>
+            </div>
+            <div class="actions">
+                <button *ngIf="droits.includes('MODIFIER_ROLE')" (click)="add(role)" class="btn">
+                    <i class="pi pi-pencil"></i> Modifier
+                </button>
+                <button *ngIf="droits.includes('SUPPRIMER_ROLE')" (click)="deleteElement(role)" class="btn"
+                ><i class="pi pi-trash"></i>Supprimer
+                </button>
+                <button class="btn">
+                    <i class="pi pi-ellipsis-v"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="bon-commande-detail">
+            <div class="main-content">
+                <div class="card role-permissions-card">
+
+                    <div class="permission-grid">
+                        <div *ngFor="let group of groupedCategories" class="category-group">
+                            <div *ngFor="let category of group" class="category-box">
+                                <div class="category-header">
+                                    <label>
+                                        <input [disabled]="true" type="checkbox" (change)="toggleCategorySelection($event, category)" [checked]="isCategorySelected(category)" class="custom-checkbox"/>
+                                        <span class="custom-checkbox-label">{{ category.label }}</span>
+                                    </label>
+                                </div>
+                                <div class="category-values">
+                                    <div *ngFor="let value of category.values" class="field-checkbox">
+                                        <label>
+                                            <input [disabled]="true" type="checkbox" name="group" [value]="value" (change)="toggleDroitSelection($event)" [checked]="isDroitSelected(value)" class="custom-checkbox"/>
+                                            <span class="custom-checkbox-label">{{ value }}</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div *ngIf="display" class="container1" style="height: 100%;">
+
+    <div class="header-special">
+        <p style="font-size: large; margin-bottom: 25px">
+            <i class="pi pi-key" style="font-size: 1.5rem"></i>
+            Enregistrement d'un role
+        </p>
+        <button (click)="closeSection(editForm)" class="p-button-primary small-button p-button-icon-only" icon="pi pi-arrow-left" pButton></button>
+    </div>
+
+    <form #editForm="ngForm"   class="container" name="editForm" novalidate role="form">
+
+        <h5>Informations générales</h5>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Nom rôle<span style="color: red">*</span></label>
+            <div class="col-sm-9 ml-7">
+                <input [(ngModel)]="role.name" class="form-control" name="nom" pInputText required type="text"/>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Description</label>
+            <div class="col-sm-9 ml-7">
+                <textarea [(ngModel)]="role.description" class="form-control" maxlength="50" name="description"
+                          pInputTextarea></textarea>
+            </div>
+        </div>
+        <h5>Gestion des droits</h5>
+        <div class="permission-grid">
+            <div *ngFor="let group of groupedCategories" class="category-group">
+                <div *ngFor="let category of group" class="category-box">
+                    <div class="category-header">
+                        <label>
+                            <input type="checkbox" (change)="toggleCategorySelection($event, category)" [checked]="isCategorySelected(category)" class="custom-checkbox"/>
+                            <span class="custom-checkbox-label">{{ category.label }}</span>
+                        </label>
+                    </div>
+                    <div class="category-values">
+                        <div *ngFor="let value of category.values" class="field-checkbox">
+                            <label>
+                                <input type="checkbox" name="group" [value]="value" (change)="toggleDroitSelection($event)" [checked]="isDroitSelected(value)" class="custom-checkbox"/>
+                                <span class="custom-checkbox-label">{{ value }}</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="layout-footer p-d-flex p-ai-center p-p-4 p-shadow-z" style="bottom: 0; position: fixed; width: 100%">
+            <span style="font-weight: bold">
+                <button (click)="save(editForm)" [disabled]="editForm.invalid || loading" class="btn btn-primary" type="Submit">
+                    <i *ngIf="loading && display" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                    <span *ngIf="!loading || !display">Enregistrer</span>
+                    <span *ngIf="loading && display">Enregistrement...</span>
+                </button>
+
+                <button (click)="annuler()" class="btn btn-secondary" type="button">Annuler</button>
+            </span>
+    </div>
+</div>
+<p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                 position="top">
+    <p-footer style="display: flex;">
+        <button (click)="cd.reject()" class="btnannulate"
+        ><i class="pi pi-close"></i>Annuler
+        </button>
+        <button (click)="cd.accept()" class="btnvalidate"
+        ><i class="pi pi-confirm"></i>Confirmer
+        </button>
+    </p-footer>
+</p-confirmDialog>
+
+

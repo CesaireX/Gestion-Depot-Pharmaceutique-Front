@@ -1,0 +1,157 @@
+<!-- inventory.component.html -->
+<div class="inventory-container">
+    <div class="header">
+        <div> <h6>Inventaire</h6>
+            <p>Résumé de l'inventaire • À la date du {{today  | customDate}} </p></div>
+        <div class="flex">
+            <button [disabled]="inventaires.length===0" type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportExcel()" class="p-button-success mr-2" pTooltip="XLS" tooltipPosition="bottom"></button>
+            <button [disabled]="inventaires.length===0" type="button" pButton pRipple icon="pi pi-file-pdf" (click)="exportPdf()" class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>
+        </div>
+
+    </div>
+    <div class="filters">
+        <div class="filter-group">
+            <label >Magasin <span
+                style="color: red">*</span></label>
+            <p-dropdown [options]="magasins" [(ngModel)]="magasinselected"
+                        (onChange)="changeMagasin()"
+                        [showClear]="true" optionLabel="nom"
+                        appendTo="body" [filter]="true" [filterBy]="'nom'"
+                        name="magasin"
+                        [style]="{width: '250px'}"
+                        placeholder="Selectionner un magasin"
+                        [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                        [required]="true">
+            </p-dropdown>
+        </div>
+
+        <!--<div class="filter-group">
+            <label>Filtre par :</label>
+            <div>
+                <p-radioButton name="jour" value=0 [(ngModel)]="check"  inputId="jour" label="Jour" (onClick)="checkValue()"></p-radioButton>&nbsp;
+                <p-radioButton name="periode" value=1 [(ngModel)]="check" inputId="periode" label="Période" (onClick)="checkValue()"></p-radioButton>
+            </div>
+        </div>
+        <div class="filter-group"  *ngIf="check==0">
+            <label>Date :</label>
+            <p-calendar appendTo="body" [(ngModel)]="dateJournee" name="dateJournee" dateFormat="dd/mm/yy" (ngModelChange)="onDateChange()"  [showIcon]="true" [ngModelOptions]="{ standalone: true }"></p-calendar>
+        </div>
+        <div class="filter-group" *ngIf="check==1">
+            <label>Période :</label>
+            <p-calendar [(ngModel)]="selectedPeriod" (ngModelChange)="onPeriodChange()" selectionMode="range" [showIcon]="true"  dateFormat="dd/mm/yy"></p-calendar>
+        </div>-->
+
+        <button [disabled]="!magasinselected" (click)="getinventaireByMagasin(magasinselected?.id,societyId)" pButton class="execute-report"><i class="pi pi-sync"></i>Charger</button>
+    </div>
+
+    <div class="card">
+        <div style="display : flex; align-items: center; align-content: center; justify-content: center">
+            <h5>Résumé de l'inventaire </h5>
+             </div>
+        <p-table #dt [value]="inventaires" [paginator]="true" [loading]="loading" [rows]="25"
+                 responsiveLayout="scroll" [exportHeader]="'customExportHeader'"
+                 [rowsPerPageOptions]="[25,50,100]" [rowHover]="true"
+                 [globalFilterFields]="['produitReference','produitNom', 'categorie', 'unite']">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+
+
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher inventaire" class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Désignation
+                        </div>
+                    </th>
+                    <th style="min-width: 6rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Unité
+                        </div>
+                    <th style="min-width: 7rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Seuil d'alerte
+                        </div>
+                    </th>
+                    <th style="min-width: 7rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Stock Initial
+                        </div>
+                    </th>
+                    <th style="min-width: 9rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Entrées
+                        </div>
+                    </th>
+                    <th style="min-width: 9rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Sorties
+                        </div>
+                    </th>
+
+                    <th style="min-width: 6rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Stock Disponible
+                        </div>
+                    </th>
+                    <th style="min-width: 9rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Stock engagé
+                        </div>
+                    </th>
+                    <th style="min-width: 9rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Stock disponible à la vente
+                        </div>
+                    </th>
+
+                    <th style="min-width: 7rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Statut
+                        </div>
+                    </th>
+
+
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-inventaire>
+                <tr>
+                    <td>{{inventaire.produitNom}}</td>
+                    <td>{{inventaire.unite}}</td>
+                    <td>{{inventaire.produitSeuil | customNumber}}</td>
+                    <td>{{inventaire.stockInitial | customNumber}}</td>
+                    <td>{{inventaire.entreeQuantite | customNumber}}</td>
+                    <td>{{inventaire.sortieQuantite | customNumber}}</td>
+                    <td>{{inventaire.stock_physique_dispo | customNumber}}</td>
+                    <td>{{inventaire.stock_physique_engage | customNumber}}</td>
+                    <td>{{inventaire.stock_physique_dispo_vente | customNumber}}</td>
+                    <td>
+                        <p-tag [severity]="getSeverity(inventaire)">{{ inventaire.statut }}</p-tag>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="12" style="text-align: center">Aucun Article disponible dans ce magasin</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="12" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+
+
+    </div>
+</div>
+
+
+

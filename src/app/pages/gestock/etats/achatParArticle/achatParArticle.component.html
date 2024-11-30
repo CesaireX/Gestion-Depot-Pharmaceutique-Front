@@ -1,0 +1,294 @@
+<!-- inventory.component.html -->
+<div class="inventory-container">
+    <div class="header">
+        <div> <h6>Achat Par Article</h6>
+            <p>• À la date du {{today  }} </p>
+        </div>
+        <div class="flex">
+            <button [disabled]="achats.length===0" type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportExcel()" class="p-button-success mr-2" pTooltip="XLS" tooltipPosition="bottom"></button>
+            <button [disabled]="achats.length===0" type="button" pButton pRipple icon="pi pi-file-pdf" (click)="exportPDF()" class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>
+        </div>
+    </div>
+    <div class="filters">
+        <div class="filter-group">
+            <label >Article <span
+                    style="color: red">*</span></label>
+            <p-dropdown [options]="articles" [(ngModel)]="articleselected" (onChange)="changeProduct()"
+                        [showClear]="true" appendTo="body" [filter]="true" [filterBy]="'nom'" optionLabel="nom"
+                        [style]="{width: '300px'}" name="magasin" placeholder="Selectionner un article"
+                        [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false" [required]="true">
+            </p-dropdown>
+        </div>
+        <div class="filter-group">
+            <label>Filtre par :</label>
+            <div>
+                <p-radioButton name="jour" value=0 [(ngModel)]="check" inputId="jour" label="Date" (onClick)="checkValue()" ></p-radioButton>&nbsp;
+                <p-radioButton name="periode" value=1 [(ngModel)]="check" inputId="periode" label="Période" (onClick)="checkValue()"></p-radioButton>
+            </div>
+        </div>
+        <div class="filter-group"  *ngIf="check==0">
+            <label >Date :</label>
+            <p-calendar appendTo="body" [(ngModel)]="dateJournee"
+                        (ngModelChange)="onDateChange()"
+                        name="dateJournee" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                        [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+            ></p-calendar>
+        </div>
+        <div class="filter-group"  *ngIf="check==1">
+            <label >Période :</label>
+            <p-calendar [(ngModel)]="selectedPeriod"  (ngModelChange)="onPeriodChange()" selectionMode="range" [showIcon]="true" dateFormat="dd/mm/yy"></p-calendar>
+        </div>
+        <!--
+                <button pButton type="button" label="+ More Filters" class="p-button-outlined more-filters"></button>
+        -->
+        <button pButton type="button"  (click)="getAchatByArticle()" class="execute-report"><i class="pi pi-sync"></i>Charger</button>
+    </div>
+    <div class="card">
+        <div style="display : flex; align-items: center; align-content: center; justify-content: center">
+            <h5>Achat Par Article</h5>
+        </div>
+        <p-table #dt [value]="achats" [paginator]="true" [loading]="loading" [rows]="25"
+                 responsiveLayout="scroll" [exportHeader]="'customExportHeader'"
+                 [rowsPerPageOptions]="[25,50,100]" [rowHover]="true"
+                 [globalFilterFields]="['nomProduit','unite']">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher achat" class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+
+                <tr>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Désignation
+                        </div>
+                    </th>
+                    <th style="min-width: 6rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Quantité
+                        </div>
+                    <th style="min-width: 7rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Unité
+                        </div>
+                    </th>
+                <th style="min-width: 7rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Montant
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-achat>
+                <tr>
+                    <td>{{achat.nomProduit}}</td>
+                    <td>{{achat.quantiteAchetee | customNumber}}</td>
+                    <td>{{achat.unite}}</td>
+                    <td>{{achat.montant | customNumber}} FCFA</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="12" style="text-align: center">Aucun historique client</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="12" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+
+
+
+
+
+<!--
+<div class="card">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card flex justify-content-between align-items-center">
+                    <div class="p-2 h-full w-full flex flex-column justify-content-between">
+                                <h5  style="color: cornflowerblue; text-align: center">Achat Par Article</h5>
+<br> <br>
+                                <div style="text-align: center" >
+                                    <label class="required-input bold-label">Type de Filtre<span class="required-icon"></span></label>&nbsp; &nbsp; &nbsp; &nbsp;
+                                    <p-radioButton name="jour" value=0 [(ngModel)]="check" inputId="jour" (onClick)="checkValue()"></p-radioButton>
+                                    <label id="jour" for="jour" class="ml-2">Jour</label> &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;
+                                    <p-radioButton name="periode" value=1 [(ngModel)]="check" inputId="periode" (onClick)="checkValue()"></p-radioButton>
+                                    <label id="periode" for="periode" class="ml-2">Période</label>
+                                </div>
+                        </div>
+                </div>
+            </div>
+            <form (ngSubmit)="getAchatByArticle()">
+
+                <div class="grid formgrid p-fluid">
+
+                    <div  class="field mb-4 col-3">
+                        <label class="font-medium text-900">Selectionner l'Article
+                           </label>
+                        <p-dropdown  [options]="articles"  [(ngModel)]="articleselected"
+                                     [showClear]="true" optionLabel="nom"
+                                     appendTo="body" [filter]="true" [filterBy]="'nom'" [style]="{width: '100%'}"
+                                     name="magasin"
+                                     placeholder="Selectionner un article"
+                                     [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                                     [required]="true">
+                        </p-dropdown>
+                    </div>
+
+
+                    <div *ngIf="check==0" class="field mb-4 col-3">
+                        <label style="font-weight:bold;">Date de journée:</label>
+                        <p-calendar appendTo="body" [(ngModel)]="dateJournee"
+                                    name="dateJournee" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                                    [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                        ></p-calendar>
+                    </div>
+
+                 &lt;!&ndash;   <div *ngIf="check==1" class="field mb-4 col-2">
+                        <label style="font-weight:bold;">Date de début:</label>
+                        <p-calendar appendTo="body" [(ngModel)]="dateDebut"
+                                    name="dateDebut" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                                    [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                        ></p-calendar>
+                    </div>
+                    <div *ngIf="check==1" class="field mb-4 col-2">
+                        <label style="font-weight:bold;">Date de fin:</label>
+                        <p-calendar appendTo="body" [(ngModel)]="dateFin"
+                                    name="dateDebut" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                                    [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                        ></p-calendar>
+                    </div>&ndash;&gt;
+                    <div class="field mb-2 col-2">
+                        <button  type="submit"
+                                style="margin-top: 25px" pButton  pRipple label="Charger"
+                                icon="pi pi-plus-circle">
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <br>
+        <p-confirmDialog [position]="'top'" [style]="{width: '25vw'}" [baseZIndex]="5000"
+                         rejectButtonStyleClass="p-button-text"></p-confirmDialog>
+        <p-toast position="top-center"></p-toast>
+        <p-table #dt [value]="achats" [paginator]="true" [loading]="loading" [rows]="25"
+                 [showCurrentPageReport]="true" responsiveLayout="scroll" [exportHeader]="'customExportHeader'"
+                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                 styleClass="p-datatable-gridlines" [rowsPerPageOptions]="[25,50,100]"
+                    [rowHover]="true"
+
+                 [globalFilterFields]="['nomProduit','unite']">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <div class="flex">
+                        <button [disabled]="achats.length===0" type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportExcel()" class="p-button-success mr-2" pTooltip="XLS" tooltipPosition="bottom"></button>
+                        <button [disabled]="achats.length===0" type="button" pButton pRipple icon="pi pi-file-pdf" (click)="reportTojasper()" class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>
+                        <button pButton label="Clear" class="p-button-outlined mb-2" icon="pi pi-filter-slash"
+                                (click)="clear(dt)"></button>
+                    </div>
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher achats" class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                     <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Désignation
+                            <p-columnFilter type="text" field="produitNom" display="menu"
+                                            placeholder="Recherche par désignation"></p-columnFilter>
+                        </div>
+                    </th>
+                     <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Quantité
+                            <p-columnFilter type="text" field="categorie" display="menu"
+                                            placeholder="Recherche par catégorie"></p-columnFilter>
+                        </div>
+                    </th>
+                <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Unité
+                            <p-columnFilter type="text" field="categorie" display="menu"
+                                            placeholder="Recherche par catégorie"></p-columnFilter>
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-achat>
+                <tr style="height: 70px ; font-size: large">
+                    <td>{{achat.nomProduit}}</td>
+                    <td>{{achat.quantiteAchetee | customNumber}}</td>
+                    <td>{{achat.unite}}</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucune achat disponible</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+&lt;!&ndash;        <p-dialog [(visible)]="display" [style]="{width: '50vw'}" header="Détail " [modal]="true" class="p-fluid">
+            <p-header>
+                <span class="font-weight-bold text-primary p-2">Enregistrement d'un inventaire</span>
+            </p-header>
+            <form (ngSubmit)="save(editForm)" name="editForm" role="form" novalidate #editForm="ngForm" class="p-mb-3"
+                  novalidate>
+
+                <div class="grid p-fluid mt-3">
+
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Description de l'inventaire</label>
+                        <input name="description" type="text" pInputText [(ngModel)]="inventaire.description"/>
+                    </div>
+
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Date</label>
+                        <input name="dateInventaire" type="text" pInputText name="dateInventaire" [(ngModel)]="inventaire.dateInventaire"/>
+                    </div>
+
+
+                </div>
+
+                <div class="grid p-fluid mt-0">
+                    <div class="field col-12 md:col-6"></div>
+                    <div class="field col-12 md:col-3">
+                        <button pButton pRipple label="Annuler" (click)="annuler()" type="button"
+                                class="p-button-secondary p-mr-2 p-mb-2 font-weight-bold"
+                                icon="pi pi-fw pi-times">
+                        </button>
+                    </div>
+                    <div class="field col-12 md:col-3">
+                        <button pButton pRipple label="Enregistrer" icon="pi pi-fw pi-check"
+                                class="p-button-primary p-mr-2 p-mb-2 font-weight-bold"
+                                type="Submit">
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </p-dialog>&ndash;&gt;
+    </div>
+</div>
+-->

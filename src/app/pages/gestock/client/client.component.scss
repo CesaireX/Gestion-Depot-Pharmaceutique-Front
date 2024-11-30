@@ -1,0 +1,12 @@
+.float-right {
+    float: right !important;
+}
+.form-columns {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Deux colonnes égales */
+    gap: 20px; /* Espacement entre les colonnes */
+}
+
+.form-column {
+    flex: 1; /* Chaque colonne prend autant d'espace que possible */
+}

@@ -1,0 +1,88 @@
+<div class="inventory-container">
+    <div class="header">
+        <div> <h6>Fournisseurs Créanciers</h6>
+            <p>• À la date du {{today  | customDate}} </p></div>
+        <div class="flex">
+            <button [disabled]="fournisseurcrediteurs.length===0" type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportExcel()" class="p-button-success mr-2" pTooltip="XLS" tooltipPosition="bottom"></button>
+            <button [disabled]="fournisseurcrediteurs.length===0" type="button" pButton pRipple icon="pi pi-file-pdf" (click)="exportPDF()" class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div style="display : flex; align-items: center; align-content: center; justify-content: center">
+            <h5>Fournisseurs Créanciers</h5>
+          </div>
+        <p-table #dt [value]="fournisseurcrediteurs" [paginator]="true" [loading]="loading" [rows]="25"
+                 responsiveLayout="scroll" [exportHeader]="'customExportHeader'"
+                 [rowsPerPageOptions]="[25,50,100]" [rowHover]="true"
+                 [globalFilterFields]="['nomFournisseur','prenomFournisseur', 'entrepriseNom']">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher fournisseur" class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header" >
+                <tr>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Fournisseur
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Téléphone
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Entreprise
+                        </div>
+                    </th>
+                     <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Adresse
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Solde Compte
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-fournisseur let-rowIndex="rowIndex">
+                <tr>
+                    <td>{{fournisseur.nomFournisseur}} &nbsp; &nbsp;  {{fournisseur.prenomFournisseur}}</td>
+                    <td>{{fournisseur.tel}}</td>
+                    <td>{{fournisseur.entrepriseNomF}}</td>
+                    <td>{{fournisseur.ville}}</td>
+                    <td>{{fournisseur.sommeACredite | customNumber}} FCFA</td>
+                </tr>
+                <tr *ngIf="rowIndex==fournisseurcrediteurs.length-1" style="height: 70px ; font-size: large ; font-weight: bold">
+                    <td colspan="3">Total</td>
+                    <ng-container>
+                        <td style="min-width: 10rem">
+                            {{ total! | customNumber}} FCFA
+                        </td>
+                    </ng-container>
+
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucun  fournisseur créancier</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+    </div>
+</div>d

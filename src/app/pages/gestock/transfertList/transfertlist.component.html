@@ -1,0 +1,295 @@
+<div class="card">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                        <h5 style="text-align: center" class="mark"
+                            pTooltip="Il s'agit de la gestion des Approvisionnements de votre entreprise"
+                            tooltipPosition="top">Liste de vos Transferts de stocks</h5>
+                        <div class="p-2 h-full w-full flex flex-column justify-content-between">
+                            <div class="flex align-items-center justify-content-between mb-3">
+                                <div class="p-col-6">
+                                </div>
+                                <div class="flex align-items-center gap-2 ">
+                                    <button *ngIf="droits.includes('AJOUTER_ENTRE_STOCK')" (click)="addentransfert()" pButton pRipple
+                                            class="p-button-outlined w-full sm:w-auto flex-order-0 sm:flex-order-1"
+                                            icon="pi pi-plus"
+                                            label="Nouvel approvisionnement"></button>
+                                </div>
+                            </div></div>
+                        <br>
+
+                        <p-table #dt [value]="list_entrees_stockMagasin"
+                                 [columns]="cols"
+                                 responsiveLayout="scroll"
+                                 [rows]="25" [globalFilterFields]="['produitNom', 'produitPrix']" [rows]="25"
+                                 [paginator]="true"
+                                 [rowsPerPageOptions]="[10,20,30]"
+                                 [rowHover]="true"
+                                 dataKey="id">
+
+                            <ng-template pTemplate="caption">
+                                <div
+                                    class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                    <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="rechercher une entrée..."
+                                   class="w-full sm:w-auto"/>
+                        </span>
+                                </div>
+                            </ng-template>
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th pSortableColumn="libelle">Date d'entrée
+                                        <p-sortIcon field="libelle"></p-sortIcon>
+                                    </th>
+                                    <th pSortableColumn="libelle">Désignation du produit
+                                        <p-sortIcon field="libelle"></p-sortIcon>
+                                    </th>
+                                    <th pSortableColumn="libelle">Magasin de sortie
+                                        <p-sortIcon field="libelle"></p-sortIcon>
+                                    </th>
+                                    <th pSortableColumn="libelle">Magasin d'entrée
+                                        <p-sortIcon field="libelle"></p-sortIcon>
+                                    </th>
+                                    <th pSortableColumn="libelle">Prix unitaire
+                                        <p-sortIcon field="libelle"></p-sortIcon>
+                                    </th>
+                                    <th pSortableColumn="description">Quantité entrée
+                                        <p-sortIcon field="description"></p-sortIcon>
+                                    </th>
+                                    <th style="border-left: none"></th>
+                                </tr>
+                            </ng-template>
+
+                            <ng-template let-entree_stock pTemplate="body">
+                                <tr>
+                                    <td style="width:10%; min-width:10rem;">{{entree_stock.date_entree | customDate}}</td>
+                                    <td style="width:30%; min-width:10rem;">{{entree_stock.produitNom}}</td>
+                                    <td style="width:30%; min-width:10rem;">{{entree_stock.magasinSortieNom}}</td>
+                                    <td style="width:30%; min-width:10rem;">{{entree_stock.magasinNom}}</td>
+                                    <td style="width:15%; min-width:10rem;">{{entree_stock.produitPrix | customNumber}} FCFA</td>
+                                    <td style="width:15%; min-width:10rem;">{{entree_stock.quantite | customNumber}}</td>
+                                    <td style="width:15%; min-width:10rem; border-left: none">
+                                      <button  type="button" pButton pRipple icon="pi pi-eye"
+                                                class="p-button-rounded p-button-success mr-2"
+                                                (click)="detailsTransfert(entree_stock)"></button>
+                                        <button *ngIf="droits.includes('SUPPRIMER_ENTRE_STOCK')"  type="button" pButton pRipple icon="pi pi-trash"
+                                                class="p-button-rounded p-button-danger" pTooltip="Annuler le transfert"
+                                                (click)="DeleteEntree(entree_stock)"></button>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+
+            </div>
+
+            <p-confirmDialog [position]="'top'" [style]="{width: '25vw'}" [baseZIndex]="5000"
+                             rejectButtonStyleClass="p-button-text"></p-confirmDialog>
+            <p-toast position="top-center"></p-toast>
+
+
+            <p-dialog [(visible)]="display" [style]="{width: '80vw'}" header="Détail " [modal]="true" class="p-fluid">
+                <p-header>
+                    <span class="font-weight-bold text-primary p-2">Mise à jour d'un transfert de stock</span>
+                </p-header>
+                <form (ngSubmit)="updateEntree()" name="editForm" role="form" novalidate #editForm="ngForm"
+                      class="p-mb-3"
+                      novalidate>
+
+                    <p-table *ngIf="produitselected" styleClass="p-datatable-gridlines" [value]="list_of_product">
+                        <ng-template pTemplate="caption" styleClass="custom-background">
+                            <div style="background-color: rgba(3,16,59,0.82);"
+                                 class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                <h5 style="color: white" class="m-0">Détail du produit sélectionné</h5>
+                            </div>
+                        </ng-template>
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th style="min-width: 10rem">
+                                    <div class="flex justify-content-between align-items-center">
+                                        Réference
+                                    </div>
+                                </th>
+                                <th style="min-width: 10rem">
+                                    <div class="flex justify-content-between align-items-center">
+                                        Catégorie
+                                    </div>
+                                </th>
+                                <th style="min-width: 10rem">
+                                    <div class="flex justify-content-between align-items-center">
+                                        Désignation
+                                    </div>
+                                </th>
+                                <th style="min-width: 10rem">
+                                    <div class="flex justify-content-between align-items-center">
+                                        Seuil d'alerte
+                                    </div>
+                                </th>
+                                <th style="min-width: 10rem">
+                                    <div class="flex justify-content-between align-items-center">
+                                        Unité de mesure
+                                    </div>
+                                </th>
+                                <th style="min-width: 10rem">
+                                    <div class="flex justify-content-between align-items-center">
+                                        Prix unitaire TTC
+                                    </div>
+                                </th>
+                                <th style="min-width: 10rem">
+                                    <div class="flex justify-content-between align-items-center">
+                                        Stock actuel
+                                    </div>
+                                </th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-produit>
+                            <tr>
+                                <td>{{produit.reference}}</td>
+                                <td>{{produit.categorieLibelle}}</td>
+                                <td>{{produit.nom}}</td>
+                                <td>{{produit.seuil | customNumber}}</td>
+                                <td>{{produit.uniteMesureLibelle}}</td>
+                                <td>{{produit.prixttc | customNumber}}</td>
+                                <td>{{magasinTotalProduit! | customNumber}}</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                    <br><br>
+
+                    <div class="grid p-fluid mt-3">
+
+                        <div class="field col-12 md:col-6">
+                            <label style="font-weight:bold;">Selectionnez la date d'entrée <span
+                                style="color: red">*</span></label>
+                            <p-calendar appendTo="body" [(ngModel)]="currentdate"
+                                        name="date_entree" [ngModelOptions]="{ standalone: true }" dateFormat="dd/mm/yy"
+                                        [showIcon]="true" [maxDate]="today"
+                                        [required]="true"></p-calendar>
+                        </div>
+                    </div>
+
+                    <div class="field col-12 md:col-6"><label class="font-medium text-900">Selectionnez le Magasin
+                        source <span
+                            style="color: red">*</span></label>
+                        <p-dropdown [options]="magasins" (onChange)="Clearcontent($event)"
+                                    [(ngModel)]="magasinselected"
+                                    [showClear]="true" optionLabel="nom"
+                                    appendTo="body" [filter]="true" [filterBy]="'nom'" [style]="{width: '100%'}"
+                                    name="magasin" [disabled]="mag == true"
+                                    [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                                    [required]="true">
+                        </p-dropdown>
+                    </div>
+
+                    <div class="field col-12 md:col-6"><label class="font-medium text-900">Selectionnez le Magasin de destination<span
+                            style="color: red">*</span></label>
+                        <p-dropdown [options]="magasins" (onChange)="Clearcontent($event)"
+                                    [(ngModel)]="magasinselected"
+                                    [showClear]="true" optionLabel="nom"
+                                    appendTo="body" [filter]="true" [filterBy]="'nom'" [style]="{width: '100%'}"
+                                    name="magasin" [disabled]="mag == true"
+                                    [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                                    [required]="true">
+                        </p-dropdown>
+                    </div>
+
+                    <div *ngIf="fournisseurselected" class="field col-12 md:col-6"><label
+                        class="font-medium text-900">Selectionnez le Fournisseur du produit<span
+                        style="color: red">*</span></label>
+                        <p-dropdown [options]="fournisseurs" (onChange)="Clearcontent($event)"
+                                    [(ngModel)]="fournisseurselected" [showClear]="true" optionLabel="nom"
+                                    appendTo="body" [filter]="true" [filterBy]="'nom'" [style]="{width: '100%'}"
+                                    name="fournisseur"
+                                    [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                                    [required]="true">
+                            <ng-template let-fournisseurs pTemplate="item">
+                                <div class="flex align-items-center fournisseurs-item">
+                                    <div>{{ fournisseurs?.nom }} {{ fournisseurs?.prenom }}</div>
+
+                                </div>
+                            </ng-template>
+                            <ng-template let-item pTemplate="selectedItem">
+
+                                {{ item?.nom }} {{ item?.prenom }}
+
+                            </ng-template>
+                        </p-dropdown>
+                    </div>
+
+                    <div class="field col-12 md:col-6"><label class="font-medium text-900">Selectionnez Produit
+                        <span style="color: red">*</span></label>
+                        <p-dropdown [disabled]="magasinselected==null || fournisseurselected==null"
+                                    (onChange)="SelectProduct()" [options]="produits" [(ngModel)]="produitselected"
+                                    [showClear]="true" optionLabel="nom"
+                                    appendTo="body" [filter]="true" [filterBy]="'nom'" [style]="{width: '100%'}"
+                                    name="produit"
+                                    [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                                    [required]="true">
+                        </p-dropdown>
+                    </div>
+
+
+                    <div *ngIf="entree_stock" class="field col-12 md:col-6">
+                        <label class="font-medium text-900">Prix du produit <span
+                            style="color: red">*</span></label>
+                        <input [disabled]="magasinselected==null || fournisseurselected==null" type="text"
+                               pInputText
+                               (input)="actualiseTotal()" name="prix"
+                               [(ngModel)]="entree_stock.produitPrix" [required]="true"/>
+                    </div>
+
+
+                    <div *ngIf="entree_stock" class="field col-12 md:col-6"><label class="font-medium text-900">Quantité
+                        <span style="color: red">*</span></label>
+                        <input [disabled]="magasinselected==null || fournisseurselected==null " type="text"
+                               pInputText
+                               (input)="actualiseTotal()" name="quantité"
+                               [(ngModel)]="entree_stock.quantite" [required]="true"/>
+                    </div>
+
+                    <div *ngIf="entree_stock && produitselected" class="field col-12 md:col-6">
+                        <label class="font-medium text-900">Prix total</label>
+                        <input disabled type="text" pInputText name="total"
+                               [(ngModel)]="total"/>
+                    </div>
+        <div class="grid p-fluid mt-0">
+            <div class="field col-12 md:col-6"></div>
+            <div class="field col-12 md:col-3">
+                <button pButton pRipple label="Annuler" type="button"
+                        class="p-button-secondary p-mr-2 p-mb-2 font-weight-bold"
+                        icon="pi pi-fw pi-times" (click)="hideAll()" [disabled]="editForm.invalid">
+                </button>
+            </div>
+            <div class="field col-12 md:col-3">
+                <button pButton pRipple label="Mettre à jour" icon="pi pi-fw pi-check"
+                        class="p-button-primary p-mr-2 p-mb-2 font-weight-bold"
+                        type="Submit" [disabled]="editForm.invalid || entree_stock?.quantite === 0">
+                </button>
+            </div>
+        </div>
+
+        </form>
+        </p-dialog>
+
+
+    </div>
+
+
+</div>
+</div>
+<p-dialog [(visible)]="displayViewM" [style]="{width: '50vw'}" header="Détail " [modal]="true" class="p-fluid">
+    <p-header>
+        <span class="font-weight-bold text-primary p-2"
+              style="text-align: center; font-weight:bold; font-size: 20px; justify-content: center">{{ entree_stock?.produitNom }}</span>
+    </p-header>
+    <div class="form-columns">
+        <div class="field col-12 md:col-12">
+            <p ><span style="font-weight:bold;">Date de sortie de l'article</span> {{entree_stock?.date_entree | customDate}}</p>
+            <p><span style="font-weight:bold;">Prix de l'article :</span> {{entree_stock?.produitPrix! | customNumber}}</p>
+            <p ><span style="font-weight:bold;">Magasin de sortie de l'article :</span> {{entree_stock?.magasinSortieNom}}</p>
+            <p ><span style="font-weight:bold;">Magasin de destination de l'article :</span>{{entree_stock?.magasinNom}}</p>
+            <p ><span style="font-weight:bold;">Quantité sortie :</span> {{entree_stock?.quantite! | customNumber}}</p>
+        </div>
+    </div>
+</p-dialog>

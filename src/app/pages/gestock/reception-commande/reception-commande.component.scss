@@ -1,0 +1,22 @@
+
+body {
+    font-family: Arial, sans-serif;
+
+}
+.badge {
+    background-color: #007bff;
+    color: white;
+    border-radius: 12px;
+    padding: 3px 8px;
+    font-size: 12px;
+    margin-left: 10px;
+}
+.invalid-input p-inputNumber {
+    border: 2px solid red;
+    border-radius: 5px
+}
+.error-message {
+    color: red;
+    font-size: 12px;
+}
+

@@ -1,0 +1,660 @@
+<div class="inventory-container">
+    <div class="header">
+        <div>
+            <h6>Chiffre d'affaire</h6>
+            <p>• À la date du {{today  }} </p>
+        </div>
+        <div class="flex">
+            <button (click)="exportExcel()" [disabled]="chiffreAffaires.length===0" class="p-button-success mr-2"
+                    icon="pi pi-file-excel" pButton
+                    pRipple pTooltip="XLS" tooltipPosition="bottom"
+                    type="button"></button>
+            <button (click)="printCA()" [disabled]="chiffreAffaires.length===0" class="p-button-warning mr-2"
+                    icon="pi pi-file-pdf" pButton
+                    pRipple pTooltip="PDF" tooltipPosition="bottom"
+                    type="button"></button>
+        </div>
+    </div>
+    <div class="filters">
+        <div class="filter-group">
+            <label>Filtre par :</label>
+            <div>
+                <p-radioButton (onClick)="checkValue()" [(ngModel)]="check" inputId="jour" label="Date" name="jour"
+                               value=0></p-radioButton>&nbsp;&nbsp;
+                <p-radioButton (onClick)="checkValue()" [(ngModel)]="check" inputId="periode" label="Période"
+                               name="periode"
+                               value=1></p-radioButton>&nbsp;&nbsp;
+                <p-radioButton (onClick)="checkValue()" [(ngModel)]="check" inputId="trimestre" label="Trimestre"
+                               name="trimestre"
+                               value=2></p-radioButton>
+            </div>
+        </div>
+        <div *ngIf="check==0" class="filter-group">
+            <label>Date :</label>
+            <p-calendar (ngModelChange)="onDateChange()" [(ngModel)]="dateJournee"
+                        [ngModelOptions]="{ standalone: true }"
+                        [showIcon]="true" appendTo="body"
+                        dateFormat="dd/mm/yy" name="dateJournee"
+            ></p-calendar>
+        </div>
+        <div *ngIf="check==1" class="filter-group">
+            <label>Période :</label>
+            <p-calendar (ngModelChange)="onPeriodChange()" [(ngModel)]="selectedPeriod" [showIcon]="true"
+                        dateFormat="dd/mm/yy" selectionMode="range"></p-calendar>
+        </div>
+        <div *ngIf="check==2" class="filter-group">
+            <label>Debut Trimestre :</label>
+            <p-calendar (ngModelChange)="change()" [(ngModel)]="trimestreDebut" [ngModelOptions]="{ standalone: true }"
+                        [showIcon]="true" appendTo="body" dateFormat="mm/yy"
+                        name="trimestreDebut" view="month"
+            ></p-calendar>
+        </div>
+        <!--
+                <button pButton type="button" label="+ More Filters" class="p-button-outlined more-filters"></button>
+        -->
+        <button (click)="getCA()" class="execute-report"  pButton type="button"><i class="pi pi-sync"></i>Charger</button>
+    </div>
+    <div class="card">
+        <div style="display: flex; align-items: center; align-content: center; justify-content: center">
+            <h5 *ngIf="check==2">Chiffre d'affaire par trimestre </h5>
+            <h5 *ngIf="check==0">Chiffre d'affaire par jour </h5>
+            <h5 *ngIf="check==1">Chiffre d'affaire par Période </h5>
+        </div>
+
+        <!-------------------------------------------- Par jour ---------------------------------------------------->
+        <p-table #dt *ngIf="check==0" [exportHeader]="'customExportHeader'"
+                 [globalFilterFields]="['nomClient','prenomClient', 'montant']" [loading]="loading" [paginator]="true"
+                 [rowHover]="true" [rowsPerPageOptions]="[25,50,100]" [rows]="25"
+                 [showCurrentPageReport]="true"
+                 [value]="chiffreAffaires"
+                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                 responsiveLayout="scroll"
+
+                 styleClass="p-datatable-gridlines">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input #filter (input)="onGlobalFilter(dt, $event)" class="w-full" pInputText
+                                   placeholder="Rechercher " type="text"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Nom
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Prénom
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Type
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Montant (FCFA)
+                        </div>
+                    </th>
+
+                </tr>
+            </ng-template>
+
+            <ng-template let-chiffreAffaire let-rowIndex="rowIndex" pTemplate="body">
+                <tr>
+                    <td>{{chiffreAffaire.nomClient}}</td>
+                    <td>{{chiffreAffaire.prenomClient}}</td>
+                    <td [ngClass]="{
+        'facture': chiffreAffaire.type.toLowerCase() === 'facture'.toLowerCase(),
+        'creance': chiffreAffaire.type.toLowerCase() === 'créance'.toLowerCase()
+      }">
+                        {{chiffreAffaire.type}}
+                    </td>
+                    <td>{{chiffreAffaire.montant | customNumber}}</td>
+                </tr>
+                <tr *ngIf="rowIndex==chiffreAffaires.length-1"
+                    style="height: 70px ; font-size: large; font-weight: bold">
+                    <td colspan="3">Total</td> <!-- Ajoutez les cellules Total -->
+                    <ng-container>
+                        <td style="min-width: 10rem">
+                            {{calculerTotaux(chiffreAffaires) | customNumber}}<!-- Affichage du total par mois -->
+                        </td>
+                    </ng-container>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucune vente disponible</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+
+        <!-------------------------------------------- Par période ---------------------------------------------------->
+        <p-table #dt *ngIf="check==1" [exportHeader]="'customExportHeader'"
+                 [globalFilterFields]="['nomClient','prenomClient', 'montant']" [loading]="loading" [paginator]="true"
+                 [rowHover]="true" [rowsPerPageOptions]="[25,50,100]" [rows]="25"
+                 [showCurrentPageReport]="true"
+                 [value]="chiffreAffaires"
+                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                 responsiveLayout="scroll"
+
+                 styleClass="p-datatable-gridlines">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                        <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input #filter (input)="onGlobalFilter(dt, $event)" class="w-full" pInputText
+                                   placeholder="Rechercher " type="text"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Nom
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Prénom
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Type
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Montant (FCFA)
+
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+
+            <ng-template let-chiffreAffaire let-rowIndex="rowIndex" pTemplate="body">
+                <tr>
+                    <td>{{chiffreAffaire.nomClient}}</td>
+                    <td>{{chiffreAffaire.prenomClient}}</td>
+                    <td [ngClass]="{
+        'facture': chiffreAffaire.type.toLowerCase() === 'facture'.toLowerCase(),
+        'creance': chiffreAffaire.type.toLowerCase() === 'créance'.toLowerCase()
+      }">
+                        {{chiffreAffaire.type}}
+                    </td>
+                    <td>{{chiffreAffaire.montant | customNumber}}</td>
+                </tr>
+                <tr *ngIf="rowIndex==chiffreAffaires.length-1"
+                    style="height: 70px ; font-size: large; font-weight: bold">
+                    <td colspan="3">Total</td> <!-- Ajoutez les cellules Total -->
+                    <ng-container>
+                        <td style="min-width: 10rem">
+                            {{calculerTotaux(chiffreAffaires) | customNumber}}<!-- Affichage du total par mois -->
+                        </td>
+                    </ng-container>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucune vente disponible</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+        <!-------------------------------------------- Par trimestre ---------------------------------------------------->
+        <p-table #dt3 *ngIf="check==2" [exportHeader]="'customExportHeader'"
+                 [globalFilterFields]="['nomClient','prenomClient', 'montant']" [loading]="loading" [paginator]="true"
+                 [rowHover]="true" [rowsPerPageOptions]="[25,50,100]" [rows]="25"
+                 [showCurrentPageReport]="true"
+                 [value]="chiffreAffaires"
+                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                 responsiveLayout="scroll"
+                 styleClass="p-datatable-gridlines">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input #filter (input)="onGlobalFilter(dt3, $event)" class="w-full" pInputText
+                                   placeholder="Rechercher " type="text"/>
+                    </span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Nom
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Prénom
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Type
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            {{ formatDate(trimestreDebut) }} ---> Montant (FCFA)
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            {{ formatDate(addMonths(trimestreDebut)) }}---> Montant (FCFA)
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            {{ formatDate(addTwoMonths(trimestreDebut)) }} ---> Montant (FCFA)
+                        </div>
+                    </th>
+                </tr>
+
+            </ng-template>
+
+            <ng-template let-chiffreAffaire let-rowIndex="rowIndex" pTemplate="body">
+                <tr>
+                    <td>{{chiffreAffaire.nomClient}}</td>
+                    <td>{{chiffreAffaire.prenomClient}}</td>
+                    <td [ngClass]="{
+        'facture': chiffreAffaire.type.toLowerCase() === 'facture'.toLowerCase(),
+        'creance': chiffreAffaire.type.toLowerCase() === 'créance'.toLowerCase()
+      }">
+                        {{chiffreAffaire.type}}
+                    </td>
+                    <ng-container *ngFor="let month of generateMonthsArray(trimestreDebut)">
+                        <td style="min-width: 10rem">
+                            <div *ngIf="formatDate(month)==chiffreAffaire.trimestre"
+                                 class="flex justify-content-between align-items-center">
+                                {{chiffreAffaire.montant | customNumber}}
+                            </div>
+                            <div *ngIf="formatDate(month)!=chiffreAffaire.trimestre"
+                                 class="flex justify-content-between align-items-center">
+                                ---
+                            </div>
+                        </td>
+                    </ng-container>
+                </tr>
+                <tr *ngIf="rowIndex==chiffreAffaires.length-1"
+                    style="height: 70px ; font-size: large ; font-weight: bold">
+                    <td colspan="3">Total</td> <!-- Ajoutez les cellules Total -->
+                    <ng-container *ngFor="let month of generateMonthsArray(trimestreDebut)">
+                        <td style="min-width: 10rem">
+                            {{ totauxParMois[formatDate(month)] || '---' | customNumber}}
+                            <!-- Affichage du total par mois -->
+                        </td>
+                    </ng-container>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucune vente disponible</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+
+</div>
+
+
+<!--
+<div class="card">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card flex justify-content-between align-items-center">
+                    <div class="p-2 h-full w-full flex flex-column justify-content-between">
+                        <h5  style="color: cornflowerblue; text-align: center">Chiffre d'affaire par trimestre</h5>
+                        <br> <br>
+
+                        <div style="text-align: center" >
+                            <label class="required-input bold-label">Type de Filtre<span class="required-icon"></span></label>&nbsp; &nbsp; &nbsp; &nbsp;
+                            <p-radioButton name="jour" value=0 [(ngModel)]="check" inputId="jour" (onClick)="checkValue()"></p-radioButton>
+                            <label id="jour" for="jour" class="ml-2">Jour</label> &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;
+                            <p-radioButton name="periode" value=1 [(ngModel)]="check" inputId="periode" (onClick)="checkValue()"></p-radioButton>
+                            <label id="periode" for="periode" class="ml-2">Période</label> &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;
+                            <p-radioButton name="trimestre" value=2 [(ngModel)]="check" inputId="trimestre" (onClick)="checkValue()"></p-radioButton>
+                            <label id="trimestre" for="trimestre" class="ml-2">Trimestre</label>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-12">
+            <form (ngSubmit)="getCA()">
+
+                <div *ngIf="check==0" class="grid formgrid p-fluid">
+
+                    <div class="field mb-4 col-2">
+                        <label style="font-weight:bold;">Date :</label>
+                        <p-calendar appendTo="body" [(ngModel)]="dateJournee"
+                                    name="dateJournee" dateFormat="dd/mm/yy" [maxDate]=" currenteDate"
+                                    [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                        ></p-calendar>
+                    </div>
+
+                    <div class="field mb-2 col-2">
+                        <button  type="submit"
+                                 style="margin-top: 25px" pButton  pRipple label="Charger"
+                                 icon="pi pi-plus-circle">
+                        </button>
+                    </div>
+                </div>
+
+                <div *ngIf="check==1" class="grid formgrid p-fluid">
+
+                    <div class="field mb-4 col-2">
+                        <label style="font-weight:bold;">Date de début:</label>
+                        <p-calendar appendTo="body" [(ngModel)]="dateDebut"
+                                    name="dateDebut" dateFormat="dd/mm/yy" [maxDate]="currenteDate"
+                                    [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                        ></p-calendar>
+                    </div>
+
+                    <div class="field mb-4 col-2">
+                        <label style="font-weight:bold;">Date de fin:</label>
+                        <p-calendar appendTo="body" [(ngModel)]="dateFin"
+                                    name="dateFin" dateFormat="dd/mm/yy" [maxDate]="currenteDate"
+                                    [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                        ></p-calendar>
+                    </div>
+                    <div class="field mb-2 col-2">
+                        <button  type="submit"
+                                 style="margin-top: 25px" pButton  pRipple label="Charger"
+                                 icon="pi pi-plus-circle">
+                        </button>
+                    </div>
+                </div>
+
+                <div *ngIf="check==2" class="grid formgrid p-fluid">
+                    <div class="field mb-4 col-2">
+                        <label style="font-weight:bold;">Date de début:</label>
+                        <p-calendar appendTo="body" [(ngModel)]="trimestreDebut" (ngModelChange)="change()"
+                                    name="trimestreDebut" dateFormat="mm/yy" [maxDate]="currenteDate" view="month"
+                                    [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                        ></p-calendar>
+                    </div>
+
+                    <div class="field mb-4 col-2">
+                        <label style="font-weight:bold;">Date de fin:</label>
+                        <p-calendar appendTo="body" [(ngModel)]="trimestreFin" [disabled]="true" view="month"
+                                    name="trimestreFin" dateFormat="mm/yy"
+                                    [showIcon]="true" [ngModelOptions]="{ standalone: true }"
+                        ></p-calendar>
+                    </div>
+                    <div class="field mb-2 col-2">
+                        <button  type="submit"
+                                 style="margin-top: 25px" pButton  pRipple label="Charger"
+                                 icon="pi pi-plus-circle">
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <br>
+
+
+        <p-confirmDialog [position]="'top'" [style]="{width: '25vw'}" [baseZIndex]="5000"
+                         rejectButtonStyleClass="p-button-text"></p-confirmDialog>
+        <p-toast position="top-center"></p-toast>
+
+        &lt;!&ndash;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; Par jour &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&ndash;&gt;
+        <p-table #dt [value]="chiffreAffaires" [paginator]="true" [loading]="loading" [rows]="25" *ngIf="check==0"
+                 [showCurrentPageReport]="true" responsiveLayout="scroll" [exportHeader]="'customExportHeader'"
+                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                 styleClass="p-datatable-gridlines" [rowsPerPageOptions]="[25,50,100]"
+                 [rowHover]="true"
+
+                 [globalFilterFields]="['nomClient','prenomClient', 'montant']">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+
+
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher " class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Nom
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Prénom
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Montant (FCFA)
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-chiffreAffaire let-rowIndex="rowIndex">
+                <tr style="height: 70px ; font-size: large">
+                    <td>{{chiffreAffaire.nomClient}}</td>
+                    <td>{{chiffreAffaire.prenomClient}}</td>
+                    <td>{{chiffreAffaire.montant | customNumber}}</td>
+                </tr>
+                <tr *ngIf="rowIndex==chiffreAffaires.length-1" style="height: 70px ; font-size: large">
+                    <td colspan="2">Total</td> &lt;!&ndash; Ajoutez les cellules Total &ndash;&gt;
+                    <ng-container>
+                        <td style="min-width: 10rem">
+                            {{calculerTotaux(chiffreAffaires) | customNumber}}&lt;!&ndash; Affichage du total par mois &ndash;&gt;
+                        </td>
+                    </ng-container>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucune vente disponible.</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+
+        &lt;!&ndash;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; Par période &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&ndash;&gt;
+        <p-table #dt [value]="chiffreAffaires" [paginator]="true" [loading]="loading" [rows]="25" *ngIf="check==1"
+                 [showCurrentPageReport]="true" responsiveLayout="scroll" [exportHeader]="'customExportHeader'"
+                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                 styleClass="p-datatable-gridlines" [rowsPerPageOptions]="[25,50,100]"
+                 [rowHover]="true"
+
+                 [globalFilterFields]="['nomClient','prenomClient', 'montant']">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher " class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Nom
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Prénom
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Montant (FCFA)
+
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-chiffreAffaire let-rowIndex="rowIndex">
+                <tr style="height: 70px ; font-size: large">
+                    <td>{{chiffreAffaire.nomClient}}</td>
+                    <td>{{chiffreAffaire.prenomClient}}</td>
+                    <td>{{chiffreAffaire.montant | customNumber}}</td>
+                </tr>
+                <tr *ngIf="rowIndex==chiffreAffaires.length-1" style="height: 70px ; font-size: large">
+                    <td colspan="2">Total</td> &lt;!&ndash; Ajoutez les cellules Total &ndash;&gt;
+                    <ng-container>
+                        <td style="min-width: 10rem">
+                            {{calculerTotaux(chiffreAffaires) | customNumber}}&lt;!&ndash; Affichage du total par mois &ndash;&gt;
+                        </td>
+                    </ng-container>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucune vente disponible.</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+        &lt;!&ndash;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; Par trimestre &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&ndash;&gt;
+        <p-table #dt3 [value]="chiffreAffaires" [paginator]="true" [loading]="loading" [rows]="25" *ngIf="check==2"
+                 [showCurrentPageReport]="true" responsiveLayout="scroll" [exportHeader]="'customExportHeader'"
+                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                 styleClass="p-datatable-gridlines" [rowsPerPageOptions]="[25,50,100]"
+                 [rowHover]="true"
+                 [globalFilterFields]="['nomClient','prenomClient', 'montant']">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <div class="flex">
+                        <button type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportExcelTrimestre()" class="p-button-success mr-2" pTooltip="XLS" tooltipPosition="bottom"></button>
+                        <button type="button" pButton pRipple icon="pi pi-file-pdf" (click)="reportTojasper()" class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>
+                        <button pButton label="Clear" class="p-button-outlined mb-2" icon="pi pi-filter-slash"
+                                (click)="clear(dt3)"></button>
+                    </div>
+
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt3, $event)"
+                                   placeholder="Rechercher " class="w-full"/>
+                    </span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Nom
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Prénom
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            {{ formatDate(trimestreDebut) }} -&ndash;&gt; Montant (FCFA)
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            {{ formatDate(addMonths(trimestreDebut) ) }}-&ndash;&gt;   Montant (FCFA)
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            {{ formatDate(addTwoMonths(trimestreDebut) ) }} -&ndash;&gt;  Montant (FCFA)
+                        </div>
+                    </th>
+
+                </tr>
+
+            </ng-template>
+
+            <ng-template pTemplate="body" let-chiffreAffaire let-rowIndex="rowIndex">
+                <tr style="height: 70px ; font-size: large">
+                    <td>{{chiffreAffaire.nomClient}}</td>
+                    <td>{{chiffreAffaire.prenomClient}}</td>
+                    <ng-container *ngFor="let month of generateMonthsArray(trimestreDebut)">
+                        <td style="min-width: 10rem">
+                            <div *ngIf="formatDate(month)==chiffreAffaire.trimestre" class="flex justify-content-between align-items-center">
+                                {{chiffreAffaire.montant | customNumber}}
+                            </div>
+                            <div *ngIf="formatDate(month)!=chiffreAffaire.trimestre" class="flex justify-content-between align-items-center">
+                                -&#45;&#45;
+                            </div>
+                        </td>
+                    </ng-container>
+                </tr>
+                <tr *ngIf="rowIndex==chiffreAffaires.length-1" style="height: 70px ; font-size: large ; font-weight: bold">
+                    <td colspan="2">Total</td> &lt;!&ndash; Ajoutez les cellules Total &ndash;&gt;
+                    <ng-container *ngFor="let month of generateMonthsArray(trimestreDebut)">
+                        <td style="min-width: 10rem">
+                            {{ totauxParMois[formatDate(month)] || '-&#45;&#45;' | customNumber}}&lt;!&ndash; Affichage du total par mois &ndash;&gt;
+                        </td>
+                    </ng-container>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucune vente disponible.</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+
+
+    </div>
+
+
+</div>
+-->

@@ -1,0 +1,142 @@
+<div class="inventory-container">
+    <div class="header">
+        <div> <h6>Gestion des Articles des Magasin </h6>
+            <p>Ajout et Gestion des Articles des Magasin  </p></div>
+
+    </div>
+    <div class="filters">
+        <div class="filter-group">
+            <label >Magasin <span
+                style="color: red">*</span></label>
+            <p-dropdown [options]="magasins" [(ngModel)]="magasinselected"
+                        (onChange)="loadProductByMagasin()"
+                        [showClear]="true" optionLabel="nom"
+                        appendTo="body" [filter]="true" [filterBy]="'nom'"
+                        name="magasin"
+                        [style]="{'width':'300px'}"
+                        placeholder="Selectionner un magasin"
+                        [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                        [required]="true">
+            </p-dropdown>
+        </div>
+        </div>
+
+
+    <div *ngIf="magasinselected" class="card">
+        <div class="new-product">
+            <div class="filter-group">
+
+            </div>
+            <div class="filter-group">
+                <label>Article <span style="color: red">*</span></label>
+                <p-dropdown [options]="articles" [(ngModel)]="selectedArticle"
+                            [showClear]="true" optionLabel="nom"
+                            appendTo="body" [filter]="true" [filterBy]="'nom'"
+                            placeholder="Selectionner un article"
+                            [style]="{'width':'242px'}"
+                            [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false">
+                </p-dropdown>
+
+                <label style="margin-left: 20px">Stock <span style="color: red">*</span></label>
+                <p-inputNumber [(ngModel)]="initialStock" [min]="1" mode="decimal" [maxFractionDigits]="2" locale="de-DE" [minFractionDigits]="0"  (onInput)="verifierInitialStock($event)" placeholder="Stock" [showButtons]="true"></p-inputNumber>
+                <button style="margin-left: 20px" pButton type="button" label="Ajouter" (click)="addProduct()" [disabled]="!selectedArticle || initialStock == null || !magasinselected"></button>
+            </div>
+        </div>
+
+        <p-toast></p-toast>
+        <p-table #dt1 [value]="produits" dataKey="id"  [metaKeySelection]="metaKey" editMode="row" [rowHover]="true" [tableStyle]="{'width': '48rem'}"
+                 [globalFilterFields]="['nom','categorieLibelle']">
+            >
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt1, $event)"
+                                   placeholder="Rechercher un produit" class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">Produit</th>
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">Catégorie</th>
+                    <th  style="min-width: 10rem; background-color: rgb(236,236,236)">Stock</th>
+                    <th style="min-width: 5rem; background-color: rgb(236,236,236)"></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-product let-editing="editing" let-ri="rowIndex">
+                <tr [pEditableRow]="product">
+                    <td>
+                        {{product.nom}}
+                    </td>
+                    <td>
+                        {{product.categorieLibelle}}
+                    </td>
+                    <td>
+                        <p-cellEditor>
+                            <ng-template pTemplate="input">
+                                <p-inputNumber [(ngModel)]="product.stockInitial" [min]="1" mode="decimal" [maxFractionDigits]="2" locale="de-DE" [minFractionDigits]="0"   [showButtons]="true"></p-inputNumber>
+
+                            </ng-template>
+                            <ng-template pTemplate="output">
+                                {{product.stockInitial}}
+                            </ng-template>
+                        </p-cellEditor>
+                    </td>
+
+                    <td>
+                        <div class="flex align-items-center justify-content-center gap-2">
+                            <button
+                                *ngIf="!editing"
+                                pButton
+                                pRipple
+                                type="button"
+                                pInitEditableRow
+                                icon="pi pi-pencil"
+                                (click)="onRowEditInit(product)"
+                                class="p-button-rounded p-button-text">
+                            </button>
+                            <button
+                                *ngIf="!editing"
+                                pButton
+                                pRipple
+                                type="button"
+                                icon="pi pi-trash"
+                                (click)="confirmDeleteProduct(product.id)"
+                                class="p-button-rounded p-button-text p-button-danger">
+                            </button>
+                            <button
+                                *ngIf="editing"
+                                pButton
+                                pRipple
+                                type="button"
+                                pSaveEditableRow
+                                icon="pi pi-check"
+                                (click)="onRowEditSave(product)"
+                                class="p-button-rounded p-button-text p-button-success mr-2">
+                            </button>
+                            <button
+                                *ngIf="editing"
+                                pButton pRipple
+                                type="button"
+                                pCancelEditableRow
+                                icon="pi pi-times"
+                                (click)="onRowEditCancel(product, ri)"
+                                class="p-button-rounded p-button-text p-button-danger">
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+<p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                 position="top" >
+    <p-footer style="display: flex;">
+        <button class="btnannulate" (click)="cd.reject()"
+        ><i class="pi pi-close"></i>Annuler</button>
+        <button class="btnvalidate" (click)="cd.accept()"
+        ><i class="pi pi-confirm"></i>Confirmer</button>
+    </p-footer>
+</p-confirmDialog>

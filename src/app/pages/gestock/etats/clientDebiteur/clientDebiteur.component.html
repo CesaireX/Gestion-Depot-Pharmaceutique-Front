@@ -1,0 +1,88 @@
+<div class="inventory-container">
+    <div class="header">
+        <div> <h6>Clients Débiteurs</h6>
+            <p>• À la date du {{today  | customDate}} </p></div>
+        <div class="flex">
+            <button [disabled]="clientdebiteurs.length===0" type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportExcel()" class="p-button-success mr-2" pTooltip="XLS" tooltipPosition="bottom"></button>
+            <button [disabled]="clientdebiteurs.length===0" type="button" pButton pRipple icon="pi pi-file-pdf" (click)="exportPDF()" class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div style="display : flex; align-items: center; align-content: center; justify-content: center">
+            <h5>Clients Débiteurs</h5>
+          </div>
+        <p-table #dt [value]="clientdebiteurs" [paginator]="true" [loading]="loading" [rows]="25"
+                 responsiveLayout="scroll" [exportHeader]="'customExportHeader'"
+                 [rowsPerPageOptions]="[25,50,100]" [rowHover]="true"
+                 [globalFilterFields]="['nomClient','prenomClient', 'entrepriseNom']">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher" class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header" >
+                <tr>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Client
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Téléphone
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Entreprise
+                        </div>
+                    </th>
+                     <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Adresse
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Solde Compte
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-client let-rowIndex="rowIndex">
+                <tr>
+                    <td>{{client.nomClient}} &nbsp; &nbsp;  {{client.prenomClient}}</td>
+                    <td>{{client.tel}}</td>
+                    <td>{{client.entrepriseNom}}</td>
+                    <td>{{client.ville}}</td>
+                    <td>{{client.sommeAdebite | customNumber}} FCFA</td>
+                </tr>
+                <tr *ngIf="rowIndex==clientdebiteurs.length-1" style="height: 70px ; font-size: large ; font-weight: bold">
+                    <td colspan="3">Total</td>
+                    <ng-container>
+                        <td style="min-width: 10rem">
+                            {{ total! | customNumber}} FCFA
+                        </td>
+                    </ng-container>
+
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucun  client débiteur.</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+    </div>
+</div>

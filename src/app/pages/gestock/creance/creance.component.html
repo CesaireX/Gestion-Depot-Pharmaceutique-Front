@@ -1,0 +1,377 @@
+<p-toast position="top-center"></p-toast>
+<div *ngIf="chrgmt" class="spinner-overlay">
+    <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
+</div>
+<div *ngIf="!displayForm" style="display: flex" >
+    <div class="card primary" [ngClass]="{'shrink': isSecondaryActive}" style="height: 100%;">
+
+        <div class="header55">
+            <h1>Créances des clients</h1>
+            <div class="header-actions">
+                <button class="p-button-primary small-button" (click)="add(null)" *ngIf="droits.includes('VOIR_CREANCE_AJOUTER')"
+                ><i class="pi pi-plus"></i>Nouveau</button>
+
+                <button class="p-button-secondary small-button p-button-icon-only" icon="pi pi-ellipsis-v"
+                        pButton></button>
+            </div>
+        </div>
+        <p-table #dt [value]="creances" [paginator]="true" [loading]="loading" [rows]="25"
+                 selectionMode="single" [(selection)]="selectedItem" dataKey="id"
+                 responsiveLayout="scroll" [rowsPerPageOptions]="[25,50,100]" [rowHover]="true"
+                 [globalFilterFields]="['date_creance', 'numero', 'clientNom', 'clientPrenom', 'montant_creance', 'montant_restant_a_payer', 'motif']" dataKey="id">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher" class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Date de la créance
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Client
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Numéro
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Montant de la créance
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Motif
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Reste à payer
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-creance let-expanded="expanded">
+                <tr (click)="onRowSelect(creance)" [pSelectableRow]="creance">
+                    <td>{{ creance.date_creance | customDate}}</td>
+                    <td>{{ creance.clientNom }} {{ creance.clientPrenom }}</td>
+                    <td>{{ creance.numero }}</td>
+                    <td>{{ creance.montant_creance  |customNumber }} FCFA</td>
+                    <td *ngIf="creance.motif!=null">{{ creance.motif }}</td>
+                    <td *ngIf="creance.motif==null">---</td>
+                    <td *ngIf="creance.montant_restant_a_payer!==0" style="color: red">{{ creance.montant_restant_a_payer |customNumber}} FCFA</td>
+                    <td *ngIf="creance.montant_restant_a_payer===0"  style="color: green">Créance Réglée</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="summary">
+                <div class="flex align-items-center justify-content-between">
+                    Au total il y'a {{creances.length}} Créance(s).
+                </div>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+    <div class="card secondary" [ngClass]="{'active': isSecondaryActive}">
+        <div class="headerfact">
+            <div class="facture-header">
+                <h5>Créance du client {{selectedItem?.clientNom}} {{selectedItem?.clientPrenom}}</h5>
+                <span class="close-button" (click)="close()">&#10006;</span>
+            </div>
+            <div class="actions">
+                <button class="btn" *ngIf="selectedItem.montant_creance===selectedItem.montant_restant_a_payer && droits.includes('VOIR_CREANCE_MODIFIER')" (click)="add(selectedItem)"
+                ><i class="pi pi-pencil"></i>Modifier</button>
+
+                <button class="btn" *ngIf="selectedItem.montant_creance===selectedItem.montant_restant_a_payer && droits.includes('VOIR_CREANCE_SUPPRIMER')" (click)="deleteElement(selectedItem)"
+                ><i class="pi pi-trash"></i>Supprimer</button>
+
+                <button class="btn" *ngIf="selectedItem.montant_restant_a_payer!>0 && droits.includes('AJOUTER_ENCAISSEMENT')" (click)="effectuer_paiement(selectedItem.id!)">
+                    <i class="pi pi-money-bill"></i> Paiement
+                </button>
+            </div>
+        </div>
+        <p-accordion>
+            <p-accordionTab (click)="onAccordionOpen();">
+                <ng-template pTemplate="header">
+                    Paiements <span class="badge">{{ selectedItem.listPaiements?.length }}</span>
+                </ng-template>
+                <ng-template pTemplate="content">
+                    <p-table [value]="selectedItem?.listPaiements!">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>N° de réception</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-recu>
+                            <tr>
+                                <td>{{ recu.numero }}</td>
+                                <td>{{ recu.date_paiement | customDate }}</td>
+                                <td>
+                                    <button pButton type="button" icon="pi pi-eye" class="p-button-text" (click)="viewRecu(recu)"></button>
+                                    <button pButton type="button" icon="pi pi-trash" class="p-button-text" (click)="deleteRecu(recu)"></button>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </ng-template>
+            </p-accordionTab>
+        </p-accordion>
+        <div class="container" *ngIf="recuState">
+            <div class="header">
+                <h1>{{ societegetted.nom }}</h1>
+                <p>Burkina Faso</p>
+                <p>+226 {{societegetted.tel}}</p>
+                <p>+226 {{societegetted.fixe}}</p>
+            </div>
+            <div class="payment-receipt">
+                <h2>REÇU DE PAIEMENT</h2>
+                <div class="payment-info">
+                    <div>
+                        <p><strong>Date du paiement:</strong> {{paiementtowatch.date_paiement | customDate}}</p>
+                        <p><strong>Numéro du reçu:</strong>{{paiementtowatch.numero}}</p>
+                        <p><strong>Mode de paiement:</strong> {{ paiementtowatch.modePaiement }}</p>
+                    </div>
+                    <div class="amount-received">
+                        <p>Montant reçu</p>
+                        <h3>{{ paiementtowatch.montant |customNumber}} FCFA</h3>
+                    </div>
+                </div>
+                <p><strong>Payer par:</strong> <a href="#">{{selectedItem.clientNom}} {{selectedItem.clientPrenom}}</a></p>
+            </div>
+            <div class="payment-details">
+                <h3>Paiement pour</h3>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Numéro de creance</th>
+                        <th>Date de creance</th>
+                        <th>Montant de la creance</th>
+                        <th>Montant du paiement</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr *ngFor="let creance of creancestoWach, let i = index">
+                        <td>{{creance.numero}}</td>
+                        <td>{{ creance.date_creance | customDate }}</td>
+                        <td>{{ creance.montant_creance |customNumber}} FCFA</td>
+                        <td>{{paiementtowatch.invoicePayments?.[creance.id!] |customNumber}} FCFA</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div *ngIf="recuState" class="bon-commande-detail">
+            <div class="main-content">
+                <div class="info-section">
+                    <div class="info-block">
+                        <div class="bc">REÇU CLIENT</div>
+                        <div style=" margin-top: 5px;"><strong>N° du reçu client</strong> :  {{recuToWatch.numero}}
+                        </div>
+                        <br>
+                        <div class="div-right-left">
+                            <div class="div-right">
+                                <div>N° du reçu</div>
+                                <div>Nom du client</div>
+                                <div>Solde dû</div>
+                            </div>
+                            <div class="div-left">
+                                <div> {{creancetoWach.numero}}</div>
+                                <div><strong> {{creancetoWach.clientNom}} {{creancetoWach.clientPrenom}}</strong></div>
+                                <div><strong> {{(creancetoWach.montant_creance! - paiementtowatch.montant!) |customNumber}} FCFA</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="address-block">
+                        <div class="first2">
+                            <div style=" margin-top: 5px;"><strong>Adresse du client</strong>
+                            </div>
+                            <div style=" margin-top: 5px;"> {{creancetoWach.clientNom}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="articles-section">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Date du reçu</th>
+                            <th>Montant versé</th>
+                            <th>Mode de versement</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>{{ paiementtowatch.date_paiement | customDate}}</td>
+                            <td>{{paiementtowatch.montant |customNumber}} FCFA</td>
+                            <td>{{recuToWatch.modePaiement}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="detailCreance&&isSecondaryActive" class="creance-details">
+                <h5 style="text-align: center">Détails de la Créance</h5>
+                <div class="form-group row align-items-center">
+                    <label class="col-sm-3 col-form-label"><strong> Date de la créance : </strong> </label>
+                    <div class="col-sm-9 ml-7">
+                        <p>{{ selectedItem.date_creance | customDate }}</p>
+                    </div>
+                </div>
+                <div class="form-group row align-items-center">
+                    <label class="col-sm-3 col-form-label"><strong> Client : </strong> </label>
+                    <div class="col-sm-9 ml-7">
+                        <p>{{ selectedItem.clientNom }} {{selectedItem.clientPrenom}}</p>
+                    </div>
+                </div>
+                <div class="form-group row align-items-center">
+                    <label class="col-sm-3 col-form-label"><strong>Numéro : </strong></label>
+                    <div class="col-sm-9 ml-7">
+                        <p>{{ selectedItem.numero }}</p>
+                    </div>
+                </div>
+
+                <div class="form-group row align-items-center">
+                    <label class="col-sm-3 col-form-label"><strong>Montant de la créance : </strong></label>
+                    <div class="col-sm-9 ml-7">
+                        <p>{{ selectedItem.montant_creance }}</p>
+                    </div>
+                </div>
+                <div class="form-group row align-items-center">
+                    <label class="col-sm-3 col-form-label"><strong>Motif : </strong></label>
+                    <div class="col-sm-9 ml-7">
+                        <p>{{  selectedItem.motif ? selectedItem.motif : '---' }}</p>
+                    </div>
+                </div>
+
+                <div class="form-group row align-items-center">
+                    <label class="col-sm-3 col-form-label"><strong>Reste à payer : </strong></label>
+                    <div class="col-sm-9 ml-7">
+                        <p><span *ngIf="selectedItem.montant_restant_a_payer !== 0" style="color: red">
+                {{ selectedItem.montant_restant_a_payer | customNumber }} FCFA
+            </span>
+                            <span *ngIf="selectedItem.montant_restant_a_payer === 0" style="color: green">
+                Créance Réglée
+            </span></p>
+                    </div>
+                </div>
+
+        </div>
+    </div>
+</div>
+
+<div *ngIf="displayForm" class="container1">
+    <div class="header-special" >
+        <p style="font-size: large; margin-bottom: 25px">
+            <i class="pi pi-bell" style="font-size: 1.5rem"></i>
+            Créance
+        </p>
+        <button (click)="closeSection(editForm)" tooltipPosition="left"
+                pTooltip="Retour sur la liste" class="p-button-primary small-button p-button-icon-only" icon="pi pi-arrow-left" pButton></button>
+    </div>
+
+    <form (ngSubmit)="save(editForm)" name="editForm" role="form" novalidate #editForm="ngForm">
+
+        <br>
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Nom du client<span style="color: red">*</span></label>
+            <div class="col-sm-9 ml-7">
+                <p-dropdown [options]="clients"
+                            [(ngModel)]="clientSelected" [showClear]="true" optionLabel="nom"
+                            appendTo="body" [filter]="true" [filterBy]="'nom'" [style]="{width: '300px'}"
+                            name="client"
+                            [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
+                            [required]="true">
+                    <ng-template let-clients pTemplate="item">
+                        <div class="flex align-items-center clients-item">
+                            <div>{{ clients?.nom }} {{ clients?.prenom }}</div>
+
+                        </div>
+                    </ng-template>
+                    <ng-template let-item pTemplate="selectedItem">
+
+                        {{ item?.nom }} {{ item?.prenom }}
+
+                    </ng-template>
+                </p-dropdown>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">N° de la créance client<span style="color: red">*</span></label>
+        <div class="col-sm-9 ml-7 input-with-button" style="width: 300px">
+            <input style="width: 400px" disabled [(ngModel)]="newBonCommandeNumber" id="bonCommandeNumber" name="bonCommandeNumber" pInputText type="text">
+            <button (click)="customizeBonCommandeNumber()" class="icon-button" type="button">
+                <i class="pi pi-cog" style="font-size: 1.5rem"></i>
+            </button>
+        </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Montant<span style="color: red">*</span></label>
+            <div class="col-sm-9 ml-7">
+                <p-inputNumber type="number" name="montant_creance" [required]="true"
+                               locale="de-DE" [minFractionDigits]="0" [(ngModel)]="creance.montant_creance" (onInput)="actualiseMontant($event)" [style]="{'width': '300px'}" [min]="0" [showButtons]="true">
+                </p-inputNumber>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Motif de la créance</label>
+            <div class="col-sm-9 ml-7">
+                <textarea name="Motif" type="text" pInputText [(ngModel)]="creance.motif" [style]="{'width': '300px'}"></textarea>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Date de la créance</label>
+            <div class="col-sm-9 ml-7">
+                <p-calendar [(ngModel)]="date"
+                            [style]="{width: '300px'}"
+                            dateFormat="dd MM yy" name="datecreance"></p-calendar>
+            </div>
+        </div>
+
+    </form>
+
+    <div style="bottom: 0; position: fixed; width: 100%" class="layout-footer p-d-flex p-ai-center p-p-4 p-shadow-z">
+            <span style="font-weight: bold">
+
+                 <button (click)="SaveChoice(editForm, 'enregistrer')" type="button" [disabled]="editForm.invalid || loading" class="btn btn-primary">
+                    <i *ngIf="loading && !display" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                    <span *ngIf="!loading || display">Enregistrer et terminer</span>
+                    <span *ngIf="loading && !display">Enregistrement...</span>
+                </button>
+                <button type="button" (click)="closeSection(editForm)" class="btn btn-secondary" >Annuler</button>
+
+
+            </span>
+    </div>
+</div>
+<p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                 position="top" >
+    <p-footer style="display: flex;">
+        <button class="btnannulate" (click)="cd.reject()"
+        ><i class="pi pi-close"></i>Annuler</button>
+        <button class="btnvalidate" (click)="cd.accept()"
+        ><i class="pi pi-confirm"></i>Confirmer</button>
+    </p-footer>
+</p-confirmDialog>

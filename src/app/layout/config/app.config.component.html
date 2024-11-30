@@ -1,0 +1,26 @@
+<p-button *ngIf="tokenStorage.getusernameonload()!=null" type="button" (click)="onConfigButtonClick()" icon="pi pi-cog" styleClass="layout-config-button"></p-button>
+
+<p-sidebar [(visible)]="visible" position="right" [transitionOptions]="'.3s cubic-bezier(0, 0, 0.2, 1)'">
+    <div class="p-3">
+        <h5>Zoom</h5>
+        <div class="flex align-items-center">
+            <button icon="pi pi-minus" type="button" pButton (click)="decrementScale()" class="p-button-text p-button-rounded w-2rem h-2rem mr-2" [disabled]="scale === scales[0]"></button>
+            <div class="flex gap-2 align-items-center">
+                <i class="pi pi-circle-fill text-300" *ngFor="let s of scales" [ngClass]="{'text-primary-500': s === scale}"></i>
+            </div>
+            <button icon="pi pi-plus"  type="button" pButton (click)="incrementScale()" class="p-button-text p-button-rounded w-2rem h-2rem ml-2" [disabled]="scale === scales[scales.length - 1]"></button>
+        </div>
+
+        <h5>Mode</h5>
+        <div class="flex gap-4">
+            <div class="field-radiobutton flex-1">
+                <p-radioButton name="colorScheme" value="light" [(ngModel)]="colorScheme" inputId="light"></p-radioButton>
+                <label for="light">Clair</label>
+            </div>
+            <div class="field-radiobutton flex-1">
+                <p-radioButton name="colorScheme" value="dark" [(ngModel)]="colorScheme" inputId="dark"></p-radioButton>
+                <label for="dark">Sombre</label>
+            </div>
+        </div>
+    </div>
+</p-sidebar>

@@ -1,0 +1,116 @@
+.permission-grid {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 60px;
+    justify-content: center;
+}
+
+.category-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4rem;
+}
+
+.category-box {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px;
+    background-color: #f9f9f9;
+    width: 350px; /* Ajustez cette valeur selon vos besoins */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.category-header {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.category-values {
+    display: flex;
+    flex-direction: column;
+}
+
+.field-checkbox {
+    margin-bottom: 5px;
+}
+
+
+/* Dans votre fichier CSS */
+/* Styles pour les cases à cocher personnalisées */
+.custom-checkbox {
+    display: none;
+}
+
+.custom-checkbox + .custom-checkbox-label {
+    position: relative;
+    padding-left: 25px;
+    cursor: pointer;
+    line-height: 20px;
+    display: inline-block;
+    color: #333;
+}
+
+.custom-checkbox + .custom-checkbox-label:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 15px;
+    height: 15px;
+    border: 1px solid #575555;
+    border-radius: 3px;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.custom-checkbox:checked + .custom-checkbox-label:before {
+    background: #007bff;
+    border-color: #007bff;
+}
+
+.custom-checkbox:checked + .custom-checkbox-label:after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 3px;
+    height: 8px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+
+}
+.p-button-text {
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+}
+.badge {
+    background-color: #007bff;
+    color: white;
+    border-radius: 12px;
+    padding: 3px 8px;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+$primary-color: #007bff;
+$secondary-color: #f0f0f0;
+$text-color: #333;
+$background-color: #f9f9f9;
+$border-color: #ddd;
+$hover-background-color: #f1f1f1;
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: $background-color;
+}
+

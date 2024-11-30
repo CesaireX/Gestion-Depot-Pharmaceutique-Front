@@ -1,0 +1,544 @@
+<p-toast position="top-center"></p-toast>
+<div class="spinner-overlay" *ngIf="chrgmt">
+    <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
+</div>
+<div *ngIf="!displayForm" style="display: flex">
+    <div class="card primary" style="height: 100%;">
+        <div class="header55">
+            <h1>Gestion des utilisateurs</h1>
+            <div class="header-actions">
+                <button *ngIf="droits.includes('AJOUTER_USER')" class="p-button-primary small-button" (click)="add(null)"
+                ><i class="pi pi-plus"></i>Nouveau</button>
+
+                <p-menu #menu appendTo="body" [popup]="true" [model]="items!"></p-menu>
+                <div class="flex justify-content-end">
+                    <button (click)="menu.toggle($event)" *ngIf="droits.includes('AJOUTER_USER')" pButton pRipple
+                            icon="pi pi-ellipsis-h" class="p-button-text p-button-rounded text-900"></button>
+                </div>
+
+            </div>
+        </div>
+        <p-table #dt [value]="utilisateurs" [paginator]="true" [loading]="loading" [rows]="25"
+                 responsiveLayout="scroll" [rowHover]="true"
+                 [rowsPerPageOptions]="[25,50,100]"
+                 [globalFilterFields]="['nom','prenoms', 'username', 'telephone', 'email']">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                                   placeholder="Rechercher un utilisateur" class="w-full"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Nom
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Prénom(s)
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Nom d'utilisateur
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem;  background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Téléphone
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem;  background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Email
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Rôle
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div  *ngIf= "this.droits.includes('MODIFIER_USER')" class="flex justify-content-between align-items-center">
+                            Activer/Désactiver
+
+                        </div>
+                    </th>
+                    <th style="border-left: none; background-color: rgb(236,236,236)">
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-utilisateur>
+                <tr>
+                    <td>{{utilisateur.nom}}</td>
+                    <td>{{utilisateur.prenoms}}</td>
+                    <td>{{utilisateur.username}}</td>
+                    <td *ngIf="utilisateur.telephone!=null">{{utilisateur.telephone | phoneNumber}}</td>
+                    <td *ngIf="utilisateur.telephone==null"></td>
+                    <td>{{utilisateur.email}}</td>
+                    <td>{{utilisateur.roles[0].name}}</td>
+                    <td>
+                        <p-inputSwitch  *ngIf= "this.droits.includes('MODIFIER_USER')" (onChange)="confirmDesactivation(utilisateur)"
+                                       [(ngModel)]="utilisateur.activated"></p-inputSwitch>
+                    </td>
+                    <td style="border-left: none;">
+
+                        <button *ngIf= "this.droits.includes('MODIFIER_USER')"  (click)="add(utilisateur)"
+                                 class="p-button-primary small-button mr-2"
+                                 icon="pi pi-pencil" pTooltip="Modifier" tooltipPosition="left"
+                                 pButton
+                                 type="button"></button>
+
+                        <button *ngIf= "this.droits.includes('MODIFIER_USER')"   (click)="displayDialogChangePsswd(utilisateur)"
+                                 class="p-button-primary small-button" tooltipPosition="left"
+                                 icon="pi pi-key" pTooltip="Réinitialiser mot de passe"
+                                 pButton
+                                 type="button"></button>
+
+                    </td>
+
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucun Client disponible</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+<div *ngIf="displayForm" style="height: 100%;" class="container1">
+    <div class="header-special">
+        <p style="font-size: large; margin-bottom: 25px">
+            <i class="pi pi-user" style="font-size: 1.5rem"></i>
+            Utilisateur
+        </p>
+        <button (click)="annulate()" class="p-button-primary small-button p-button-icon-only" icon="pi pi-arrow-left" pButton></button>
+    </div>
+
+    <form  name="editForm" role="form" novalidate  style="padding-bottom: 4%" #editForm="ngForm">
+
+        <h5>Informations générales</h5>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Nom <span style="color: red">*</span></label>
+            <div class="col-sm-9 ml-7">
+                <input name="nom" type="text" pInputText [(ngModel)]="utilisateur.nom" required class="form-control"/>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Prénom(s)<span style="color: red">*</span></label>
+            <div class="col-sm-9 ml-7">
+                <input name="prenoms" type="text" pInputText [(ngModel)]="utilisateur.prenoms" required class="form-control"/>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Nom d'utilisateur<span style="color: red">*</span></label>
+            <div class="col-sm-9 ml-7">
+                <input type="text" pInputText [(ngModel)]="utilisateur.username" name="username" class="form-control"/>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Téléphone</label>
+            <div class="col-sm-9 ml-7">
+                <input type="tel" pInputText [(ngModel)]="utilisateur.telephone" name="telephone" appPhoneNumber class="form-control"/>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label class="col-sm-3 col-form-label">Email</label>
+            <div class="col-sm-9 ml-7">
+                <input name="email" type="email" pInputText [(ngModel)]="utilisateur.email" class="form-control"/>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center" *ngIf="utilisateur.roles?.[0]?.name !='ADMIN' && this.rolss.includes('ADMIN')">
+            <label class="col-sm-3 col-form-label">Rôle<span style="color: red">*</span></label>
+            <div class="col-sm-9 ml-7" style="width: 300px;">
+                <p-dropdown [(ngModel)]="role" [autoDisplayFirst]="false" [emptyFilterMessage]="'Aucun element trouvé'"
+                            [filterBy]="'name'" [filter]="true" [options]="roles" [required]="true"
+                            [showClear]="true" [style]="{width: '100%'}"
+                            appendTo="body" name="role"
+                            optionLabel="name">
+                </p-dropdown>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center" *ngIf="modif">
+            <label class="col-sm-3 col-form-label">Mot de passe<span style="color: red">*</span></label>
+            <div class="col-sm-9 ml-7">
+                <input name="password" type="password" pInputText [(ngModel)]="utilisateur.password" required class="form-control"/>
+            </div>
+            <div *ngIf="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</div>
+
+        </div>
+
+        <div class="form-group row align-items-center" *ngIf="modif">
+            <label class="col-sm-3 col-form-label">Confirmer mot de passe<span style="color: red">*</span></label>
+            <div class="col-sm-9 ml-7">
+                <input name="confirmPassword" type="password" pInputText [(ngModel)]="confirmPassword" required class="form-control"/>
+            </div>
+            <div *ngIf="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</div>
+
+        </div>
+
+    </form>
+
+    <div style="bottom: 0; position: fixed; width: 100%" class="layout-footer p-d-flex p-ai-center p-p-4 p-shadow-z">
+            <span style="font-weight: bold">
+
+                <button *ngIf="modif" (click)="save(editForm, 'continuer')" type="button" [disabled]="editForm.invalid || loading" class="btn btn-primary">
+                    <i *ngIf="loading && display" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                    <span *ngIf="!loading || !display">Enregistrer et continuer</span>
+                    <span *ngIf="loading && display">Enregistrement...</span>
+                </button>
+
+                 <button (click)="save(editForm, 'enregistrer')" type="button" [disabled]="editForm.invalid || loading" class="btn btn-primary">
+                    <i *ngIf="loading && !display" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                    <span *ngIf="!loading || display">Enregistrer et terminer</span>
+                    <span *ngIf="loading && !display">Enregistrement...</span>
+                </button>
+
+                <button type="button" class="btn btn-secondary" (click)="annulate()" >Annuler</button>
+            </span>
+    </div>
+</div>
+<p-dialog [(visible)]="display2" [modal]="true" [style]="{width: '30vw'}" class="p-fluid" header="Détail ">
+    <p-header>
+        <span class="font-weight-bold text-primary p-2">Réinitialiser le mot de passe</span>
+    </p-header>
+    <form #editForm2="ngForm" name="editForm2" novalidate
+          role="form">
+        <div class="flex flex-column gap-3 mt-6">
+            <!--     <div class="p-inputgroup">
+                     <span class="p-inputgroup-addon"><i class="pi pi-key"></i></span>
+                     <input [(ngModel)]="actuelPsswd" [required]="true" name="password" pInputText
+                            placeholder="Mot de passe actuel" type="password"/>
+                 </div>
+                 <br>-->
+            <div *ngIf="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</div>
+            <div class="p-inputgroup">
+                <span class="p-inputgroup-addon"><i class="pi pi-key"></i></span>
+                <input [(ngModel)]="password" [required]="true" name="password" pInputText
+                       placeholder="Nouveau mot de passe" type="password"/>
+            </div>
+            <br>
+            <div class="p-inputgroup">
+                <span class="p-inputgroup-addon"><i class="pi pi-key"></i></span>
+                <input [(ngModel)]="confirmPassword" [required]="true" name="passwordd" pInputText
+                       placeholder="Confirmez Mot de passe" type="password"/>
+            </div>
+            <br><br>
+            <div>
+                <button (click)="changePsswd(editForm2)" [disabled]="editForm2.invalid" class="w-full" label="Changer le mot de passe"
+                        pButton pRipple type="Submit"></button>
+            </div>
+
+        </div>
+    </form>
+</p-dialog>
+
+
+<p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                 position="top" >
+    <p-footer style="display: flex;">
+        <button class="btnannulate" (click)="cd.reject()"
+        ><i class="pi pi-close"></i>Annuler</button>
+        <button class="btnvalidate" (click)="cd.accept()"
+        ><i class="pi pi-confirm"></i>Confirmer</button>
+    </p-footer>
+</p-confirmDialog>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--
+<div class="container-fluid">
+    <h5 class="mark" pTooltip="Il s'agit de la gestion des utilisateurs dans votre entreprise"
+        style="text-align: center" tooltipPosition="top">Gestion des
+        utilisateurs</h5>
+    <div class="p-2 h-full w-full flex flex-column justify-content-between">
+        <div class="flex align-items-center justify-content-between mb-3">
+            <div class="p-col-6">
+            </div>
+            <div *ngIf="droits.includes('AJOUTER_USER')" class="flex align-items-center gap-2 ">
+                <button (click)="onDisplayDialog()" class="p-button-outlined w-full sm:w-auto flex-order-0 sm:flex-order-1" icon="pi pi-plus"
+                        label="Nouvel utilisateur" pButton
+                        pRipple></button>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <p-toast position="top-center"></p-toast>
+        <p-table #dt [globalFilterFields]="['nom','prenoms', 'username', 'telephone', 'email']" [loading]="loading" [paginator]="true" [rowHover]="true"
+                 [rowsPerPageOptions]="[25,50,100]" [rows]="25"
+                 [value]="utilisateurs"
+                 responsiveLayout="scroll">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input #filter (input)="onGlobalFilter(dt, $event)" class="w-full" pInputText
+                                   placeholder="Rechercher utilisateur" type="text"/>
+						</span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="min-width: 12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Nom
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Prenom
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Nom d'utilisateur
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Téléphone
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Email
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Rôle
+                        </div>
+                    </th>
+                    <th style="min-width: 12rem">
+                        <div class="flex justify-content-between align-items-center">
+                            Activer/Désactiver
+                        </div>
+                    </th>
+                    <th style="border-left: none;">
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template let-utilisateur pTemplate="body">
+                <tr>
+                    <td>{{utilisateur.nom}}</td>
+                    <td>{{utilisateur.prenoms}}</td>
+                    <td>{{utilisateur.username}}</td>
+                    <td>{{utilisateur.telephone}}</td>
+                    <td>{{utilisateur.email}}</td>
+                    <td>{{utilisateur.roles[0].name}}</td>
+                    <td>
+                        <p-inputSwitch (onChange)="confirmDesactivation(utilisateur)"
+                                       [(ngModel)]="utilisateur.activated"></p-inputSwitch>
+                    </td>
+                    <td style="border-left: none;">
+                        <p-menu #menu [model]="menuitems" [popup]="true" appendTo="body"></p-menu>
+                        <div class="flex justify-content-end">
+                            <button (click)="selectedItem = utilisateur" (click)="menu.toggle($event)" class="p-button-text p-button-rounded text-900" icon="pi pi-ellipsis-h"
+                                    pButton pRipple></button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucun Utilisateur disponible</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+        <p-dialog [(visible)]="display" [modal]="true" [style]="{width: '50vw'}" class="p-fluid" header="Détail ">
+            <p-header>
+                <span class="font-weight-bold text-primary p-2">Enregistrement d'un utilisateur</span>
+            </p-header>
+            <form #editForm="ngForm" (ngSubmit)="save(editForm)" class="p-mb-3" name="editForm" novalidate novalidate
+                  role="form">
+
+                <div class="form-columns">
+                    <div class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label style="font-weight:bold;">Nom <span style="color: red">*</span></label>
+                            <input [(ngModel)]="utilisateur.nom" [required]="true" name="nom" pInputText type="text"/>
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label style="font-weight:bold;">Prenom<span style="color: red">*</span></label>
+                            <input [(ngModel)]="utilisateur.prenoms" [required]="true" name="prenoms"
+                                   pInputText type="text"/>
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label style="font-weight:bold;">Nom d'utilisateur<span style="color: red">*</span></label>
+                            <input [(ngModel)]="utilisateur.username" [required]="true" name="username"
+                                   pInputText type="text"/>
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label style="font-weight:bold;">Téléphone</label>
+                            <input [(ngModel)]="utilisateur.telephone" name="telephone" pInputText
+                                   type="tel" appPhoneNumber/>
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label style="font-weight:bold;">Email</label>
+                            <input [(ngModel)]="utilisateur.email" name="email" pInputText type="email"/>
+                        </div>
+                    </div>
+                    <div *ngIf="utilisateur.roles?.[0]?.name !='ADMIN' && this.rolss.includes('ADMIN')"
+                         class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <label class="font-medium text-900">Role <span style="color: red">*</span></label>
+                            <p-dropdown [(ngModel)]="role" [autoDisplayFirst]="false" [emptyFilterMessage]="'Aucun element trouvé'"
+                                        [filterBy]="'name'" [filter]="true" [options]="roles" [required]="true"
+                                        [required]="true"
+                                        [showClear]="true" [style]="{width: '100%'}"
+                                        appendTo="body" name="role"
+                                        optionLabel="name">
+                            </p-dropdown>
+                        </div>
+                    </div>
+                    <div *ngIf="modif==false" class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <div *ngIf="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</div>
+                            <label style="font-weight:bold;">Mot de passe<span style="color: red">*</span></label>
+                            <input [(ngModel)]="utilisateur.password" [required]="true" name="password" pInputText
+                                   type="password"/>
+                        </div>
+                    </div>
+                    <div *ngIf="modif==false" class="form-column">
+                        <div class="field col-12 md:col-12">
+                            <div *ngIf="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</div>
+                            <label style="font-weight:bold;">Confirmez le mot de passe<span style="color: red">*</span></label>
+                            <input [(ngModel)]="confirmPassword" [required]="true" name="confirmPassword" pInputText
+                                   type="password"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid p-fluid mt-0">
+                    <div class="field col-12 md:col-6"></div>
+                    <div class="field col-12 md:col-3">
+                        <button (click)="annuler()" class="p-button-secondary p-mr-2 p-mb-2 font-weight-bold" icon="pi pi-fw pi-times" label="Annuler" pButton
+                                pRipple
+                                type="button">
+                        </button>
+                    </div>
+                    <div class="field col-12 md:col-3">
+                        <button [disabled]="editForm.invalid" class="p-button-primary p-mr-2 p-mb-2 font-weight-bold" icon="pi pi-fw pi-check" label="Enregistrer"
+                                pButton
+                                pRipple
+                                type="Submit">
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </p-dialog>
+        <p-dialog [(visible)]="display2" [modal]="true" [style]="{width: '30vw'}" class="p-fluid" header="Détail ">
+            <p-header>
+                <span class="font-weight-bold text-primary p-2">Réinitialiser le mot de passe</span>
+            </p-header>
+            <form #editForm2="ngForm" name="editForm2" novalidate novalidate
+                  role="form">
+                <div class="flex flex-column gap-3 mt-6">
+               &lt;!&ndash;     <div class="p-inputgroup">
+                        <span class="p-inputgroup-addon"><i class="pi pi-key"></i></span>
+                        <input [(ngModel)]="actuelPsswd" [required]="true" name="password" pInputText
+                               placeholder="Mot de passe actuel" type="password"/>
+                    </div>
+                    <br>&ndash;&gt;
+                    <div *ngIf="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</div>
+                    <div class="p-inputgroup">
+                        <span class="p-inputgroup-addon"><i class="pi pi-key"></i></span>
+                        <input [(ngModel)]="password" [required]="true" name="password" pInputText
+                               placeholder="Nouveau mot de passe" type="password"/>
+                    </div>
+                    <br>
+                    <div class="p-inputgroup">
+                        <span class="p-inputgroup-addon"><i class="pi pi-key"></i></span>
+                        <input [(ngModel)]="confirmPassword" [required]="true" name="passwordd" pInputText
+                               placeholder="Confirmez Mot de passe" type="password"/>
+                    </div>
+                    <br><br>
+                    <div>
+                        <button (click)="changePsswd(editForm2)" [disabled]="editForm2.invalid" class="w-full" label="Changer le mot de passe"
+                                pButton pRipple type="Submit"></button>
+                    </div>
+
+                </div>
+            </form>
+        </p-dialog>
+        <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle">
+            <p-footer>
+                <button (click)="cd.reject()" class="p-button-secondary" icon="pi pi-times" label="NON"
+                        pButton type="button"></button>
+                <button (click)="cd.accept()" class="p-button-danger" icon="pi pi-check" label="OUI"
+                        pButton type="button"></button>
+            </p-footer>
+        </p-confirmDialog>
+
+    </div>
+
+
+</div>
+-->
