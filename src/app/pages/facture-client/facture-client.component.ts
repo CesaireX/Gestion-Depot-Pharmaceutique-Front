@@ -294,6 +294,7 @@ export class FactureClientComponent implements OnInit {
             this.loadall().toPromise()
         ]);
         this.clients = allData!.clients;
+        console.log(this.clients)
         this.articleOptions = allData!.articleOptions;
         this.magasins = allData!.magasins;
         this.taxes = allData!.taxes;
@@ -538,14 +539,18 @@ export class FactureClientComponent implements OnInit {
     onSubmit(ngForm: NgForm) {
         this.errorMessage = '';
         // Validation: Vérifier si chaque article est sélectionné
-
-        if(!this.client?.id){
-            this.scrollToTop();
-            this.messages = [
-                {severity: 'error', detail: `Veuillez selectionner un client.`}
-            ];
-            return;
+        if (!this.client?.id) {
+            if (this.clients && this.clients.length > 0) {
+                this.client = this.clients[0]; // Sélectionner le premier client
+            } else {
+                this.scrollToTop();
+                this.messages = [
+                    { severity: 'error', detail: 'Aucun client trouvé dans la base de données. Veuillez vérifier.' }
+                ];
+                return;
+            }
         }
+
 
         if(!this.newBonCommandeNumber){
             this.scrollToTop();
@@ -958,6 +963,20 @@ export class FactureClientComponent implements OnInit {
             this.filteredMagasins = this.magasins.filter(magasin => magasin.nom.toLowerCase().includes(this.searchQuery.toLowerCase()));
         } else {
             this.filteredMagasins = this.magasins;
+        }
+    }
+
+    // Méthode pour attribuer le premier magasin par défaut
+    setDefaultMagasin(index: number) {
+        // @ts-ignore
+        if (this.articles[index].stocks && this.articles[index].stocks.length > 0) {
+            // Affecter le premier magasin de la liste
+            // @ts-ignore
+            this.articles[index].magasin = this.articles[index].stocks[0];
+
+            // Mettre à jour la quantité initiale disponible
+            this.articles[index].initialQuantite = this.articles[index].magasin.stock_physique_dispo_vente;
+            console.log('Premier magasin attribué par défaut :', this.articles[index].magasin);
         }
     }
 

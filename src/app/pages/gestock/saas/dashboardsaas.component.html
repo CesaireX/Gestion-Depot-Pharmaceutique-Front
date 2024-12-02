@@ -30,12 +30,12 @@
                     <div class="grid grid-nogutter font-medium">
                         <span class="col-6 text-6xl md:col-3 flex align-items-center">{{fournisseur |customNumber}} <span
                                 class="text-base ml-2">Fournisseur(s)</span></span>
-                        <span class="col-6 text-6xl md:col-3 flex align-items-center">{{client |customNumber}} <span
-                                class="text-base ml-2">Client(s)</span></span>
+                        <!--<span class="col-6 text-6xl md:col-3 flex align-items-center">{{client |customNumber}} <span
+                                class="text-base ml-2">Client(s)</span></span>-->
                         <span class="col-6 text-6xl md:col-3 flex align-items-center">{{magasin |customNumber}} <span
-                                class="text-base ml-2">Magasin(s)</span></span>
+                                class="text-base ml-2">Dépot(s)</span></span>
                         <span class="col-6 text-6xl md:col-3 flex align-items-center">{{produit |customNumber}} <span
-                                class="text-base ml-2">Articles</span></span>
+                                class="text-base ml-2">Produits</span></span>
                     </div>
                 </div>
             </div>
@@ -73,7 +73,7 @@
                         <div class="flex justify-content-between">
                             <div class="flex flex-column gap-1">
                                 <span class="text-900 text-4xl">{{totalentreeday |customNumber}} FCFA</span>
-                                <span class="text-700">Factures fournisseurs</span>
+                                <span class="text-700">Achats</span>
                             </div>
                         </div>
                     </div>
@@ -82,7 +82,7 @@
                         <div class="flex justify-content-between">
                             <div class="flex flex-column gap-1">
                                 <span class="text-900 text-4xl">{{totalliquidesortiday |customNumber}} FCFA</span>
-                                <span class="text-700">Paiements effectués</span>
+                                <span class="text-700">Paiements fournisseurs</span>
                             </div>
                         </div>
                     </div>
@@ -100,11 +100,11 @@
                         <div class="flex justify-content-between">
                             <div class="flex flex-column gap-1">
                                 <span class="text-900 text-4xl">{{totalfactureday |customNumber}} FCFA</span>
-                                <span class="text-700">Factures clientes</span>
+                                <span class="text-700">Ventes</span>
                             </div>
                         </div>
                     </div>
-                    <div [ngClass]="{'bg-yellow-800':layoutService.config.colorScheme  === 'dark'}"
+                    <!--<div [ngClass]="{'bg-yellow-800':layoutService.config.colorScheme  === 'dark'}"
                          class="flex flex-column p-3 gap-3 bg-green-100 w-full justify-content-between border-round-md">
                         <div class="flex justify-content-between">
                             <div class="flex flex-column gap-1">
@@ -112,7 +112,7 @@
                                 <span class="text-700">Paiements reçus</span>
                             </div>
                         </div>
-                    </div>
+                    </div>-->
                 </div>
             </div>
         </div>
@@ -131,11 +131,13 @@
                     </div>
 
                 <div class="flex align-items-center justify-content-between mb-3">
-                    <span style="margin: 20px" class="font-bold text-primary">Factures fournisseurs: {{totalentree |customNumber}} FCFA</span>
-                    <span style="margin: 20px" class="font-bold text-primary">Paiements effectués: {{totalliquidesorti |customNumber}} FCFA</span>
+                    <span style="margin: 20px" class="font-bold text-primary">Achats: {{totalentree |customNumber}} FCFA</span>
+                    <span style="margin: 20px" class="font-bold text-primary">Paiements fournisseurs: {{totalliquidesorti |customNumber}} FCFA</span>
                     <span style="margin: 20px" class="font-bold text-primary">Dépenses: {{totaldepense |customNumber}} FCFA</span>
-                    <span style="margin: 20px" class="font-bold text-primary">Factures clientes: {{totalfacture |customNumber}} FCFA</span>
+                    <span style="margin: 20px" class="font-bold text-primary">Ventes: {{totalfacture |customNumber}} FCFA</span>
+<!--
                     <span style="margin: 20px" class="font-bold text-primary">Paiements reçu: {{totalliquide |customNumber}} FCFA</span>
+-->
 
                 </div>
                 <div class="grid">
@@ -162,7 +164,7 @@
             </div>
         </div>
     </div>
-    <div class="col-12" *ngIf="droits.includes('VOIR_DIV5')">
+<!--    <div class="col-12" *ngIf="droits.includes('VOIR_DIV5')">
         <div class="card flex justify-content-between align-items-center">
             <div class="p-2 h-full w-full flex flex-column justify-content-between">
                 <div class="flex align-items-center justify-content-between mb-3">
@@ -258,7 +260,7 @@
                                         <th pSortableColumn="libelle">Désignation du produit
                                             <p-sortIcon field="libelle"></p-sortIcon>
                                         </th>
-                                        <th pSortableColumn="libelle">Magasin d'entrée
+                                        <th pSortableColumn="libelle">Dépot d'entrée
                                             <p-sortIcon field="libelle"></p-sortIcon>
                                         </th>
                                         <th pSortableColumn="libelle">Fournisseur du produit
@@ -346,6 +348,6 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div>-->
 </div>
 </div>

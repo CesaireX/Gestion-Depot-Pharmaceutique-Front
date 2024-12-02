@@ -14,7 +14,7 @@
                 <button *ngIf="droits.includes('AJOUTER_SORTIE_STOCK')" (click)="addsortie()" pButton pRipple
                         class="p-button-outlined w-full sm:w-auto flex-order-0 sm:flex-order-1"
                         icon="pi pi-plus"
-                        label="Nouvelle facture"></button>
+                        label="Nouvelle Vente"></button>
             </div>
         </div>
     </div>
@@ -35,7 +35,7 @@
                 <th pSortableColumn="libelle">Désignation du produit
                     <p-sortIcon field="libelle"></p-sortIcon>
                 </th>
-                <th pSortableColumn="libelle">Magasin de sortie
+                <th pSortableColumn="libelle">Dépot de sortie
                     <p-sortIcon field="libelle"></p-sortIcon>
                 </th>
                 <th pSortableColumn="libelle">Prix unitaire
@@ -133,7 +133,7 @@
                     </th>
                     <th style="min-width: 12rem">
                         <div class="flex justify-content-between align-items-center">
-                            Magasin de sortie
+                            Dépot de sortie
                         </div>
                     </th>
                     <th style="min-width: 12rem">
@@ -274,7 +274,7 @@
                     </div>
 
                     <div class="field col-12 md:col-12">
-                        <label style="font-weight:bold;">Magasin<span style="color: red">*</span></label>
+                        <label style="font-weight:bold;">Dépot<span style="color: red">*</span></label>
                         <input [disabled]="true" name="magasin" type="text" pInputText
                                [(ngModel)]="facture.magasinNom"/>
                     </div>

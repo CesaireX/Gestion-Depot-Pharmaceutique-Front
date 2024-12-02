@@ -665,7 +665,7 @@ small.form-text {
     }
 
     &:hover {
-        background-color: rgba(3, 16, 59, 0.82);
+        background-color: rgb(17, 71, 39);
         border-radius: 4px;
         color: white;
     }
@@ -678,7 +678,7 @@ small.form-text {
 .btnsave {
     display: flex;
     align-items: center;
-    background-color: rgba(3, 16, 59, 0.82);
+    background-color: rgb(17, 71, 39);
     border: none;
     padding: 8px 12px;
     font-size: 14px;
@@ -692,7 +692,7 @@ small.form-text {
     }
 
     &:hover {
-        background-color: rgb(3, 16, 59);
+        background-color: rgb(6, 53, 26);
         border-radius: 4px;
         color: white;
     }
@@ -999,7 +999,7 @@ small.form-text {
     border: none;
 }
 
-$primary-color: rgb(3, 16, 59);;
+$primary-color: rgb(6, 53, 26);;
 $secondary-color: #f0f0f0;
 $text-color: #333;
 $background-color: #f9f9f9;

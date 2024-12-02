@@ -6,7 +6,7 @@
     <div class="header-special">
         <p style="font-size: large; margin-bottom: 25px">
             <i class="pi pi-shopping-bag" style="font-size: 1.5rem"></i>
-            Nouvelle facture fournisseur
+            Nouveau achat
         </p>
         <button (click)="retour()" class="p-button-primary small-button p-button-icon-only" icon="pi pi-arrow-left" pButton></button>
     </div>
@@ -363,7 +363,7 @@
             <h1>Toutes les factures fournisseurs</h1>
             <div class="header-actions">
                 <button  *ngIf="droits.includes('AJOUTER_FACTURE_FOURNISSEUR')" (click)="createModify({})" class="p-button-primary small-button" pButton><i
-                    class="pi pi-plus"></i>Nouvelle facture
+                    class="pi pi-plus"></i>Nouveau achat
                 </button>
                 <button class="p-button-secondary small-button p-button-icon-only" icon="pi pi-ellipsis-v"
                         pButton></button>
@@ -628,7 +628,7 @@
                     <table>
                         <thead>
                         <tr>
-                            <th>Articles et description</th>
+                            <th>Produis et description</th>
                             <th>Quantité</th>
                             <th>Magasin</th>
                             <th>Prix</th>

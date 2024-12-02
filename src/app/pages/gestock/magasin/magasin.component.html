@@ -5,7 +5,7 @@
             <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
         </div>
         <div class="header55">
-        <h1>Magasins</h1>
+        <h1>Dépots</h1>
         <div class="header-actions">
             <button *ngIf="droits.includes('AJOUTER_MAGASIN')" class="p-button-primary small-button" (click)="add(null)"
             ><i class="pi pi-plus"></i>Nouveau</button>
@@ -69,7 +69,7 @@
             </ng-template>
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="7" style="text-align: center">Aucun Magasin disponible</td>
+                    <td colspan="7" style="text-align: center">Aucun Dépot disponible</td>
                 </tr>
             </ng-template>
             <ng-template pTemplate="loadingbody">

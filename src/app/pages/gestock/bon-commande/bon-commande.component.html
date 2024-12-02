@@ -71,7 +71,7 @@
         </div>
 
         <!-- Deuxième partie du formulaire -->
-        <p style="font-size:medium; margin-top: 30px; font-weight: bold">Tableau d’articles</p>
+        <p style="font-size:medium; margin-top: 30px; font-weight: bold">Tableau de produis</p>
         <table class="article-table">
             <thead>
             <tr>
@@ -97,10 +97,10 @@
                                 (onClear)="onArticleClear(i)"
                                 appendTo="body"
                                 optionLabel="nom" optionValue="id"
-                                placeholder="Sélectionner un article"></p-dropdown>
+                                placeholder="Sélectionner un produit"></p-dropdown>
                     <div *ngIf="article.produitId" class="flex flex-column align-items-center justify-content-end">
                         <button (click)="op.toggle($event)"
-                                [label]="article.magasin ? article.magasin.magasinNom! : 'Sélectionner magasin'"
+                                [label]="article.magasin ? article.magasin.magasinNom! : 'Sélectionner dépot'"
                                 class="custom-button2"
                                 icon="pi pi-shopping-cart" pButton
                                 type="button"
@@ -124,7 +124,7 @@
                                                 <input (input)="filterMagasins()" [(ngModel)]="searchQuery"
                                                        name="search_magasin"
                                                        pInputText
-                                                       placeholder="Rechercher un magasin..."
+                                                       placeholder="Rechercher un dépot..."
                                                 />
                                             </th>
                                             <th colspan="3" style="text-align: center; color: #8c8989">Stock Physique
@@ -581,7 +581,7 @@
                     <table>
                         <thead>
                         <tr>
-                            <th>Articles et description</th>
+                            <th>Produis et description</th>
                             <th>Commandé</th>
                             <th>Reçu</th>
                             <th>Facturée</th>

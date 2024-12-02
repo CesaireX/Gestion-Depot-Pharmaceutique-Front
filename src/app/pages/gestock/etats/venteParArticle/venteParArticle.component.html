@@ -15,7 +15,7 @@
                     style="color: red">*</span></label>
             <p-dropdown [options]="articles" [(ngModel)]="articleselected" (onChange)="changeProduct()"
                         [showClear]="true" appendTo="body" [filter]="true" [filterBy]="'nom'" optionLabel="nom"
-                        [style]="{width: '300px'}" name="magasin" placeholder="Selectionner un article"
+                        [style]="{width: '300px'}" name="magasin" placeholder="Selectionner un produit"
                         [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false" [required]="true">
             </p-dropdown>
         </div>
@@ -146,7 +146,7 @@
                                      appendTo="body" [filter]="true" [filterBy]="'nom'" [style]="{width: '100%'}"
                                      name="magasin"
                                      placeholder="Sélectionner un article"
-                                     [emptyFilterMessage]="'Aucun article trouvé'" [autoDisplayFirst]="false"
+                                     [emptyFilterMessage]="'Aucun produit trouvé'" [autoDisplayFirst]="false"
                                      [required]="true">
                         </p-dropdown>
                     </div>

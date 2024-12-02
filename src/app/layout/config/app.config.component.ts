@@ -118,7 +118,7 @@ export class AppConfigComponent implements OnInit {
         this.menuThemes = [
             {name: 'light', color: '#FDFEFF'},
             {name: 'dark', color: '#434B54'},
-            {name: 'indigo', color: '#1A237E'},
+            {name: 'indigo', color: '#114727'},
             {name: 'bluegrey', color: '#37474F'},
             {name: 'brown', color: '#4E342E'},
             {name: 'cyan', color: '#006064'},

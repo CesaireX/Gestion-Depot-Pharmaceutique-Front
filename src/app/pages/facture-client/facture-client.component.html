@@ -7,14 +7,14 @@
     <div class="header-special">
         <p style="font-size: large; margin-bottom: 25px">
             <i class="pi pi-shopping-bag" style="font-size: 1.5rem"></i>
-            Facture
+            ventes
         </p>
         <button (click)="retour()" class="p-button-primary small-button p-button-icon-only" icon="pi pi-arrow-left" pButton></button>
     </div>
     <p-messages [(value)]="messages!" [enableService]="false" [style]="{width: '50%'}"></p-messages>
     <form #factureForm="ngForm" autocomplete="off" (ngSubmit)="onSubmit(factureForm)" name="factureForm" novalidate role="form">
         <!-- Première partie du formulaire -->
-        <div class="form-group row" style="margin-top: 15px">
+<!--        <div class="form-group row" style="margin-top: 15px">
             <label class="col-label" >Nom du client<span style="color: red">*</span></label>
             <div class="col-input">
                 <p-dropdown
@@ -68,10 +68,10 @@
                 </p-dropdown>
 
             </div>
-        </div>
+        </div>-->
 
         <div class="form-group row">
-            <label class="col-label">N° de la facture client<span style="color: red">*</span></label>
+            <label class="col-label">N° de la vente<span style="color: red">*</span></label>
             <div class="input-with-button">
                 <input [(ngModel)]="newBonCommandeNumber" disabled id="bonCommandeNumber" name="bonCommandeNumber"
                        pInputText type="text">
@@ -81,10 +81,10 @@
             </div>
         </div>
 
-        <div class="form-group row" style="margin-top: 15px">
+<!--        <div class="form-group row" style="margin-top: 15px">
             <label class="col-label">Numéro de commande</label>
             <div class="col-input">
-                <!--                <input [(ngModel)]="bonCommande?.numero" name="bonCommande" pInputText type="text">-->
+                &lt;!&ndash;                <input [(ngModel)]="bonCommande?.numero" name="bonCommande" pInputText type="text">&ndash;&gt;
                 <p-dropdown (onChange)="refreshBoncommandeData()" (onClear)="onBonCommandeClear()"
                             [(ngModel)]="bonCommande"
                             [disabled]="true"
@@ -95,7 +95,7 @@
                             placeholder="Sélectionner une commande">
                 </p-dropdown>
             </div>
-        </div>
+        </div>-->
 
         <div class="form-group row">
             <label class="col-label">Date</label>
@@ -105,7 +105,7 @@
             </div>
         </div>
 
-        <div class="form-group row">
+<!--        <div class="form-group row">
             <label class="col-label">Date d’échéance</label>
             <div class="col-input">
                 <p-calendar (ngModelChange)="validateDeliveryDate()" [(ngModel)]="dateEcheance"
@@ -114,17 +114,17 @@
                 <span *ngIf="!isDeliveryDateValid" style="color: red">La date de livraison doit être supérieure à la date de commande ou égale à la date de commande.</span>
             </div>
             <div class="error-message"></div>
-        </div>
+        </div>-->
 
         <!-- Deuxième partie du formulaire -->
         <p style="font-size:medium; margin-top: 30px; font-weight: bold">Tableau d’articles</p>
         <table class="article-table">
             <thead>
             <tr>
-                <th>DÉTAILS DE L’ARTICLE</th>
+                <th>DÉTAILS DU PRODUIT</th>
                 <th>QUANTITÉ</th>
                 <th>PRIX (FCFA)</th>
-                <th>TAXE (%)</th>
+                <!--<th>TAXE (%)</th>-->
                 <th>MONTANT (FCFA)</th>
                 <th *ngIf="bonCommande.id==null"></th>
             </tr>
@@ -144,7 +144,7 @@
                                 [style]="{width: '200px'}"
                                 appendTo="body"
                                 optionLabel="nom" optionValue="id"
-                                placeholder="Sélectionner un article"></p-dropdown>
+                                placeholder="Sélectionner un produit"></p-dropdown>
                     <div *ngIf="article.produitId" class="flex flex-column align-items-center justify-content-end">
                         <button (click)="op.toggle($event)"
                                 [label]="article.magasin ? article.magasin.magasinNom! : 'Sélectionner magasin'"
@@ -224,8 +224,9 @@
                                    [style]="{'width': '100%'}" locale="de-DE" pInputNumber>
                     </p-inputNumber>
                 </td>
+<!--
                 <td>
-                    <!--                    <span *ngIf="bonCommande">{{article.taxeLibelle}} {{article.taxe}} %</span>-->
+                    &lt;!&ndash;                    <span *ngIf="bonCommande">{{article.taxeLibelle}} {{article.taxe}} %</span>&ndash;&gt;
                     <p-dropdown (onChange)="onTaxeChange($event, i)"
                                 [(ngModel)]="article.taxe"
                                 [filterBy]="'libelle'"
@@ -246,6 +247,7 @@
                         </ng-template>
                     </p-dropdown>
                 </td>
+-->
                 <td style="width: 150px;">{{ article.montant.toFixed(2) | customNumber }}</td>
                 <td *ngIf="bonCommande.id==null">
                     <button (click)="supprimerLigne(i)"
@@ -273,19 +275,20 @@
                     <div>
                         <label>Sous-total</label>
                     </div>
-                    <div>
+                    <!--<div>
                         <label>Remise</label>
-                    </div>
+                    </div>-->
 <!--                    <div>-->
 <!--                        <label>Frais Expédition</label>-->
 <!--                    </div>-->
-                    <div>
+<!--                    <div>
                         <label>Ajustement</label>
-                    </div>
+                    </div>-->
                     <div>
                         <label style="font-weight: bold; font-size: 15px">Total</label>
                     </div>
                 </div>
+<!--
                 <div class="totals-row2">
                     <div></div>
                     <div class="jhb">
@@ -308,11 +311,12 @@
                     </div>
                     <div></div>
                 </div>
+-->
                 <div class="totals-row3">
                     <div><span>{{ sousTotal | customNumber }} FCFA</span></div>
-                    <div>(-){{remise | customNumber}} FCFA</div>
-<!--                    <div>{{fraisExpedition | customNumber}} FCFA</div>-->
-                    <div>{{ajustement | customNumber}} FCFA</div>
+                    <!--<div>(-){{remise | customNumber}} FCFA</div>
+&lt;!&ndash;                    <div>{{fraisExpedition | customNumber}} FCFA</div>&ndash;&gt;
+                    <div>{{ajustement | customNumber}} FCFA</div>-->
                     <div><span style="font-weight: bold; font-size: 15px">{{ total | customNumber}} FCFA</span></div>
                 </div>
             </div>
@@ -344,10 +348,10 @@
 <div *ngIf="!createOrModify" style="display: flex; ">
     <div [ngClass]="{'shrink': isSecondaryActive}" class="card primary" style="height: 100%;">
         <div class="header55">
-            <h1>Toutes les factures clients</h1>
+            <h1>Toutes les ventes</h1>
             <div class="header-actions">
                 <button *ngIf="droits.includes('AJOUTER_FACTURE_CLIENT')" (click)="createModify({})" class="p-button-primary small-button" pButton><i
-                    class="pi pi-plus"></i>Nouvelle facture
+                    class="pi pi-plus"></i>Nouvelle Vente
                 </button>
                 <button class="p-button-secondary small-button p-button-icon-only" icon="pi pi-ellipsis-v"
                         pButton></button>
@@ -376,7 +380,7 @@
                 </div>
             </ng-template>
 
-                        <ng-template pTemplate="caption">
+<!--                        <ng-template pTemplate="caption">
                             <div class="flex justify-content-between flex-column sm:flex-row">
                                 <p-dropdown
                                     [options]="clients"
@@ -407,7 +411,7 @@
                                 </p-dropdown>
 
                             </div>
-                        </ng-template>
+                        </ng-template>-->
             <ng-template pTemplate="header">
                 <tr class="large-row">
                     <th style="min-width: 10rem; background-color: rgb(236,236,236)">
@@ -417,7 +421,7 @@
                     </th>
                     <th style="min-width: 10rem; background-color: rgb(236,236,236)">
                         <div class="flex justify-content-between align-items-center">
-                            N° de la facture
+                            N° de la vente
                         </div>
                     </th>
 
@@ -427,37 +431,37 @@
                         </div>
                     </th>
 
-                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                    <!--<th style="min-width: 10rem; background-color: rgb(236,236,236)">
                         <div class="flex justify-content-between align-items-center">
                             N° de Bon commande
                         </div>
-                    </th>
-                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                    </th>-->
+                    <!--<th style="min-width: 10rem; background-color: rgb(236,236,236)">
                         <div class="flex justify-content-between align-items-center">
                             Client
                         </div>
-                    </th>
-                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                    </th>-->
+<!--                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
                         <div class="flex justify-content-between align-items-center">
                             Statut
                         </div>
-                    </th>
+                    </th>-->
 
-                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+<!--                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
                         <div class="flex justify-content-between align-items-center">
                             Date d'échéance
                         </div>
-                    </th>
+                    </th>-->
                     <th style="min-width: 10rem; background-color: rgb(236,236,236)">
                         <div class="flex justify-content-between align-items-center">
                             Montant
                         </div>
                     </th>
-                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                   <!-- <th style="min-width: 10rem; background-color: rgb(236,236,236)">
                         <div class="flex justify-content-between align-items-center">
                             Solde Dû
                         </div>
-                    </th>
+                    </th>-->
                 </tr>
             </ng-template>
             <ng-template let-facture pTemplate="body">
@@ -465,9 +469,9 @@
                     <td>{{facture.date_facture | customDate}}</td>
                     <td>{{ facture.numero}}</td>
                     <td>{{ facture.createdBy}}</td>
-                    <td>{{ facture.numeroboncommande }}</td>
-                    <td>{{ facture.clientNom }} {{ facture.clientPrenom }}</td>
-                    <td>
+                    <!--<td>{{ facture.numeroboncommande }}</td>
+                    <td>{{ facture.clientNom }} {{ facture.clientPrenom }}</td>-->
+ <!--                   <td>
     <span [ngClass]="{
         'status-en-attente': facture.status === 'EN_ATTENTE',
         'status-partiellement-payee': facture.status === 'PARTIELLEMENT_PAYEE',
@@ -475,16 +479,18 @@
     }">
         {{ formatStatus(facture.status) }}
     </span>
-                    </td>
+                    </td>-->
+<!--
                     <td>{{ facture.date_echeance | customDate}}</td>
+-->
                     <td>{{ facture.montant_total | customNumber}} FCFA</td>
                     <td *ngIf="facture.reste!==0" [ngStyle]="{ color: 'red' }">{{ facture.reste | customNumber}} FCFA</td>
-                    <td *ngIf="facture.reste===0" style="color: green"> Facture Réglée</td>
+                    <td *ngIf="facture.reste===0" style="color: green"> vente Réglée</td>
                 </tr>
             </ng-template>
             <ng-template pTemplate="summary">
                 <div class="flex align-items-center justify-content-between">
-                    Au total il y'a {{filteredFactures.length}} Facture(s).
+                    Au total il y'a {{filteredFactures.length}} Vente(s).
                 </div>
             </ng-template>
             <ng-template pTemplate="loadingbody">
@@ -507,9 +513,9 @@
                 <button (click)="generatePDF()" class="btn">
                     <i class="pi pi-file-pdf"></i> PDF/Impression <i class="fas fa-caret-down"></i>
                 </button>
-                <button (click)="effectuer_paiement(facture.id!)" *ngIf="facture.reste!>0 && droits.includes('AJOUTER_ENCAISSEMENT')" class="btn">
+                <!--<button (click)="effectuer_paiement(facture.id!)" *ngIf="facture.reste!>0 && droits.includes('AJOUTER_ENCAISSEMENT')" class="btn">
                     <i class="pi pi-money-bill"></i> Paiement
-                </button>
+                </button>-->
                 <button (click)="deleteElement(facture)" *ngIf="facture.montant_total===facture.reste  && droits.includes('SUPPRIMER_FACTURE_CLIENT')" class="btn"
                 ><i class="pi pi-trash"></i>Supprimer
                 </button>
@@ -562,7 +568,7 @@
                 <div class="info-section">
                     <div class="info-block">
                         <div class="bc">FACTURE CLIENT</div>
-                        <div style=" margin-top: 5px;"><strong>N° de la facture client</strong> :  {{facture.numero}}
+                        <div style=" margin-top: 5px;"><strong>N° de la vente</strong> :  {{facture.numero}}
                         </div>
                         <br/>
                         <br/>
@@ -606,11 +612,13 @@
                     <table>
                         <thead>
                         <tr>
-                            <th>Articles et description</th>
+                            <th>Produits et description</th>
                             <th>Quantité</th>
-                            <th>Magasin de sortie</th>
+                            <th>Dépot de sortie</th>
                             <th>Prix</th>
+<!--
                             <th>Taxe</th>
+-->
                             <th>Montant</th>
                         </tr>
                         </thead>
@@ -620,7 +628,9 @@
                             <td>{{ item.quantite! | customNumber}}</td>
                             <td>{{ item.magasinNom! }}</td>
                             <td>{{ item.produitPrix! | customNumber}} FCFA</td>
+<!--
                             <td>{{ item.taxeLibelle}} ({{ item.taxehauteur != null ? item.taxehauteur : 0 }}) %</td>
+-->
                             <td>
                                 {{
                                 (item.quantite! * item.produitPrix! *
@@ -637,14 +647,14 @@
                     <div class="div-right-left2">
                         <div class="div-right">
                             <div>Sous-total:</div>
-                            <div>Remise:</div>
-                            <div>Ajustement:</div>
+                            <!--<div>Remise:</div>
+                            <div>Ajustement:</div>-->
                             <div>Total:</div>
                         </div>
                         <div class="div-left">
                             <div> {{facture.sous_total | customNumber}} FCFA</div>
-                            <div>(-){{facture.remise | customNumber}} FCFA</div>
-                            <div>{{facture.ajustement | customNumber}} FCFA</div>
+                            <!--<div>(-){{facture.remise | customNumber}} FCFA</div>
+                            <div>{{facture.ajustement | customNumber}} FCFA</div>-->
                             <div>{{facture.montant_total | customNumber}} FCFA</div>
                         </div>
                     </div>

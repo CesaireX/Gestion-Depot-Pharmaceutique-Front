@@ -30,36 +30,36 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                         label: 'Inventaire', icon: 'pi pi-folder',
                         items: [
                             {
-                                label: 'Articles',
+                                label: 'Produits',
                                 icon: 'pi pi-fw pi-folder-open',
                                 routerLink: ['/gestock/produit']
                             },
-                             {
-                                label: 'Ajout Articles dans magasins',
+                             /*{
+                                label: 'Ajout Produits dans magasins',
                                 icon: 'pi pi-fw pi-folder-open',
                                 routerLink: ['/gestock/addProduitMagasin']
-                            },
+                            },*/
                             {
-                                label: 'Inventaire par magasin',
+                                label: 'Inventaire par Dépots',
                                 icon: 'pi pi-fw pi-chart-bar',
                                 routerLink: ['/gestock/inventaire']
                             },
-                            {
+                            /*{
                                 label: 'Correction Stock',
                                 icon: 'pi pi-fw pi-pencil',
                                 routerLink: ['/gestock/correctionStock']
-                            },
-                            {
+                            },*/
+                            /*{
                                 label: 'Transfert de stock',
                                 icon: 'pi pi-fw pi-plus-circle',
                                 routerLink: ['/gestock/transfertStock']
-                            },
+                            },*/
                         ]
                     },
                     {
                         label: 'Ventes', icon: 'pi pi-fw pi-shopping-cart',
                         items: [
-                            {
+                            /*{
                                 label: 'Clients',
                                 icon: 'pi pi-fw pi-globe',
                                 routerLink: ['/gestock/client']
@@ -78,17 +78,17 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                 label: 'Livraisons',
                                 icon: 'pi pi-fw pi-plus-circle',
                                 routerLink: ['/gestock/livraison']
-                            },
+                            },*/
                             {
                                 label: 'Factures',
                                 icon: 'pi pi-fw pi-plus-circle',
                                 routerLink: ['/gestock/factureClient']
                             },
-                            {
+                            /*{
                                 label: 'Encaissements',
                                 icon: 'pi pi-fw pi-plus-circle',
                                 routerLink: ['/gestock/caisse']
-                            }
+                            }*/
                         ]
                     },
                     {
@@ -129,7 +129,7 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                     {
                         label: 'Rapports', icon: 'pi pi-chart-line',
                         items: [
-                            {
+                            /*{
                                 label: 'Clients débiteurs',
                                 icon: 'pi pi-fw pi-star-fill',
                                 routerLink: ['/gestock/clientdebiteur']
@@ -143,19 +143,19 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                 label: 'Historique des clients',
                                 icon: 'pi pi-fw pi-star-fill',
                                 routerLink: ['/gestock/clienthistorique']
-                            },
+                            },*/
                             {
                                 label: 'Historique des Fournisseurs',
                                 icon: 'pi pi-fw pi-star-fill',
                                 routerLink: ['/gestock/fournisseurhistorique']
                             },
-                            {
+                            /*{
                                 label: 'Ventes Par Client',
                                 icon: 'pi pi-fw pi-star-fill',
                                 routerLink: ['/gestock/venteparclient']
-                            },
+                            },*/
                             {
-                                label: 'Ventes Par Article',
+                                label: 'Ventes Par Produits',
                                 icon: 'pi pi-fw pi-star-fill',
                                 routerLink: ['/gestock/ventepararticle']
                             },
@@ -165,7 +165,7 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                 routerLink: ['/gestock/achatparfournisseur']
                             },
                             {
-                                label: 'Achat Par Article',
+                                label: 'Achat Par Produits',
                                 icon: 'pi pi-fw pi-star-fill',
                                 routerLink: ['/gestock/achatpararticle']
                             },
@@ -174,7 +174,7 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                 icon: 'pi pi-fw pi-star-fill',
                                 routerLink: ['/gestock/etatDepense']
                             },
-                            {
+                            /*{
                                 label: 'Encaissement',
                                 icon: 'pi pi-fw pi-star-fill',
                                 routerLink: ['/gestock/encaissement']
@@ -183,29 +183,29 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                 label: 'Rapport Activité',
                                 icon: 'pi pi-fw pi-star-fill',
                                 routerLink: ['/gestock/rapportActivite']
-                            },
+                            },*/
                             {
                                 label: 'Etat Stock',
                                 icon: 'pi pi-fw pi-star-fill',
                                 routerLink: ['/gestock/etatstock']
                             },
-                            {
+                            /*{
                                 label: 'Chiffre d\'affaire par trimestre',
                                 icon: 'pi pi-fw pi-star-fill',
                                 routerLink: ['/gestock/chiffreAffaire']
-                            }
+                            }*/
                         ]
                     },
                     {
                         label: 'Paramétrages', icon: 'pi pi-cog',
                         items: [
                             {
-                                label: 'Magasins',
+                                label: 'Dépots',
                                 icon: 'pi pi-fw pi-database',
                                 routerLink: ['/gestock/magasin']
                             },
                             {
-                                label: 'Catégories de vos articles',
+                                label: 'Catégories de vos produits',
                                 icon: 'pi pi-fw pi-box',
                                 routerLink: ['/gestock/categorie']
                             },
@@ -214,11 +214,11 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                 icon: 'pi pi-fw pi-align-left',
                                 routerLink: ['/gestock/uniteMesure']
                             },
-                            {
+                            /*{
                                 label: 'Taxes',
                                 icon: 'pi pi-fw pi-align-left',
                                 routerLink: ['/gestock/taxe']
-                            },
+                            },*/
                             {
                                 label: 'Natures des dépenses',
                                 icon: 'pi pi-fw pi-align-left',
@@ -239,11 +239,11 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                 icon: 'pi pi-fw pi-ban',
                                 routerLink: ['/gestock/role']
                             },
-                            {
+                            /*{
                                 label: 'Société',
                                 icon: 'pi pi-fw pi-building',
                                 routerLink: ['/gestock/societe']
-                            }
+                            }*/
                         ]
                     }
                 ]

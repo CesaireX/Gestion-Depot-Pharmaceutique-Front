@@ -11,7 +11,7 @@
     </div>
     <div class="filters">
         <div class="filter-group">
-            <label >Magasin <span
+            <label >Dépot <span
                 style="color: red">*</span></label>
             <p-dropdown [options]="magasins" [(ngModel)]="magasinselected"
                         (onChange)="changeMagasin()"
@@ -19,7 +19,7 @@
                         appendTo="body" [filter]="true" [filterBy]="'nom'"
                         name="magasin"
                         [style]="{width: '250px'}"
-                        placeholder="Selectionner un magasin"
+                        placeholder="Selectionner un dépot"
                         [emptyFilterMessage]="'Aucun element trouvé'" [autoDisplayFirst]="false"
                         [required]="true">
             </p-dropdown>
@@ -55,12 +55,6 @@
             <ng-template pTemplate="caption">
                 <div class="flex justify-content-between flex-column sm:flex-row">
 
-
-                    <span class="p-input-icon-left mb-2">
-							<i class="pi pi-search"></i>
-							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
-                                   placeholder="Rechercher inventaire" class="w-full"/>
-						</span>
                 </div>
             </ng-template>
             <ng-template pTemplate="header">
@@ -138,7 +132,7 @@
             </ng-template>
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="12" style="text-align: center">Aucun Article disponible dans ce magasin</td>
+                    <td colspan="12" style="text-align: center">Aucun Produit disponible dans ce dépot</td>
                 </tr>
             </ng-template>
             <ng-template pTemplate="loadingbody">

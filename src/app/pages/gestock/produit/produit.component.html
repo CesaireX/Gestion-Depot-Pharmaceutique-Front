@@ -5,7 +5,7 @@
 <div *ngIf="!displayForm" style="display: flex">
     <div class="card primary" [ngClass]="{'shrink': isSecondaryActive}" style="height: 100%;">
         <div class="header55">
-            <h1>Articles</h1>
+            <h1>Produits</h1>
             <div class="header-actions">
                 <button class="p-button-primary small-button" (click)="add(null)" *ngIf="droits.includes('AJOUTER_PRODUIT')"
                 ><i class="pi pi-plus"></i>Nouveau</button>
@@ -96,7 +96,7 @@
             </ng-template>
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="7" style="text-align: center">Aucun article disponible.</td>
+                    <td colspan="7" style="text-align: center">Aucun produit disponible.</td>
                 </tr>
             </ng-template>
             <ng-template pTemplate="loadingbody">
@@ -176,7 +176,7 @@
                     <div *ngIf="droits.includes('VOIR_ARTICLE_TRANSACTION')" class="stock-item-container" style="margin-right: 50px; width: 70%">
                         <div class="stock-section">
                             <div class="stock-header">
-                                <h3 *ngIf="ligneMagasins"><i class="icon" aria-hidden="true"></i> Magasin principal <i class="info-icon" aria-hidden="true"></i>: {{ligneMagasins[0]?.magasinNom}}</h3>
+                                <h3 *ngIf="ligneMagasins"><i class="icon" aria-hidden="true"></i> Dépot principal <i class="info-icon" aria-hidden="true"></i>: {{ligneMagasins[0]?.magasinNom}}</h3>
                                 <h3 *ngIf="ligneMagasins"><i class="icon" aria-hidden="true"></i> Stock d'ouverture <i class="info-icon" aria-hidden="true"></i>: {{(ligneMagasins[0]?.stockInitial | customNumber) ?? 0}}</h3>
                             </div>
                             <!--                                <div class="stock-info">

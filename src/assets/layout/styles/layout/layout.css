@@ -336,8 +336,8 @@ p:last-child {
 }
 
 .layout-topbar-indigo {
-  --topbar-bg: #1A237E;
-  --topbar-start-bg: #283593;
+  --topbar-bg: #114727;
+  --topbar-start-bg: #114727;
   --topbar-menu-button-bg: #FBC02D;
   --topbar-menu-button-hover-bg: #d3a126;
   --topbar-menu-button-text-color: #212121;
@@ -355,7 +355,7 @@ p:last-child {
   transition: width var(--transition-duration);
   display: flex;
   color: var(--topbar-item-text-color);
-  background-color: rgb(3, 16, 59);
+  background-color: rgb(6, 53, 26);
   box-shadow: 0px 1px 10px rgba(0, 0, 0, 0.12), 0px 4px 5px rgba(0, 0, 0, 0.14), 0px 2px 4px -1px rgba(0, 0, 0, 0.2);
 }
 .layout-topbar ul {
@@ -519,7 +519,7 @@ p:last-child {
 }
 
 .layout-menu-indigo {
-  --menu-bg: #1A237E;
+  --menu-bg: #114727;
   --root-menuitem-text-color: #ffffff;
   --menuitem-text-color: rgba(255,255,255,.6);
   --menuitem-hover-bg: rgba(255,255,255,.12);

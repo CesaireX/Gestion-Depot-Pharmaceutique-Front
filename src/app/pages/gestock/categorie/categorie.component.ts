@@ -58,7 +58,7 @@ export class CategorieComponent implements OnInit {
             await this.loadItems();
             this.items = [
                 {
-                    label: 'Importer des articles',
+                    label: 'Importer des produits',
                     icon: 'pi pi-upload',
                     routerLink: ['/fileupload']
                 },

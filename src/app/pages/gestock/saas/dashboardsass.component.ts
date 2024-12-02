@@ -268,7 +268,7 @@ export class DashboardSaasComponent implements OnInit, OnDestroy {
                 this.ordersChart = {
                 labels: orderOfKeys,
                 datasets: [{
-                    label: 'Factures clientes',
+                    label: 'Ventes',
                     data: valueSortie,
                     borderColor: [
                         'rgba(0,62,255,0.82)',
@@ -281,7 +281,7 @@ export class DashboardSaasComponent implements OnInit, OnDestroy {
                     pointRadius: 3,
                     tension: .2
                 }, {
-                    label: 'Factures fournisseurs',
+                    label: 'Achats',
                     data: valueEntrees,
                     borderColor: [
                         'rgb(121,94,190)',
@@ -295,7 +295,7 @@ export class DashboardSaasComponent implements OnInit, OnDestroy {
                     tension: .4
                 },
                     {
-                    label: 'Paiements effectués',
+                    label: 'Paiements fournisseurs',
                     data: valeurPE,
                     borderColor: [
                         'rgba(185,83,39,0.82)',
@@ -308,7 +308,7 @@ export class DashboardSaasComponent implements OnInit, OnDestroy {
                     pointRadius: 3,
                     tension: .4
                 },
-                {
+                /*{
                     label: 'Paiements reçus',
                     data: valeurP,
                     borderColor: [
@@ -321,7 +321,7 @@ export class DashboardSaasComponent implements OnInit, OnDestroy {
                     fill: true,
                     pointRadius: 3,
                     tension: .4
-                },{
+                }*/{
                     label: 'Dépenses',
                     data: valueDepenses,
                     borderColor: [
