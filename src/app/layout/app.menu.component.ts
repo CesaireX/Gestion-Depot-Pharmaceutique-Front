@@ -178,12 +178,12 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                 label: 'Encaissement',
                                 icon: 'pi pi-fw pi-star-fill',
                                 routerLink: ['/gestock/encaissement']
-                            },
+                            },*/
                             {
                                 label: 'Rapport Activité',
                                 icon: 'pi pi-fw pi-star-fill',
                                 routerLink: ['/gestock/rapportActivite']
-                            },*/
+                            },
                             {
                                 label: 'Etat Stock',
                                 icon: 'pi pi-fw pi-star-fill',

@@ -2,11 +2,11 @@
         <div class="header">
             <div> <h6>Etat du stock des produits</h6>
                 <p>• À la date du {{today}} </p></div>
-            <div class="flex radio-buttons">
+           <!-- <div class="flex radio-buttons">
                 <p-radioButton name="stockType" value="stock_physique_dispo" [(ngModel)]="selectedStockType" label="Stock Physique Disponible"></p-radioButton>&nbsp;&nbsp;
                 <p-radioButton name="stockType" value="stock_physique_dispo_vente" [(ngModel)]="selectedStockType" label="Stock Physique Disponible Vente"></p-radioButton>&nbsp;&nbsp;
                 <p-radioButton name="stockType" value="stock_physique_engage" [(ngModel)]="selectedStockType" label="Stock Physique Engage"></p-radioButton>
-            </div>
+            </div>-->
             <div class="flex">
                 <button [disabled]="etatStocks.length===0" type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportExcel()" class="p-button-success mr-2" pTooltip="XLS" tooltipPosition="bottom"></button>
                 <button [disabled]="etatStocks.length=== 0" type="button" pButton pRipple icon="pi pi-file-pdf" (click)="exportPDF()" class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>

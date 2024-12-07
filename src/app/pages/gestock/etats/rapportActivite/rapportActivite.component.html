@@ -4,14 +4,14 @@
             <h6>Rapport d'activité</h6>
             <p>• À la date du {{today}}</p>
         </div>
-        <div class="flex radio-buttons">
+       <!-- <div class="flex radio-buttons">
             <p-radioButton name="selectedType" value="rapport" [(ngModel)]="selectedType" label="Rapport Activité"></p-radioButton>&nbsp;&nbsp;
             <p-radioButton name="selectedType" value="etat" [(ngModel)]="selectedType" label="Etat Activité"></p-radioButton>&nbsp;&nbsp;
         </div>
-        <div class="flex">
-            <button type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportExcel()"
+     -->   <div class="flex">
+            <!--<button type="button" pButton pRipple icon="pi pi-file-excel" (click)="exportExcel()"
                     class="p-button-success mr-2" pTooltip="XLS" tooltipPosition="bottom"></button>
-            <button type="button" pButton pRipple icon="pi pi-file-pdf" (click)="exportPDF()"
+      -->      <button type="button" pButton pRipple icon="pi pi-file-pdf" (click)="exportPDF()"
                     class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>
         </div>
     </div>
@@ -49,14 +49,17 @@
                 <span class="bold-text label">Montant des Ventes:</span>
                 <span class="bold-text value">{{rapportActivite.montantVente | customNumber}} FCFA</span><br><hr>
 
-                <span class="bold-text label">Montant Encaissé:</span>
+            <!--    <span class="bold-text label">Montant Encaissé:</span>
                 <span class="bold-text value">{{rapportActivite.montantEncaisse | customNumber}} FCFA</span><br><hr>
-
+-->
                 <span class="bold-text label">Montant des Dépenses:</span>
                 <span class="bold-text value">{{rapportActivite.montantDepense | customNumber}} FCFA</span><br><hr>
 
                 <span class="bold-text label">Reste:</span>
+<!--
                 <span class="bold-text value">{{rapportActivite.reste | customNumber}} FCFA</span><br><hr>
+-->
+                <span class="bold-text value">{{((rapportActivite.montantVente!)-(rapportActivite.montantDepense!))! | customNumber}} FCFA</span><br><hr>
             </div>
         </div>
 

@@ -159,10 +159,10 @@ export class RapportActiviteComponent implements OnInit {
     exportPDF() {
         const data = [
             {
-                "Montant des Ventes": this.formatCurrency(this.rapportActivite.montantVente || 0),
-                "Montant Encaissé": this.formatCurrency(this.rapportActivite.montantEncaisse || 0),
-                "Montant des Dépenses": this.formatCurrency(this.rapportActivite.montantDepense || 0),
-                "Reste": this.formatCurrency(this.rapportActivite.reste || 0)
+                "Ventes (FCFA)": this.formatCurrency(this.rapportActivite.montantVente || 0),
+                // "Montant Encaissé": this.formatCurrency(this.rapportActivite.montantEncaisse || 0),
+                "Dépenses (FCFA)": this.formatCurrency(this.rapportActivite.montantDepense || 0),
+                "Reste (FCFA)": this.formatCurrency((this.rapportActivite.montantVente!-this.rapportActivite.montantDepense!) || 0 || 0)
             }
         ];
         let dateInfo = {};
@@ -171,7 +171,7 @@ export class RapportActiviteComponent implements OnInit {
         } else if (this.selectedPeriod) { // Période
             dateInfo = { period: { start: this.selectedPeriod[0], end: this.selectedPeriod[1] } };
         }
-        const headers = ['Montant des Ventes', 'Montant Encaissé', 'Montant des Dépenses', 'Reste'];
+        const headers = ['Ventes (FCFA)', 'Dépenses (FCFA)', 'Reste (FCFA)'];
         const title = 'Rapport Activité';
 
         if (this.selectedType === 'etat') {
