@@ -19,7 +19,7 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
 
         this.model = [
             {
-                label: 'GESTION DE STOCK', icon: 'pi pi-fw pi-cog',
+                label: 'GESTION DE PHARMACIE', icon: 'pi pi-fw pi-cog',
                 items: [
                     {
                         label: 'Acceuil',
@@ -57,7 +57,7 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                         ]
                     },
                     {
-                        label: 'Ventes', icon: 'pi pi-fw pi-shopping-cart',
+                        label: 'Ventes', icon: 'pi pi-fw pi-shopping-cart',expanded: true,
                         items: [
                             /*{
                                 label: 'Clients',
@@ -254,7 +254,7 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
         if (this.droits != null) {
             // GESTION DE STOCK
             this.model = this.model.map(section => {
-                if (section.label === 'GESTION DE STOCK') {
+                if (section.label === 'GESTION DE PHARMACIE') {
                     section.items = section.items?.filter(item => {
                         if (!item.items) {
                             // Si l'élément n'a pas de sous-éléments, on le garde si l'utilisateur a les droits

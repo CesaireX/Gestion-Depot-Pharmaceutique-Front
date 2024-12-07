@@ -8,7 +8,7 @@ import {TokenStorage} from "./store/storage/tokenStorage";
     templateUrl: './app.component.html'
 })
 export class AppComponent implements OnInit {
-title="G-STOCK";
+title="G-PHARM";
     constructor(private primengConfig: PrimeNGConfig, private authService:AuthService,
     public tokenStorage: TokenStorage) { }
 
