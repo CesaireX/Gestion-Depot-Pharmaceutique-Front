@@ -890,7 +890,6 @@ export class FactureClientComponent implements OnInit {
                         this.bonCommandes.push(this.bonCommande);
                         console.log(this.bonCommandes);
                     }
-
                     const commandesResponse = await this.bonCommandeService.getCommandeByBonId(this.facture.boncommandeId).toPromise();
                     this.commandes1 = commandesResponse!.payload;
                 }
@@ -1039,7 +1038,13 @@ export class FactureClientComponent implements OnInit {
                 };
             });
 
-            if (this.articles[index].magasin) {
+            // Sélectionner automatiquement le premier magasin si aucun n'est sélectionné
+            // @ts-ignore
+            if (!this.articles[index].magasin && this.articles[index].stocks.length > 0) {
+                // @ts-ignore
+                this.articles[index].magasin = this.articles[index].stocks[0]; // Sélectionner le premier magasin
+                this.articles[index].initialQuantite = this.articles[index].magasin.stock_physique_dispo_vente; // Mettre à jour la quantité initiale
+            } else if (this.articles[index].magasin) {
                 // @ts-ignore
                 const selectedMagasin = this.articles[index].stocks.find(s => s.idMagasin === this.articles[index].magasin.id);
                 if (selectedMagasin) {
@@ -1048,6 +1053,7 @@ export class FactureClientComponent implements OnInit {
             }
         });
     }
+
     getfacturebyclients(event: any) {
         console.log(event.value)
         if(event.value!=null){

@@ -78,14 +78,14 @@ export class RoleComponent implements OnInit {
             Droit.VOIR_FOURNISSEUR_TRANSACTION,
             Droit.VOIR_FOURNISSEUR_HISTORIQUE,
         ],
-        Client: [
+       /* Client: [
             Droit.AJOUTER_CLIENT,
             Droit.MODIFIER_CLIENT,
             Droit.SUPPRIMER_CLIENT,
             Droit.VOIR_CLIENTS,
             Droit.VOIR_CLIENT_TRANSACTION,
             Droit.VOIR_CLIENT_HISTORIQUE,
-        ],
+        ],*/
         Categorie: [
             Droit.AJOUTER_CATEGORIE,
             Droit.MODIFIER_CATEGORIE,
@@ -155,13 +155,13 @@ export class RoleComponent implements OnInit {
             Droit.VOIR_CORRECTION_STOCK_MODIFIER,
             Droit.VOIR_CORRECTION_STOCK_SUPPRIMER],
 
-        Creance:[
+        /*Creance:[
             Droit.VOIR_CREANCE,
             Droit.VOIR_CREANCE_AJOUTER,
             Droit.VOIR_CREANCE_MODIFIER,
             Droit.VOIR_CREANCE_SUPPRIMER,
             Droit.VOIR_CREANCE_PAIEMENT],
-
+*/
 
         Facture_Client: [
             Droit.AJOUTER_FACTURE_CLIENT,
@@ -169,13 +169,13 @@ export class RoleComponent implements OnInit {
             Droit.SUPPRIMER_FACTURE_CLIENT,
             Droit.VOIR_FACTURE_CLIENT,
         ],
-        Commande_Client: [
+      /*  Commande_Client: [
             Droit.AJOUTER_COMMANDE_CLIENT,
             Droit.MODIFIER_COMMANDE_CLIENT,
             Droit.SUPPRIMER_COMMANDE_CLIENT,
             Droit.VOIR_COMMANDE_CLIENT,
         ],
-        Facture_Fournisseur: [
+    */    Facture_Fournisseur: [
             Droit.AJOUTER_FACTURE_FOURNISSEUR,
             Droit.MODIFIER_FACTURE_FOURNISSEUR,
             Droit.SUPPRIMER_FACTURE_FOURNISSEUR,
@@ -188,12 +188,12 @@ export class RoleComponent implements OnInit {
             Droit.VOIR_COMMANDE_FOURNISSEUR,
         ],
 
-        Encaissement: [
+   /*     Encaissement: [
             Droit.AJOUTER_ENCAISSEMENT,
             Droit.MODIFIER_ENCAISSEMENT,
             Droit.SUPPRIMER_ENCAISSEMENT,
             Droit.VOIR_ENCAISSEMENT_FACTURE,
-        ],
+        ],*/
 
         Versement: [
             Droit.AJOUTER_VERSEMENT,

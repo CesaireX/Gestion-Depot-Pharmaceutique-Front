@@ -484,8 +484,8 @@
                     <td>{{ facture.date_echeance | customDate}}</td>
 -->
                     <td>{{ facture.montant_total | customNumber}} FCFA</td>
-                    <td *ngIf="facture.reste!==0" [ngStyle]="{ color: 'red' }">{{ facture.reste | customNumber}} FCFA</td>
-                    <td *ngIf="facture.reste===0" style="color: green"> vente Réglée</td>
+                   <!-- <td *ngIf="facture.reste!==0" [ngStyle]="{ color: 'red' }">{{ facture.reste | customNumber}} FCFA</td>
+                    <td *ngIf="facture.reste===0" style="color: green"> vente Réglée</td>-->
                 </tr>
             </ng-template>
             <ng-template pTemplate="summary">
@@ -525,7 +525,7 @@
                 </button>
             </div>
         </div>
-        <p-accordion>
+        <!--<p-accordion>
             <p-accordionTab>
                 <ng-template pTemplate="header">
                     Paiements <span class="badge">{{ facture.listPaiements?.length }}</span>
@@ -548,8 +548,8 @@
                                 <td>
                                     <button (click)="viewRecu(recu)" class="p-button-text" icon="pi pi-eye" pButton
                                             type="button"></button>
-<!--                                    <button (click)="modifier_paiement(recu.id)" class="p-button-text" icon="pi pi-pencil" pButton-->
-<!--                                            type="button"></button>-->
+&lt;!&ndash;                                    <button (click)="modifier_paiement(recu.id)" class="p-button-text" icon="pi pi-pencil" pButton&ndash;&gt;
+&lt;!&ndash;                                            type="button"></button>&ndash;&gt;
                                     <button (click)="deleteRecu(recu)" class="p-button-text" icon="pi pi-trash" pButton
                                             type="button"></button>
                                 </td>
@@ -558,7 +558,7 @@
                     </p-table>
                 </ng-template>
             </p-accordionTab>
-        </p-accordion>
+        </p-accordion>-->
         <br>
         <h6 *ngIf="!recuState">Vue en mode PDF
             <p-inputSwitch [(ngModel)]="checked"/>
@@ -575,7 +575,7 @@
 
                         <div class="div-right-left">
                             <div class="div-right">
-                                <div>Statut</div>
+<!--                                <div>Statut</div>-->
                                 <div *ngIf="facture.numeroboncommande">N° de la commande client</div>
                                 <div>Date</div>
                                 <div>Date d'échéance</div>
@@ -583,13 +583,13 @@
                                 <div>Total</div>
                             </div>
                             <div class="div-left">
-                                <div> <span [ngClass]="{
+                                <!--<div> <span [ngClass]="{
         'status-en-attente': facture.status === 'EN_ATTENTE',
         'status-partiellement-payee': facture.status === 'PARTIELLEMENT_PAYEE',
         'status-payee': facture.status === 'PAYEE'
     }">
         {{ formatStatus(facture.status) }}
-    </span></div>
+    </span></div>-->
                                 <div (click)="viewBon(facture)" *ngIf="facture.numeroboncommande" class="link-like"> {{facture.numeroboncommande}}</div>
                                 <div>{{facture.date_facture | customDate}}</div>
                                 <div> {{facture.date_echeance | customDate}}</div>

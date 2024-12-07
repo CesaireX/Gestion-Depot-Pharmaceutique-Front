@@ -704,16 +704,17 @@ export class FactureFournisseurComponent implements OnInit {
                 };
             });
 
-            if (this.articles[index].magasin) {
+            // @ts-ignore
+            if (this.articles[index].stocks.length > 0) {
+                // Sélection automatique du premier magasin
                 // @ts-ignore
-                const selectedMagasin = this.articles[index].stocks.find(s => s.idMagasin === this.articles[index].magasin.id);
-                if (selectedMagasin) {
-                    this.articles[index].magasin = selectedMagasin;
-
-                }
+                const firstMagasin = this.articles[index].stocks[0];
+                this.articles[index].magasin = firstMagasin;
+                this.articles[index].initialQuantite = firstMagasin.stock_physique_dispo_vente; // Mettre à jour la quantité initiale
             }
         });
     }
+
 
 
     transformToEntrees(article: any): Entree_stock {
