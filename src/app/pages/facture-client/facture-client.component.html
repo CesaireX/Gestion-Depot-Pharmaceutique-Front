@@ -567,7 +567,7 @@
             <div class="main-content">
                 <div class="info-section">
                     <div class="info-block">
-                        <div class="bc">FACTURE CLIENT</div>
+                        <div class="bc">RECU DE PAIEMENT</div>
                         <div style=" margin-top: 5px;"><strong>N° de la vente</strong> :  {{facture.numero}}
                         </div>
                         <br/>
@@ -722,21 +722,21 @@
                 </div>
             </div>
             <div class="order-info" style="margin-top: -120px">
-                <p><strong>FACTURE</strong></p>
-                <p><strong>N° de facture :</strong> {{facture.numero}}</p>
-                <p><strong>Date de la facture :</strong> {{facture.date_facture | customDate}}</p>
-                <p><strong>Date d'échéance :</strong> {{facture.date_echeance | customDate}}</p>
+                <p><strong>RECU</strong></p>
+                <p><strong>N° de RECU :</strong> {{facture.numero}}</p>
+                <p><strong>Date du reçu :</strong> {{facture.date_facture | customDate}}</p>
+                <!--<p><strong>Date d'échéance :</strong> {{facture.date_echeance | customDate}}</p>
                 <p><strong>Solde Dû :</strong> {{facture.reste | customNumber}} FCFA</p>
                 <p *ngIf="facture.boncommandeId!=null"><strong>Numéro du bon de
-                    commande:</strong> {{facture.numeroboncommande}}</p>
+                    commande:</strong> {{facture.numeroboncommande}}</p>-->
                 <p><strong>Ouagadougou le {{facture.createdDate | customDate}}</strong></p>
             </div>
-            <div class="billing-info">
+<!--            <div class="billing-info">
                 <p><strong>Facturer à :</strong><br>
                     {{ facture.clientNom }} {{ facture.clientPrenom }}<br>
                     <span *ngIf="facture.telClient">Téléphone: +226 {{ facture.telClient }}</span>
                 </p>
-            </div>
+            </div>-->
             <div class="article-section">
                 <table>
                     <thead>
@@ -760,9 +760,13 @@
             <div class="total-section">
                 <p><strong>Sous-total:</strong> {{ facture.sous_total | customNumber}} FCFA</p>
                 <p><strong>Total:</strong> {{ facture.montant_total | customNumber}} FCFA</p>
+<!--
                 <p><strong>Solde Dû :</strong> {{facture.reste | customNumber}} FCFA</p>
+-->
             </div>
-            <p>Arrêté la présente facture à {{ facture.montant_total | numberToWords }} FRANCS CFA</p>
+<!--
+            <p>Arrêté le facture à {{ facture.montant_total | numberToWords }} FRANCS CFA</p>
+-->
         </div>
     </div>
 </div>

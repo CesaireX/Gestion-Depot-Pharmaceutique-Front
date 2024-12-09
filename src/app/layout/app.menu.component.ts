@@ -205,7 +205,7 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                 routerLink: ['/gestock/magasin']
                             },
                             {
-                                label: 'Catégories de vos produits',
+                                label: 'Catégories des produits',
                                 icon: 'pi pi-fw pi-box',
                                 routerLink: ['/gestock/categorie']
                             },
@@ -214,11 +214,11 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                 icon: 'pi pi-fw pi-align-left',
                                 routerLink: ['/gestock/uniteMesure']
                             },
-                            /*{
+                            {
                                 label: 'Taxes',
                                 icon: 'pi pi-fw pi-align-left',
                                 routerLink: ['/gestock/taxe']
-                            },*/
+                            },
                             {
                                 label: 'Natures des dépenses',
                                 icon: 'pi pi-fw pi-align-left',
@@ -368,7 +368,7 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                     if (subItem.label === 'Magasins' && !this.droits.includes('VOIR_MAGASINS')) {
                                         return false;
                                     }
-                                    if (subItem.label === 'Catégories de vos articles' && !this.droits.includes('VOIR_CATEGORIE')) {
+                                    if (subItem.label === 'Catégories des produits' && !this.droits.includes('VOIR_CATEGORIE')) {
                                         return false;
                                     }
                                     if (subItem.label === 'Unités de mesure' && !this.droits.includes('VOIR_UNITE_MESURE')) {
