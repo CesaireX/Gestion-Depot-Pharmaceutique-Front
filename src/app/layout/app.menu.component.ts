@@ -220,6 +220,11 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                 routerLink: ['/gestock/taxe']
                             },
                             {
+                                label: 'Assurances',
+                                icon: 'pi pi-fw pi-align-left',
+                                routerLink: ['/gestock/assurance']
+                            },
+                            {
                                 label: 'Natures des dépenses',
                                 icon: 'pi pi-fw pi-align-left',
                                 routerLink: ['/gestock/course']

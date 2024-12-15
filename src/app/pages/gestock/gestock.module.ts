@@ -67,6 +67,7 @@ import {VersementsFactureComponent} from "./versements/versements-facture.compon
 import { AddProduitMagasinComponent } from './add-produit-magasin/add-produit-magasin.component';
 import {NumberToWordsPipe} from "../../store/pipe/numberToWords.pipe";
 import {Transfert_stockComponent} from "./transfertStock/transfert_stock.component";
+import {AssuranceComponent} from "./assurance/assurance.component";
 @NgModule({
     declarations: [
         MagasinComponent,
@@ -86,6 +87,7 @@ import {Transfert_stockComponent} from "./transfertStock/transfert_stock.compone
         Entree_listComponent,
         InventaireComponent,
         TaxeComponent,
+        AssuranceComponent,
         FactureEntreeComponent,
         EncaissementFactureComponent,
         VersementsFactureComponent,

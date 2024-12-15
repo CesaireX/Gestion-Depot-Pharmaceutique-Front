@@ -1,5 +1,6 @@
 import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {
+    Assurance,
     BonCommande,
     Client,
     Commande,
@@ -33,6 +34,7 @@ import {formatDate} from "@angular/common";
 import {SocieteService} from "../../store/services/gestock-service/Societe.service";
 import html2pdf from 'html2pdf.js';
 import {PaiementService} from "../../store/services/gestock-service/Paiement.service";
+import {AssuranceService} from "../../store/services/gestock-service/Assurance.service";
 
 interface TableRowSelectEvent {
     originalEvent?: Event;
@@ -60,6 +62,7 @@ export class FactureClientComponent implements OnInit {
     article?: Produit;
     numeroFacture: string = 'FF-00001';
     reference: string = '';
+    nomAssure: string = '';
     dateFacture: Date = new Date();
     dateEcheance: Date = new Date();
     isDeliveryDateValid: boolean = true;
@@ -70,6 +73,7 @@ export class FactureClientComponent implements OnInit {
     facture: Facture = {};
     factureSelect: Facture = {};
     taxes: { id: number, label: string, value: number }[] = [];
+    assurances: { id: number, label: string, value: number }[] = [];
 
     articles: {
         produitId: number,
@@ -78,7 +82,9 @@ export class FactureClientComponent implements OnInit {
         produitPrix: number,
         produitNom: string,
         taxeLibelle: string,
+        assuranceLibelle: string,
         taxe: number,
+        assurance: number,
         montant: number,
         initialQuantite: number,
         stocks?: StockDetail[],
@@ -109,7 +115,7 @@ export class FactureClientComponent implements OnInit {
     lastInvoiceNumber: number = 13;
     errorMessage: string = '';
     createOrModify: boolean = false;
-
+    selectedType: string = 'nonAssure';
     clients: Client[] = [];
     factures: Facture[] = [];
     commandes: Commande[] = [];
@@ -145,6 +151,7 @@ export class FactureClientComponent implements OnInit {
         private produitService: ProduitService,
         private factureService: FactureFournisseurClientService,
         private taxeService: TaxeService,
+        private assuranceService: AssuranceService,
         private sortieStockService: Sortie_stockService,
         protected route: ActivatedRoute,
         protected router: Router,
@@ -298,6 +305,7 @@ export class FactureClientComponent implements OnInit {
         this.articleOptions = allData!.articleOptions;
         this.magasins = allData!.magasins;
         this.taxes = allData!.taxes;
+        this.assurances = allData!.assurances;
     }
 
     loadall() {
@@ -313,17 +321,27 @@ export class FactureClientComponent implements OnInit {
             })))
         );
 
+        const assurances$ = this.assuranceService.findbysociety(society).pipe(
+            map((res: any) => res.payload.map((ass: Assurance) => ({
+                id: ass.id!,
+                label: ass.libelle!,
+                value: ass.hauteur!
+            })))
+        );
+
         return forkJoin({
             clients: clients$,
             articleOptions: articleOptions$,
             magasins: magasins$,
-            taxes: taxes$
+            taxes: taxes$,
+            assurances: assurances$
         }).pipe(
             map((results: any) => ({
                 clients: results.clients.payload,
                 articleOptions: results.articleOptions.payload,
                 magasins: results.magasins.payload,
-                taxes: results.taxes
+                taxes: results.taxes,
+                assurances: results.assurances
             }))
         );
     }
@@ -419,7 +437,7 @@ export class FactureClientComponent implements OnInit {
     }
 
     ajouterLigne() {
-        this.articles.push({produitId: 0, magasin: undefined, quantite: 1, produitPrix: 0, taxe: 0, montant: 0,initialQuantite:0, taxeLibelle:'', produitNom:'', stocks: [], commandeId:null });
+        this.articles.push({produitId: 0, magasin: undefined, quantite: 1, produitPrix: 0, taxe: 0,assurance: 0, montant: 0,initialQuantite:0, taxeLibelle:'', assuranceLibelle:'', produitNom:'', stocks: [], commandeId:null });
     }
 
     supprimerLigne(index: number) {
@@ -440,6 +458,7 @@ export class FactureClientComponent implements OnInit {
         this.articles[index].produitPrix = 0;
         this.articles[index].quantite = 1;
         this.articles[index].taxe = 0;
+        this.articles[index].assurance = 0;
         this.articles[index].magasin = undefined;
     }
 
@@ -476,6 +495,38 @@ export class FactureClientComponent implements OnInit {
         this.updateMontant(index);
         this.calculateTotal();
     }
+
+
+    onAssuranceChange(event: any, index: number): void {
+        this.articles[index].assurance = event.value;
+        this.updateMontantAssurance(index);
+        this.calculateTotalAssurance();
+    }
+
+    updateMontantAssurance(index: number): void {
+        const article = this.articles[index];
+        const articleTotal = article.quantite * article.produitPrix;
+        const assuranceCouverture = articleTotal * (article.assurance / 100);
+        article.montant = articleTotal - assuranceCouverture;
+    }
+
+    calculateTotalAssurance(): void {
+        this.sousTotal = this.articles.reduce((acc, article) => {
+            return acc + article.montant;
+        }, 0);
+
+        let remiseValue = 0;
+        if (this.remiseType === 0) {
+            remiseValue = this.sousTotal * (this.remise / 100);
+        } else if (this.remiseType === 1) {
+            remiseValue = this.remise;
+        }
+
+        this.total = this.sousTotal - remiseValue + this.ajustement;
+        this.total = +this.total.toFixed(2);
+        this.sousTotal = +this.sousTotal.toFixed(2);
+    }
+
 
     updateMontant(index: number): void {
         const article = this.articles[index];
@@ -604,6 +655,11 @@ export class FactureClientComponent implements OnInit {
             this.facture.clientId = this.client?.id;
             this.facture.boncommandeId = this.bonCommande.id;
 
+            if(this.selectedType=='assure'){
+                this.facture.nomAssure = this.nomAssure;
+                this.facture.assure = true;
+            }
+
             if(this.facture.clientId){
                 console.log("fffffff")
                 this.facture.listSorties = this.articles.map(article => this.transformToSortie(article));
@@ -672,10 +728,11 @@ export class FactureClientComponent implements OnInit {
         this.facture = {};
         this.client = undefined;
         this.reference = '';
+        this.nomAssure = '';
         this.dateFacture = new Date();
         this.dateEcheance = new Date();
         this.isDeliveryDateValid = true;
-        this.articles = [{produitId: 0, magasin: undefined, quantite: 1, produitPrix: 0, taxe: 0, montant: 0, initialQuantite:0,taxeLibelle:'', produitNom:'', stocks: [], commandeId:null }];
+        this.articles = [{produitId: 0, magasin: undefined, quantite: 1, produitPrix: 0, taxe: 0, montant: 0, initialQuantite:0,taxeLibelle:'', produitNom:'', stocks: [], commandeId:null , assuranceLibelle:'', assurance:0}];
         this.sousTotal = 0;
         this.remise = 0;
         this.ajustement = 0;
@@ -689,35 +746,39 @@ export class FactureClientComponent implements OnInit {
     commandesToArticles(commandes: Commande[]): any[] {
         return commandes.map(command => {
             const taxe = this.taxes.find(t => t.id === command.taxeId);
-            const articleTotal = (command.quantite!-command.quantitefacturee!) * command.produitPrix!;
+            const articleTotal = (command.quantite! - command.quantitefacturee!) * command.produitPrix!;
             const taxeTotal = articleTotal * (taxe ? taxe.value / 100 : 0);
+            const assurance = this.assurances.find(t => t.id === command.assuranceId);
+            const assuranceCouverture = articleTotal * (assurance? assurance.value / 100 :0);
+
             const magasin = this.magasins.find(m => m.id === command.magasinId);
             let initialQuantite1;
-            if(this.facture.id){
+            if (this.facture.id) {
                 // @ts-ignore
-                 initialQuantite1 = command.quantitefacturee+command.quantite;
-            }else{
-                 initialQuantite1 =command.quantite!-command.quantitefacturee!
+                initialQuantite1 = command.quantitefacturee + command.quantite;
+            } else {
+                initialQuantite1 = command.quantite! - command.quantitefacturee!;
             }
-            return {
 
+            return {
                 produitId: command.produitId,
                 magasin: magasin,
                 produitNom: command.produitNom,
-                quantite: command.quantite!-command.quantitefacturee!,
+                quantite: command.quantite! - command.quantitefacturee!,
                 initialQuantite: initialQuantite1,
                 produitPrix: command.produitPrix,
                 taxe: taxe ? taxe.value : 0,
                 taxeLibelle: command.taxeLibelle,
-                montant: articleTotal + taxeTotal,
-                commandeId:command.id
+                assurance: assurance,
+                montant: articleTotal + taxeTotal - assuranceCouverture,
+                commandeId: command.id
             };
         });
     }
 
     transformToSortie(article: any): Sortie_stock {
         return {
-            id:article.id,
+            id: article.id,
             commandeId: article.commandeId,
             produitId: article.produitId,
             magasinId: article.magasin.idMagasin,
@@ -725,6 +786,7 @@ export class FactureClientComponent implements OnInit {
             produitNom: article.produitNom,
             produitPrix: article.produitPrix,
             quantite: article.quantite,
+            assuranceId: this.getAssuranceId(article.assurance),
             societyId: JSON.parse(this.tokenStorage.getsociety()!),
         };
     }
@@ -734,6 +796,9 @@ export class FactureClientComponent implements OnInit {
             const taxe = this.taxes.find(t => t.id === sortie.taxeId);
             const articleTotal = sortie.quantite! * sortie.produitPrix!;
             const taxeTotal = articleTotal * (taxe ? taxe.value / 100 : 0);
+            const assurance = this.assurances.find(t => t.id === sortie.assuranceId);
+            const assuranceCouverture = articleTotal * (assurance ? assurance.value/ 100:0);
+
             const magasin = this.magasins.find(m => m.id === sortie.magasinId);
             let initialQuantite1;
 
@@ -768,7 +833,8 @@ export class FactureClientComponent implements OnInit {
                 quantite: sortie.quantite,
                 produitPrix: sortie.produitPrix,
                 taxe: taxe ? taxe.value : 0,
-                montant: articleTotal + taxeTotal,
+                assurance: assurance? assurance.value :0,
+                montant: articleTotal + taxeTotal - assuranceCouverture,
                 initialQuantite: initialQuantite1,
             };
         }));
@@ -778,6 +844,10 @@ export class FactureClientComponent implements OnInit {
         const taxe = this.taxes.find(t => t.value === taxeValue);
         return taxe ? taxe.id : undefined;
     }
+    getAssuranceId(assuranceValue?: number): number | undefined {
+            const assurance = this.assurances.find(t => t.value === assuranceValue);
+            return assurance ? assurance.id : undefined;
+        }
 
     validateDeliveryDate() {
         this.isDeliveryDateValid = this.dateEcheance >= this.dateFacture;
@@ -881,7 +951,10 @@ export class FactureClientComponent implements OnInit {
                 this.client = this.clients.find(t => t.id === facture.clientId);
 
                 console.log(this.facture);
-
+                if (this.facture.assure==true){
+                   this.selectedType='assure'
+                    this.nomAssure=this.facture.nomAssure!;
+                }
                 if (this.facture.boncommandeId) {
                     const bonCommandeResponse = await this.bonCommandeService.findOne(this.facture.boncommandeId).toPromise();
                     if (bonCommandeResponse !== undefined) {

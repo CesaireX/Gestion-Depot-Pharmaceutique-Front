@@ -188,9 +188,9 @@
                             <div class="stock-info">
                                 <h3>Stock physique <i class="info-icon" aria-hidden="true"></i></h3>
                                 <p>Stock disponible: <span *ngIf="ligneMagasins" style="color: black">{{ligneMagasins[0]?.stock_physique_dispo}}</span></p>
-                                <p>Stock engagé: <span *ngIf="ligneMagasins" style="color: black">{{ligneMagasins[0]?.stock_physique_engage}}</span></p>
+                        <!--        <p>Stock engagé: <span *ngIf="ligneMagasins" style="color: black">{{ligneMagasins[0]?.stock_physique_engage}}</span></p>
                                 <p>Disponible à la vente: <span *ngIf="ligneMagasins" style="color: black">{{ligneMagasins[0]?.stock_physique_dispo_vente}}</span></p>
-                            </div>
+                  -->          </div>
                         </div>
                         <div *ngIf="droits.includes('VOIR_ARTICLE_TRANSACTION')" class="action-section">
                             <div class="action-info">
@@ -198,18 +198,18 @@
                                     <p>{{selectedItem?.quantite_a_recevoir !== undefined && selectedItem?.quantite_a_recevoir !== null ? (selectedItem.quantite_a_recevoir | customNumber) : 0}}</p>
                                     <span>Qté à recevoir</span>
                                 </div>
-                                <div class="action-card">
+                               <!-- <div class="action-card">
                                     <p>{{selectedItem?.quantite_a_facture !== undefined && selectedItem?.quantite_a_facture !== null ? (selectedItem.quantite_a_facture | customNumber) : 0}}</p>
                                     <span>Qté à facturer</span>
-                                </div>
+                                </div>-->
                                 <div class="action-card">
                                     <p>{{selectedItem?.quantite_a_regler !== undefined && selectedItem?.quantite_a_regler !== null ? (selectedItem.quantite_a_regler | customNumber) : 0}}</p>
                                     <span>Qté à réglée</span>
                                 </div>
-                                <div class="action-card">
+                               <!-- <div class="action-card">
                                     <p>{{selectedItem?.quantite_a_livrer !== undefined && selectedItem?.quantite_a_livrer !== null ? (selectedItem.quantite_a_livrer | customNumber) : 0}}</p>
                                     <span>Qté à livrer</span>
-                                </div>
+                                </div>-->
                             </div>
                         </div>
                     </div>
@@ -378,7 +378,7 @@
                 <p-table [value]="ligneMagasins" [tableStyle]="{'min-width': '50rem'}">
                     <ng-template pTemplate="header">
                         <tr>
-                            <th style="width:50%;">Magasin</th>
+                            <th style="width:50%;">Dépot</th>
                             <th>Stock Initial</th>
                         </tr>
                     </ng-template>

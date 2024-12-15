@@ -52,6 +52,7 @@ export class GestockEndpoint {
     static readonly gestock_inventaire = `${SERVICE_GESTOCK_PREFIX}/inventaire`;
     static readonly gestock_inventaire_export = `${SERVICE_GESTOCK_PREFIX}/inventaire/export/`;
     static readonly gestock_taxe = `${SERVICE_GESTOCK_PREFIX}/taxe`;
+    static readonly gestock_assurance = `${SERVICE_GESTOCK_PREFIX}/assurance`;
     static readonly gestock_ligneMagasin = `${SERVICE_GESTOCK_PREFIX}/ligneMagasin`;
     static readonly gestock_ligneMagasinByProductAndMagasin = `${SERVICE_GESTOCK_PREFIX}/ligneMagasin/ByProductAndMagasin/`;
     static readonly gestock_ligneMagasinByProduit = `${SERVICE_GESTOCK_PREFIX}/ligneMagasinByProduit/`;

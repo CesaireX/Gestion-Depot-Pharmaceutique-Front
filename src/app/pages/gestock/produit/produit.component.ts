@@ -36,7 +36,7 @@ export class ProduitComponent implements OnInit {
     tabs = [
         { label: 'Informations générales' },
         // { label: 'Transactions' },
-        { label: 'Stock par magasin' }
+       // { label: 'Stock par magasin' }
     ];
     selectedTab: number | null = 0;
     displayForm: boolean = false;
@@ -286,9 +286,14 @@ export class ProduitComponent implements OnInit {
         this.magasinService.findbysociety(JSON.parse(this.tokenStorage.getsociety()!)).subscribe(
             (res) => {
                 this.magasins = res.payload;
+                if (this.magasins && this.magasins.length > 0) {
+                    this.selectedMagasin = this.magasins[0];
+                    this.onMagasinChange({ value: this.selectedMagasin });
+                }
             }
         );
     }
+
 
     loadLignesMagasinByProduit(id: number) {
         this.ligneService.findAllByBesoin(id).subscribe(

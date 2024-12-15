@@ -11,6 +11,10 @@
         </p>
         <button (click)="retour()" class="p-button-primary small-button p-button-icon-only" icon="pi pi-arrow-left" pButton></button>
     </div>
+    <div class="flex radio-buttons" style="margin-bottom: 9px">
+        <p-radioButton name="assurance" value="nonAssure" [(ngModel)]="selectedType" label="Non Assuré"></p-radioButton>&nbsp;&nbsp;
+        <p-radioButton name="assurance" value="assure" [(ngModel)]="selectedType" label="Assuré"></p-radioButton>&nbsp;&nbsp;
+    </div>
     <p-messages [(value)]="messages!" [enableService]="false" [style]="{width: '50%'}"></p-messages>
     <form #factureForm="ngForm" autocomplete="off" (ngSubmit)="onSubmit(factureForm)" name="factureForm" novalidate role="form">
         <!-- Première partie du formulaire -->
@@ -80,6 +84,13 @@
                 </button>
             </div>
         </div>
+        <div *ngIf="selectedType==='assure'" class="form-group row">
+            <label class="col-label">Nom complet de l'assuré<span style="color: red"></span></label>
+            <div class="input-with-button">
+                <input [(ngModel)]="nomAssure" placeholder="Entrer le nom complet de l'assuré" id="nomAssure" name="nomAssure"
+                       pInputText type="text">
+            </div>
+        </div>
 
 <!--        <div class="form-group row" style="margin-top: 15px">
             <label class="col-label">Numéro de commande</label>
@@ -125,6 +136,7 @@
                 <th>QUANTITÉ</th>
                 <th>PRIX (FCFA)</th>
                 <!--<th>TAXE (%)</th>-->
+                <th *ngIf="selectedType==='assure'">ASSURANCE (%)</th>
                 <th>MONTANT (FCFA)</th>
                 <th *ngIf="bonCommande.id==null"></th>
             </tr>
@@ -248,6 +260,29 @@
                     </p-dropdown>
                 </td>
 -->
+                <td *ngIf="selectedType==='assure'">
+                    <!--                    <span *ngIf="bonCommande">{{article.taxeLibelle}} {{article.taxe}} %</span>-->
+                    <p-dropdown (onChange)="onAssuranceChange($event, i)"
+                                [(ngModel)]="article.assurance"
+                                [filterBy]="'libelle'"
+                                [filter]="true"
+                                [name]="'article-' + i + '-assurances'"
+                                [options]="assurances"
+                                [showClear]="true"
+                                [style]="{width: '200px'}" appendTo="body"
+                                placeholder="Sélectionner une assurance">
+
+                        <ng-template let-assurancess pTemplate="item">
+                            <div class="flex align-items-center fournisseurs-item">
+                                <div>{{ assurancess?.label }} &nbsp;&nbsp; [{{ assurancess?.value }}%]</div>
+                            </div>
+                        </ng-template>
+                        <ng-template let-assurancess pTemplate="selectedItem">
+                            <div>{{ assurancess?.label }} &nbsp;&nbsp; [{{ assurancess?.value }}%]</div>
+                        </ng-template>
+                    </p-dropdown>
+                </td>
+
                 <td style="width: 150px;">{{ article.montant.toFixed(2) | customNumber }}</td>
                 <td *ngIf="bonCommande.id==null">
                     <button (click)="supprimerLigne(i)"
@@ -568,17 +603,18 @@
                 <div class="info-section">
                     <div class="info-block">
                         <div class="bc">RECU DE PAIEMENT</div>
-                        <div style=" margin-top: 5px;"><strong>N° de la vente</strong> :  {{facture.numero}}
-                        </div>
+                        <div style=" margin-top: 5px;"><strong>N° de la vente</strong> :  {{facture.numero}}</div>
+                        <div *ngIf="facture.assure==true" style=" margin-top: 5px;"><strong>Nom assuré</strong> :  {{facture.nomAssure}}</div>
                         <br/>
                         <br/>
 
                         <div class="div-right-left">
                             <div class="div-right">
-<!--                                <div>Statut</div>-->
+<!--                            <div>Statut</div>-->
+                                <div *ngIf="facture.numeroboncommande">N° de la commande client</div>
                                 <div *ngIf="facture.numeroboncommande">N° de la commande client</div>
                                 <div>Date</div>
-                                <div>Date d'échéance</div>
+<!--                                <div>Date d'échéance</div>-->
                                 <div>Solde dû</div>
                                 <div>Total</div>
                             </div>
@@ -592,7 +628,7 @@
     </span></div>-->
                                 <div (click)="viewBon(facture)" *ngIf="facture.numeroboncommande" class="link-like"> {{facture.numeroboncommande}}</div>
                                 <div>{{facture.date_facture | customDate}}</div>
-                                <div> {{facture.date_echeance | customDate}}</div>
+<!--                                <div> {{facture.date_echeance | customDate}}</div>-->
                                 <div><strong> {{facture.reste | customNumber}} FCFA</strong></div>
                                 <div><strong> {{facture.montant_total | customNumber}} FCFA</strong></div>
                             </div>
@@ -619,6 +655,7 @@
 <!--
                             <th>Taxe</th>
 -->
+                            <th *ngIf="facture.assure==true">Assurance</th>
                             <th>Montant</th>
                         </tr>
                         </thead>
@@ -631,6 +668,7 @@
 <!--
                             <td>{{ item.taxeLibelle}} ({{ item.taxehauteur != null ? item.taxehauteur : 0 }}) %</td>
 -->
+                            <td  *ngIf="facture.assure==true">{{ item.assuranceLibelle}} ({{ item.assuranceHauteur != null ? item.assuranceHauteur : 0 }}) %</td>
                             <td>
                                 {{
                                 (item.quantite! * item.produitPrix! *

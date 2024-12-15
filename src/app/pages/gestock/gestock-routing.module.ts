@@ -48,6 +48,7 @@ import {EncaissementFactureComponent} from "./encaissements/encaissement-facture
 import {VersementsFactureComponent} from "./versements/versements-facture.component";
 import {AddProduitMagasinComponent} from "./add-produit-magasin/add-produit-magasin.component";
 import {Transfert_stockComponent} from "./transfertStock/transfert_stock.component";
+import {AssuranceComponent} from "./assurance/assurance.component";
 
 export const gestockRoutes: Routes = [{
     path:'',
@@ -60,6 +61,7 @@ export const gestockRoutes: Routes = [{
         {path:'fournisseur', component:FournisseurComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FOURNISSEURS'] } },
         {path:'uniteMesure', component:UniteMesureComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_UNITE_MESURE'] } },
         {path:'taxe', component:TaxeComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_TAXE'] } },
+        {path:'assurance', component:AssuranceComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_TAXE'] } },
         {path:'facture', component:FactureEntreeComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FACTURE'] } },
         {path:'entreestock', component:Entree_stockComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_ENTREE'] } },
         {path:'entreestocklist', component:Entree_listComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_LISTE_ENTRE_STOCK'] } },

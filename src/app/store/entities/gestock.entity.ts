@@ -323,6 +323,9 @@ export interface Sortie_stock{
     produitPrix?: number;
     taxehauteur?: number;
     taxeId?: number
+    assuranceId?: number;
+    assuranceLibelle?: string;
+    assuranceHauteur?: number;
     magasinId?: number;
     magasinNom?: string;
     factureId?: number;
@@ -773,6 +776,9 @@ export interface Commande {
     taxeLibelle?: string;
     taxeValue?: number;
     taxehauteur?: number;
+    assuranceId?: number;
+    assuranceLibelle?: string;
+    assuranceHauteur?: number;
     bondCommandeId?: number;
     produitNom?: string;
     produitUnite?: string;
@@ -813,6 +819,8 @@ export class Facture {
     modePaiement?: string; // Supposant que Mode_paiement est un enum ou une classe
     paiement?: number;
     numeroCheque?: string;
+    nomAssure?: string;
+    assure? : boolean;
 
     montant_total?: number;
     reste?: number;
@@ -829,4 +837,11 @@ export class Facture {
     createdBy?: string;
     societyId?: number;
     lastNumber?: string
+}
+
+export class Assurance {
+    id?: number;
+    libelle?: string;
+    hauteur?: number;
+    societyId?: number;
 }
