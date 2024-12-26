@@ -441,7 +441,7 @@ export class PaiementComponent implements OnInit {
                                     this.showMessage('success', 'SUPPRESSION', 'Suppression effectuée avec succès !');
                                     this.getRecuByCreanceId(id);
                                 },
-                                () => this.showMessage('error', 'SUPPRESSION', 'Echec de la suppression car catégorie est déja utilisé!')
+                                () => this.showMessage('error', 'SUPPRESSION', 'Echec de la suppression cardéja utilisé!')
                             );
                         }
                     }

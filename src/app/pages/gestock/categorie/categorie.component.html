@@ -110,7 +110,7 @@
  <div style="display: flex">
     <div class="card primary" style="height: 100%;">
         <div class="header55">
-        <h1>Catégorie</h1>
+        <h1>Forme</h1>
         <div class="header-actions">
             <button *ngIf="droits.includes('AJOUTER_CATEGORIE')" class="p-button-primary small-button" (click)="add(null)"
             ><i class="pi pi-plus"></i>Nouveau</button>
@@ -160,7 +160,7 @@
             </ng-template>
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="7" style="text-align: center">Aucune Catégorie disponible.</td>
+                    <td colspan="7" style="text-align: center">Aucune Forme disponible.</td>
                 </tr>
             </ng-template>
             <ng-template pTemplate="loadingbody">
@@ -170,12 +170,12 @@
             </ng-template>
         </p-table>
 
-        <p-dialog position="top" header="Créer une catégorie" [modal]="true" [(visible)]="display" [style]="{ width: '35rem' }">
+        <p-dialog position="top" header="Créer une forme de produit" [modal]="true" [(visible)]="display" [style]="{ width: '35rem' }">
             <form (ngSubmit)="save(editForm)" name="editForm" role="form" novalidate #editForm="ngForm" class="p-mb-3">
                 <div class="grid p-fluid mt-3">
 
                     <div class="field col-12 md:col-12">
-                        <label style="font-weight:bold;">Libellé de la Catégorie<span
+                        <label style="font-weight:bold;">Libellé de la forme<span
                             style="color: red">*</span></label>
                         <input name="nom" type="text" pInputText [(ngModel)]="categorie.libelle" [required]="true"/>
                     </div>

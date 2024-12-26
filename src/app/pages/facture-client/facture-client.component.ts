@@ -969,9 +969,6 @@ export class FactureClientComponent implements OnInit {
 
                 await this.loadSortieByInvoice(facture.id!);
 
-                console.log(this.clients);
-                console.log(this.client);
-                console.log(facture.clientId);
 
                 this.newBonCommandeNumber = facture.numero!;
 

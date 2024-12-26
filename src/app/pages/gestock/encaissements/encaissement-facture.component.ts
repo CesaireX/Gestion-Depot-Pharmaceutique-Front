@@ -503,7 +503,7 @@ export class EncaissementFactureComponent implements OnInit {
                                 this.loadPaiements();
                                 this.chrgmt = false;
                             },
-                            () => this.showMessage('error', 'SUPPRESSION', 'Echec de la suppression car catégorie est déja utilisé!')
+                            () => this.showMessage('error', 'SUPPRESSION', 'Echec de la suppression car la Forme est déja utilisé!')
                         );
                     }
                 }

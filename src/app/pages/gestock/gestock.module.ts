@@ -68,11 +68,13 @@ import { AddProduitMagasinComponent } from './add-produit-magasin/add-produit-ma
 import {NumberToWordsPipe} from "../../store/pipe/numberToWords.pipe";
 import {Transfert_stockComponent} from "./transfertStock/transfert_stock.component";
 import {AssuranceComponent} from "./assurance/assurance.component";
+import {FamilleComponent} from "./famille/famille.component";
 @NgModule({
     declarations: [
         MagasinComponent,
         ProduitComponent,
         CategorieComponent,
+        FamilleComponent,
         ClientComponent,
         FournisseurComponent,
         DepenseComponent,

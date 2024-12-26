@@ -28,7 +28,7 @@
                  responsiveLayout="scroll" [rowHover]="true"
                  selectionMode="single" [(selection)]="produit" dataKey="id"
                  [rowsPerPageOptions]="[25,50,100]"
-                 [globalFilterFields]="['nom','magasinLibelle','categorieLibelle','seuil','uniteMesureLibelle','prix','quantite','total','description']">
+                 [globalFilterFields]="['nom','magasinLibelle','categorieLibelle','familleLibelle','seuil','uniteMesureLibelle','prix','quantite','total','description']">
             <ng-template pTemplate="caption">
                 <div class="flex justify-content-between flex-column sm:flex-row">
                     <span class="p-input-icon-left mb-2">
@@ -40,17 +40,22 @@
             </ng-template>
             <ng-template pTemplate="header">
                 <tr>
-                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
-                        <div class="flex justify-content-between align-items-center">
-                            Catégorie du produit
-                        </div>
-                    </th>
+
                     <th style="min-width: 10rem; background-color: rgb(236,236,236)">
                         <div class="flex justify-content-between align-items-center">
                             Désignation
                         </div>
                     </th>
-
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Famille du produit
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Forme du produit
+                        </div>
+                    </th>
                     <th style="min-width: 10rem; background-color: rgb(236,236,236)">
                         <div class="flex justify-content-between align-items-center">
                             Seuil d'alerte
@@ -83,8 +88,9 @@
             </ng-template>
             <ng-template pTemplate="body" let-produit>
                 <tr (click)="onRowSelect(produit)" [pSelectableRow]="produit">
-                    <td>{{produit.categorieLibelle}}</td>
                     <td>{{produit.nom}}</td>
+                    <td>{{produit.familleLibelle}}</td>
+                    <td>{{produit.categorieLibelle}}</td>
                     <td>{{produit.seuil | customNumber}}</td>
                     <td>{{produit.uniteMesureLibelle}}</td>
                     <td *ngIf="produit.prixventettc>0"> {{produit.prixventettc | customNumber}}  FCFA</td>
@@ -161,7 +167,8 @@
                             <div>
                                 <p>Désignation : <b style="color: black">{{selectedItem?.nom ? selectedItem.nom : 'non spécifié'}}</b></p>
                                 <p>Unité de mesure : <b style="color: black">{{selectedItem?.uniteMesureLibelle ? selectedItem.uniteMesureLibelle : 'non spécifié'}}</b></p>
-                                <p>Catégorie du produit : <b style="color: black">{{selectedItem?.categorieLibelle ? selectedItem.categorieLibelle : 'non spécifié'}}</b></p>
+                                <p>Famille du produit : <b style="color: black">{{selectedItem?.familleLibelle ? selectedItem.familleLibelle : 'non spécifié'}}</b></p>
+                                <p>Forme du produit : <b style="color: black">{{selectedItem?.categorieLibelle ? selectedItem.categorieLibelle : 'non spécifié'}}</b></p>
                                 <p>Seuil d'alerte : <b style="color: black">{{selectedItem?.seuil ? (selectedItem.seuil| customNumber) : 'non spécifié'}}</b></p>
                             </div>
                         </div>
@@ -281,11 +288,23 @@
         </div>
 
         <div class="form-group row align-items-center">
-            <label for="categorie" class="col-sm-3 col-form-label">Catégorie</label>
-            <div class="col-sm-9 ml-7"> <!-- Ajouter une marge gauche -->
+            <label for="famille" class="col-sm-3 col-form-label">Famille</label>
+            <div class="col-sm-9 ml-7">
+                <p-dropdown class="form-control" id="famille" [options]="familles" [(ngModel)]="selectedFamille"
+                            optionLabel="libelle" name="familleId" [filter]="true"
+                            placeholder="Sélectionner une famille"
+                            [resetFilterOnHide]='true' [showClear]="true"
+                            [style]="{'width':'300px'}">
+                </p-dropdown>
+            </div>
+        </div>
+
+        <div class="form-group row align-items-center">
+            <label for="categorie" class="col-sm-3 col-form-label">Forme</label>
+            <div class="col-sm-9 ml-7">
                 <p-dropdown class="form-control" id="categorie" [options]="categories" [(ngModel)]="selectedCategorie"
                             optionLabel="libelle" name="categorieId" [filter]="true"
-                            placeholder="Sélectionner une catégorie"
+                            placeholder="Sélectionner une forme"
                             [resetFilterOnHide]='true' [showClear]="true"
                             [style]="{'width':'300px'}">
                 </p-dropdown>

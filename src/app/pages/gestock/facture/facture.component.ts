@@ -545,7 +545,7 @@ export class FactureEntreeComponent implements OnInit {
                                 this.showMessage('success', 'SUPPRESSION', 'Suppression effectuée avec succès !');
                                 this.getRecuByFactureId(id);
                             },
-                            () => this.showMessage('error', 'SUPPRESSION', 'Echec de la suppression car catégorie est déja utilisé!')
+                            () => this.showMessage('error', 'SUPPRESSION', 'Echec de la suppression est déja utilisé!')
                         );
                     }
                 }

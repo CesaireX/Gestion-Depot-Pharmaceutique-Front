@@ -1,13 +1,10 @@
 import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {
     CorrectionStock,
-    Inventaire,
-    LigneMagasin,
     Magasin,
-    Produit,
-    TypeStructure
+    Produit
 } from "../../../store/entities/gestock.entity";
-import { Router} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {ConfirmationService, MenuItem, MessageService} from "primeng/api";
 import {NgForm} from "@angular/forms";
 import {CorrectionStockService} from "../../../store/services/gestock-service/CorrectionStock.service";
@@ -46,9 +43,12 @@ export class CorrectionStockComponent implements OnInit {
     magasinSelected?: Magasin | null;
     items: MenuItem[] | undefined;
     isSecondaryActive = false;
+    currentdate: Date = new Date();
     @ViewChild('filter') filter!: ElementRef;
      //diff: number=0;
-     display2?: boolean;
+    display2?: boolean;
+    type?: string;
+    datePeremption: Date = new Date();
 
     constructor(
         protected correctionStockService: CorrectionStockService,
@@ -60,6 +60,7 @@ export class CorrectionStockComponent implements OnInit {
         protected confirmationService: ConfirmationService,
         protected authService: AuthService,
         protected ligneMagasinService : LigneMagasinService,
+        protected route: ActivatedRoute,
     ) {
     }
 
@@ -67,9 +68,16 @@ export class CorrectionStockComponent implements OnInit {
         this.display = false;
         this.menuBarBool = false;
         this.droits = this.tokenStorage.getdroits();
-        this.loadAll();
         this.loadItems()
         this.loadAllMagasin();
+        this.route.queryParams.subscribe(params => {
+            this.type = params['type']||'CORRECTION';
+            if (this.type === 'PERIME') {
+                this.loadExpiredProducts();
+            }else {
+                this.loadAll();
+            }
+        });
     }
 
 
@@ -99,7 +107,11 @@ export class CorrectionStockComponent implements OnInit {
                     if (correctionStockToDelete.id != null) {
                         this.correctionStockService.update(correctionStockToDelete).subscribe(
                             () => {
-                                this.loadAll();
+                                if (this.type === 'PERIME') {
+                                    this.loadExpiredProducts();
+                                }else {
+                                    this.loadAll();
+                                }
                                 this.isSecondaryActive=false;
                                 this.showMessage('success', 'ANNULATION', 'Annulation effectuée avec succès !');
                             },
@@ -126,10 +138,29 @@ export class CorrectionStockComponent implements OnInit {
             );
     }
 
+    loadExpiredProducts(){
+        this.loading = true;
+        this.correctionStockService.getExpiredProducts(JSON.parse(this.tokenStorage.getsociety()!)).subscribe(
+            (res) => {
+                this.correctionStocks = res.payload;
+                this.loading = false;
+            },
+            (error) => {
+                console.error(error);
+                this.loading = false;
+            }
+        );
+    }
+
+
     loadAllMagasin() {
         this.magasinService.findbysociety(JSON.parse(this.tokenStorage.getsociety()!)).subscribe(
             (res) => {
                 this.magasins = res.payload;
+                if (this.magasins && this.magasins.length > 0) {
+                    this.magasinSelected = this.magasins[0];
+                    this.loadProductByMagasin();
+                }
             }
         );
     }
@@ -213,6 +244,11 @@ export class CorrectionStockComponent implements OnInit {
         this.correctionStock.societyId = JSON.parse(this.tokenStorage.getsociety()!);
         this.correctionStock.magasinId = this.magasinSelected?.id;
         this.correctionStock.produitId = this.produitSelected?.id;
+        if (this.type === 'PERIME') {
+            this.correctionStock.productExpired=true;
+        }else {
+            this.correctionStock.productExpired=false;
+        }
             this.confirmationService.confirm({
                 header: 'ENREGISTREMENT',
                 message: 'Voulez-vous vraiment enregistrer un nouvel correctionStock?',
@@ -221,7 +257,11 @@ export class CorrectionStockComponent implements OnInit {
                     this.chrgmt = true;
                         this.correctionStockService.save(this.correctionStock).subscribe(
                             () => {
-                                this.loadAll();
+                                if (this.type === 'PERIME') {
+                                    this.loadExpiredProducts();
+                                }else {
+                                    this.loadAll();
+                                }
                                 this.showMessage('success', 'Ajout', 'Ajout effectué avec succès !');
                                 this.display = false;
                                 this.chrgmt = false;
@@ -232,7 +272,6 @@ export class CorrectionStockComponent implements OnInit {
                         );
                 }
             });
-
     }
 
     ifExist(): boolean {
@@ -278,31 +317,46 @@ export class CorrectionStockComponent implements OnInit {
 
     calculDif(event:any) {
         this.correctionStock.diff=0;
-        if (this.produitSelected){
+        if (this.type === 'PERIME'){
             // @ts-ignore
-            this.correctionStock.diff = event.value - this.correctionStock.stockTheorique;
+            this.correctionStock.diff = this.correctionStock.stockTheorique - event.value;
+
+        }else {
+            if (this.produitSelected){
+                // @ts-ignore
+                this.correctionStock.diff = event.value - this.correctionStock.stockTheorique;
+            }
         }
+
     }
     calculDif1() {
         this.correctionStock.diff=0;
-        if (this.produitSelected){
+        if (this.type === 'PERIME'){
             // @ts-ignore
-            this.correctionStock.diff = this.correctionStock.stockPhysique - this.correctionStock.stockTheorique;
+            this.correctionStock.diff = this.correctionStock.stockTheorique - this.correctionStock.qtePerime;
+        }else{
+            if (this.produitSelected){
+                // @ts-ignore
+                this.correctionStock.diff = this.correctionStock.stockPhysique - this.correctionStock.stockTheorique;
+            }
         }
     }
     getSeverity(correctionStock:CorrectionStock): string {
         // @ts-ignore
         if(correctionStock?.diff<0){
             return 'danger';
+            // @ts-ignore
+        }else if (correctionStock?.qtePerime>0){
+            return 'danger';
         }
         else{
-            return 'success';}
+            return 'success';
+        }
     }
 
     clearDropdown() {
         if (!this.produitSelected){
 
         }
-        console.log('ffffffffffffffffffffjksbdhhhhhhhhhshdbffffffffffff')
     }
 }

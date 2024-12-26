@@ -401,7 +401,7 @@ export class VersementsFactureComponent implements OnInit {
                                 this.loadVersements();
                                 this.chrgmt = false;
                             },
-                            () => this.showMessage('error', 'SUPPRESSION', 'Echec de la suppression car catégorie est déja utilisé!')
+                            () => this.showMessage('error', 'SUPPRESSION', 'Echec de la suppression car déja utilisé!')
                         );
                     }
                 }

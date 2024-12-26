@@ -44,11 +44,18 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                 icon: 'pi pi-fw pi-chart-bar',
                                 routerLink: ['/gestock/inventaire']
                             },
-                            /*{
+                            {
                                 label: 'Correction Stock',
                                 icon: 'pi pi-fw pi-pencil',
-                                routerLink: ['/gestock/correctionStock']
-                            },*/
+                                routerLink: ['/gestock/correctionStock'],
+                                queryParams: { type: 'CORRECTION' },
+                            },
+                            {
+                                label: 'Sortie de produits périmés',
+                                icon: 'pi pi-fw pi-trash',
+                                routerLink: ['/gestock/produitsPerimes'],
+                                queryParams: { type: 'PERIME' },
+                            },
                             /*{
                                 label: 'Transfert de stock',
                                 icon: 'pi pi-fw pi-plus-circle',
@@ -205,9 +212,14 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                 routerLink: ['/gestock/magasin']
                             },
                             {
-                                label: 'Catégories des produits',
+                                label: 'Formes des produits',
                                 icon: 'pi pi-fw pi-box',
                                 routerLink: ['/gestock/categorie']
+                            },
+                            {
+                                label: 'Familles des produits',
+                                icon: 'pi pi-fw pi-box',
+                                routerLink: ['/gestock/famille']
                             },
                             {
                                 label: 'Unités de mesure',
@@ -373,7 +385,10 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                     if (subItem.label === 'Magasins' && !this.droits.includes('VOIR_MAGASINS')) {
                                         return false;
                                     }
-                                    if (subItem.label === 'Catégories des produits' && !this.droits.includes('VOIR_CATEGORIE')) {
+                                    if (subItem.label === 'Formes des produits' && !this.droits.includes('VOIR_CATEGORIE')) {
+                                        return false;
+                                    }
+                                    if (subItem.label === 'Familles des produits' && !this.droits.includes('VOIR_CATEGORIE')) {
                                         return false;
                                     }
                                     if (subItem.label === 'Unités de mesure' && !this.droits.includes('VOIR_UNITE_MESURE')) {

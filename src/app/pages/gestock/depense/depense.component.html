@@ -36,7 +36,7 @@
                     </th>
                     <th style="min-width: 12rem; background-color: rgb(236,236,236)">
                         <div class="flex justify-content-between align-items-center">
-                            Nature de la course
+                            Nature de la depense
                         </div>
                     </th>
                     <th style="min-width: 12rem; background-color: rgb(236,236,236)">
@@ -115,11 +115,11 @@
     <form (ngSubmit)="save(editForm)" name="editForm" role="form" novalidate #editForm="ngForm" class="container">
 
         <div class="form-group row align-items-center">
-            <label style="color: red" class="col-sm-3 col-form-label">Nature de la course</label>
+            <label style="color: red" class="col-sm-3 col-form-label">Nature de la depense</label>
             <div class="col-sm-9 ml-7" style="width: 300px;">
                 <p-dropdown id="categorie" [options]="courses" [(ngModel)]="selectedCourse"
                             optionLabel="libelle" name="courseId" [filter]="true"
-                            placeholder="Sélectionner une course" [showClear]="true"
+                            placeholder="Sélectionner une depense" [showClear]="true"
                             [resetFilterOnHide]='true' [required]="true"
                             [style]="{'width':'100%'}">
                 </p-dropdown>

@@ -196,7 +196,7 @@ export class CreanceComponent implements OnInit {
                                         this.displayForm = false;
                                     });
                                 },
-                                () => this.showMessage('error', 'SUPPRESSION', 'Echec de la suppression car catégorie est déja utilisé!')
+                                () => this.showMessage('error', 'SUPPRESSION', 'Echec de la suppression car la Forme est déja utilisé!')
                             );
                         }
                     }
@@ -412,7 +412,7 @@ export class CreanceComponent implements OnInit {
                                     this.chrgmt = false;
                                 })
                             },
-                            () => this.showMessage('error', 'SUPPRESSION', 'Echec de la suppression car catégorie est déja utilisé!')
+                            () => this.showMessage('error', 'SUPPRESSION', 'Echec de la suppression car la Forme est déja utilisé!')
                         );
                     }
                 }

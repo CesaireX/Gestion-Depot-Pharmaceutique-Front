@@ -1,59 +1,51 @@
-<div style="display: flex">
+<p-toast position="top-center"></p-toast>
+<div class="spinner-overlay" *ngIf="chrgmt">
+    <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
+</div>
+ <div style="display: flex">
     <div class="card primary" style="height: 100%;">
-        <p-toast position="top-center"></p-toast>
         <div class="header55">
-            <h1>Courses du personnel</h1>
-            <div class="header-actions">
-                <button *ngIf="droits.includes('AJOUTER_DEPENSE')" (click)="add(null)"
-                        class="p-button-primary small-button"><i class="pi pi-plus"></i>Nouveau
-                       </button>
+        <h1>Famille</h1>
+        <div class="header-actions">
+            <button *ngIf="droits.includes('AJOUTER_CATEGORIE')" class="p-button-primary small-button" (click)="add(null)"
+            ><i class="pi pi-plus"></i>Nouveau</button>
 
-                <p-menu #menu appendTo="body" [popup]="true" [model]="items!"></p-menu>
-                <div class="flex justify-content-end">
-                    <button (click)="menu.toggle($event)" pButton pRipple
-                            icon="pi pi-ellipsis-h" class="p-button-text p-button-rounded text-900"></button>
-                </div>
+            <p-menu #menu appendTo="body" [popup]="true" [model]="items!"></p-menu>
+            <div class="flex justify-content-end">
+                <button (click)="menu.toggle($event)" pButton pRipple
+                        icon="pi pi-ellipsis-h" class="p-button-text p-button-rounded text-900"></button>
             </div>
 
-
         </div>
-
-        <p-table #dt [value]="courses" [paginator]="true" [loading]="loading" [rows]="25"
+    </div>
+        <p-table #dt [value]="familles" [paginator]="true" [loading]="loading" [rows]="25"
                  responsiveLayout="scroll" [rowHover]="true"
                  [rowsPerPageOptions]="[25,50,100]"
                  [globalFilterFields]="['libelle']">
             <ng-template pTemplate="caption">
-                <div class="flex justify-content-between flex-column sm:flex-row">
-                    <span class="p-input-icon-left mb-2">
-							<i class="pi pi-search"></i>
-							<input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
-                                   placeholder="Rechercher une course" class="w-full"/>
-						</span>
-                </div>
             </ng-template>
             <ng-template pTemplate="header">
                 <tr>
-                    <th style="min-width: 12rem">
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
                         <div class="flex justify-content-between align-items-center">
-                            Nature de la depense
+                            Libellé
                         </div>
                     </th>
-                    <th style="border-left: none;">
+                    <th style="border-left: none; background-color: rgb(236,236,236)">
                     </th>
                 </tr>
             </ng-template>
-            <ng-template pTemplate="body" let-course>
+            <ng-template pTemplate="body" let-famille>
                 <tr>
-                    <td>{{ course.libelle }}</td>
+                    <td>{{ famille.libelle }}</td>
                     <td style="border-left: none;">
-
-                        <button *ngIf="droits.includes('MODIFIER_DEPENSE')"  (click)="add(course)"
+                        <button   *ngIf="droits.includes('MODIFIER_CATEGORIE')" (click)="add(famille)"
                                  class="p-button-primary small-button mr-2"
                                  icon="pi pi-pencil" pTooltip="Modifier"
                                  pButton
                                  type="button"></button>
 
-                        <button *ngIf="droits.includes('SUPPRIMER_DEPENSE')"  (click)="deleteElement(course)"
+                        <button  *ngIf="droits.includes('SUPPRIMER_CATEGORIE')" (click)="deleteElement(famille)"
                                  class="p-button-danger small-button"
                                  icon="pi pi-trash" pTooltip="Supprimer"
                                  pButton
@@ -61,10 +53,10 @@
                     </td>
                 </tr>
             </ng-template>
-            <ng-template pTemplate="summary">
-                <div class="flex align-items-center justify-content-between">
-                    Au total il y'a {{courses.length}} Courses(s).
-                </div>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" style="text-align: center">Aucune Famille disponible.</td>
+                </tr>
             </ng-template>
             <ng-template pTemplate="loadingbody">
                 <tr>
@@ -72,11 +64,16 @@
                 </tr>
             </ng-template>
         </p-table>
-        <p-dialog position="top" header="Créer une course" [modal]="true" [(visible)]="display" [style]="{ width: '35rem' }">
+
+        <p-dialog position="top" header="Créer une forme de produit" [modal]="true" [(visible)]="display" [style]="{ width: '35rem' }">
             <form (ngSubmit)="save(editForm)" name="editForm" role="form" novalidate #editForm="ngForm" class="p-mb-3">
-                <div class="flex align-items-center gap-3 mb-5">
-                    <label class="font-semibold w-10rem">Nature de la depense<span style="color: red">*</span></label>
-                    <input [(ngModel)]="course.libelle" pInputText id="unite" name="unite" autocomplete="off" [required]="true" />
+                <div class="grid p-fluid mt-3">
+
+                    <div class="field col-12 md:col-12">
+                        <label style="font-weight:bold;">Libellé de la Famille<span
+                            style="color: red">*</span></label>
+                        <input name="nom" type="text" pInputText [(ngModel)]="famille.libelle" [required]="true"/>
+                    </div>
                 </div>
 
                 <div class="flex justify-content-end gap-2">
@@ -91,7 +88,6 @@
                 </div>
             </form>
         </p-dialog>
-
     </div>
 </div>
 <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
@@ -103,4 +99,3 @@
         ><i class="pi pi-confirm"></i>Confirmer</button>
     </p-footer>
 </p-confirmDialog>
-

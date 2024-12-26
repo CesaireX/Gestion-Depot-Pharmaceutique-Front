@@ -146,8 +146,9 @@ export class InventaireComponent implements OnInit {
                     return {
                         //Réference: inventaire.produitReference,
                         Désignation: inventaire.produitNom,
-                        //Catégorie: inventaire.categorie,
                         Unité: inventaire.unite,
+                        Famille: inventaire.famille,
+                        Forme: inventaire.categorie,
                         'Seuil de l\'inventaire': inventaire.produitSeuil,
                         'Stock Initial': inventaire.stockInitial,
                         Entrées: inventaire.entreeQuantite,
@@ -173,19 +174,19 @@ export class InventaireComponent implements OnInit {
         const data = this.inventaires.map(inventaire => ({
             Désignation: inventaire.produitNom || '',
             Unité: inventaire.unite || '',
+            Famille: inventaire.famille || '',
+            Forme: inventaire.categorie || '',
             'Seuil d\'alerte': this.formatCurrency(inventaire.produitSeuil!) || '',
             'Stock Initial': this.formatCurrency(inventaire.stockInitial!) || '',
             Entrées: this.formatCurrency(inventaire.entreeQuantite!) || '',
             Sorties: this.formatCurrency(inventaire.sortieQuantite!) || '',
             'Stock Disponible': this.formatCurrency(inventaire.stock_physique_dispo!) || '',
-            'Stock engagé': this.formatCurrency(inventaire.stock_physique_engage!) || '',
-            'Stock disponible à la vente': this.formatCurrency(inventaire.stock_physique_dispo_vente!) || '',
-            Statut: inventaire.statut || ''
+             Statut: inventaire.statut || ''
         }));
 
         const headers = [
-            'Désignation', 'Unité', 'Seuil d\'alerte', 'Stock Initial', 'Entrées',
-            'Sorties', 'Stock Disponible', 'Stock engagé', 'Stock disponible à la vente', 'Statut'
+            'Désignation', 'Unité', 'Famille', 'Forme', 'Seuil d\'alerte', 'Stock Initial', 'Entrées',
+            'Sorties', 'Stock Disponible', 'Statut'
         ];
         const magasinNom = this.magasinselected?.nom;
         const title = `Résumé de l'Inventaire du magasin : ${magasinNom}`;
@@ -202,7 +203,7 @@ export class InventaireComponent implements OnInit {
     exportPdffff() {
         const doc = new jsPDF('l', 'mm', 'a4');
 
-        const head = [['Réference', 'Désignation', 'Catégorie',
+        const head = [['Réference', 'Désignation', 'Forme',
             'Unité', 'Seuil de l\'inventaire', 'Stock Initial', 'Entrées',
             'Sorties', 'Stock Final', 'Prix U', 'Valeur', 'Statut']];
 

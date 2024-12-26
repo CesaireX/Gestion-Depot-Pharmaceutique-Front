@@ -702,8 +702,12 @@ export class BonCommandeComponent implements OnInit {
                     stock_physique_dispo_vente: existingStock ? existingStock.stock_physique_dispo_vente : 0
                 };
             });
+            // Sélectionner automatiquement le premier magasin si aucun n'est sélectionné
+            //@ts-ignore
+            if (!this.articles[index].magasin && this.articles[index].stocks.length > 0) {
+                // @ts-ignore
+                this.articles[index].magasin = this.articles[index].stocks[0]; // Sélectionner le premier magasin
 
-            if (this.articles[index].magasin) {
                 // @ts-ignore
                 const selectedMagasin = this.articles[index].stocks.find(s => s.idMagasin === this.articles[index].magasin.id);
                 if (selectedMagasin) {

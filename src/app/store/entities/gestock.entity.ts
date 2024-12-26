@@ -162,7 +162,8 @@ export interface Produit {
 
     categorieId?: number;
     categorieLibelle?: string;
-
+    familleId?: number;
+    familleLibelle?: string;
     reference?: string;
 
     seuil?: number;
@@ -180,6 +181,11 @@ export interface Produit {
 }
 
 export interface Categorie {
+    id?: number;
+    libelle?: string;
+    societyId?: number;
+}
+export interface Famille {
     id?: number;
     libelle?: string;
     societyId?: number;
@@ -400,9 +406,10 @@ export interface Inventaire {
      unite?: number;
      //produitValeur?: number;
      //produitPrix?: number;
-     //categorie?: number;
+     categorie?: string;
      statut?:string;
     nomMagasin?:string;
+    famille?:string;
     idMagasin?:number;
     stockInitial?:number;
     stock_physique_dispo?:number;
@@ -657,8 +664,12 @@ export interface CorrectionStock{
     produitReference?:string;
     produitNom?:string;
     categorie?:string;
+    qtePerime?:number;
+    famille?:string;
     unite?:string;
     raison?:string;
+    datePeremption?:Date;
+    productExpired?:boolean;
     societyId?: number;
 }
 

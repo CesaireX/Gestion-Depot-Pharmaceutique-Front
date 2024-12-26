@@ -1,7 +1,7 @@
 import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {
     AchatParArticle,
-    Categorie, Dates,
+    Categorie, Dates, Famille,
     LigneMagasin,
     Magasin,
     Produit,
@@ -25,6 +25,7 @@ import {AuthService} from "../../../store/services/gestock-service/Auth.service"
 import {VenteArticleService} from "../../../store/services/gestock-service/etats-gest-service/VenteArticle.service";
 import {a} from "@fullcalendar/core/internal-common";
 import {PdfService} from "../../../store/services/service-partage/Pdf.service";
+import {FamilleService} from "../../../store/services/gestock-service/Famille.service";
 
 @Component({
     selector: 'app-produit',
@@ -60,10 +61,12 @@ export class ProduitComponent implements OnInit {
     seuilAlert=0;
     prixventeht=0;
     selectedMagasin?: Magasin;
-    selectedCategorie?: Magasin;
+    selectedCategorie?: Categorie;
     magasins: Magasin[] = [];
     categories: Categorie[] = [];
-    uniteMesures: Categorie[] = [];
+    familles: Famille[] = [];
+    selectedFamille?: Famille;
+    uniteMesures: UniteMesure[] = [];
     total: number | undefined;
     selectedUniteMesure?: UniteMesure;
     selectedTaxe?: Taxe;
@@ -104,6 +107,7 @@ export class ProduitComponent implements OnInit {
         protected produitService: ProduitService,
         protected magasinService: MagasinService,
         protected categorieService: CategorieService,
+        protected familleService: FamilleService,
         protected uniteMesureService: UniteMesureService,
         protected router: Router,
         private tokenStorage: TokenStorage,
@@ -126,6 +130,7 @@ export class ProduitComponent implements OnInit {
                 this.loadItems(),
                 this.loadMagasin(),
                 this.loadCategorie(),
+                this.loadFamille(),
                 this.loadUniteMesure(),
                 this.loadtaxes()
             ]).then(() => {
@@ -189,6 +194,7 @@ export class ProduitComponent implements OnInit {
             this.ligneMagasins = [];
             this.produit = {}
             this.selectedCategorie = {};
+            this.selectedFamille = {};
             this.selectedUniteMesure = {};
             this.createormodif=true;
         } else {
@@ -202,6 +208,7 @@ export class ProduitComponent implements OnInit {
             this.modal = 'modifier';
             //this.selectedMagasin = this.magasins.find(magasin => magasin.id === produitValue.magasinId);
             this.selectedCategorie = this.categories.find(categorie => categorie.id === produitValue.categorieId);
+            this.selectedFamille = this.familles.find(famille => famille.id === produitValue.familleId);
             this.selectedUniteMesure = this.uniteMesures.find(unite => unite.id === produitValue.uniteMesureId);
             this.selectedTaxe = this.taxes.find(taxe => taxe.id === produitValue.taxeventeId);
             this.selectedTaxe2 = this.taxes.find(taxe => taxe.id === produitValue.taxeachatId);
@@ -312,6 +319,14 @@ export class ProduitComponent implements OnInit {
         );
     }
 
+    loadFamille() {
+            this.familleService.findbysociety(JSON.parse(this.tokenStorage.getsociety()!)).subscribe(
+                (res) => {
+                    this.familles = res.payload;
+                }
+            );
+        }
+
     loadUniteMesure() {
         this.uniteMesureService.findbysociety(JSON.parse(this.tokenStorage.getsociety()!)).subscribe(
             (res) => {
@@ -345,7 +360,7 @@ export class ProduitComponent implements OnInit {
             'Prix': this.formatCurrency(produit.prixventettc!) + ' FCFA' || '',
         }));
 
-        const headers = ['Catégorie', 'Désignation', 'Seuil', 'Unité', 'Prix'];
+        const headers = ['Forme', 'Désignation', 'Seuil', 'Unité', 'Prix'];
         const title = 'Liste des Produits';
 
         let dateInfo = {};
@@ -385,6 +400,7 @@ export class ProduitComponent implements OnInit {
         this.produit.societyId = JSON.parse(this.tokenStorage.getsociety()!);
         if (!this.ifExist()) {
             this.produit.categorieId = this.selectedCategorie?.id;
+            this.produit.familleId = this.selectedFamille?.id;
             this.produit.uniteMesureId = this.selectedUniteMesure?.id;
             this.produit.ligneMagasinDTOS = this.ligneMagasins;
             this.produit.prixachatht = this.prixventeht;

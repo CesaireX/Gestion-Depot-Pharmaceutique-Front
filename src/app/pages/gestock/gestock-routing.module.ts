@@ -49,6 +49,7 @@ import {VersementsFactureComponent} from "./versements/versements-facture.compon
 import {AddProduitMagasinComponent} from "./add-produit-magasin/add-produit-magasin.component";
 import {Transfert_stockComponent} from "./transfertStock/transfert_stock.component";
 import {AssuranceComponent} from "./assurance/assurance.component";
+import {FamilleComponent} from "./famille/famille.component";
 
 export const gestockRoutes: Routes = [{
     path:'',
@@ -56,6 +57,7 @@ export const gestockRoutes: Routes = [{
         { path: 'magasin', component: MagasinComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_MAGASINS'] } },
         { path: 'produit', component: ProduitComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_ARTICLE'] } },
         { path: 'categorie', component: CategorieComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_CATEGORIE'] } },
+        { path: 'famille', component: FamilleComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_CATEGORIE'] } },
         { path: 'client', component: ClientComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_CLIENTS'] } },
         {path:'utilisateur', component:UtilisateurComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_UTILISATEUR'] } },
         {path:'fournisseur', component:FournisseurComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FOURNISSEURS'] } },
@@ -73,7 +75,7 @@ export const gestockRoutes: Routes = [{
         {path:'sortieStocklist', component:Sortie_listComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_LISTE_SORTIE_STOCK'] } },
         {path:'transfertList', component:TransfertlistComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_LISTE_SORTIE_STOCK'] } },
         {path:'transfertStock', component:Transfert_stockComponent, canActivate: [AuthorizationGuard], data: { roles: ['AJOUTER_SORTIE_STOCK'] } },
-        { path: "notauthorize",  component: NotauthorizeComponent},
+        { path:'notauthorize',  component: NotauthorizeComponent},
         {path:'venteparclient', component:VenteParClientComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_VENTE_PAR_CLIENT'] } },
         {path:'ventepararticle', component:VenteParArticleComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_VENTE_PAR_ARTICLE'] } },
         {path:'clientdebiteur', component:ClientDebiteurComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_CLIENT_DEBITEUR'] } },
@@ -86,6 +88,7 @@ export const gestockRoutes: Routes = [{
         {path:'role', component:RoleComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_ROLE'] } },
         {path:'creance', component:CreanceComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_CREANCE'] } },
         {path:'correctionStock', component:CorrectionStockComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_CORRECTION_STOCK'] } },
+        {path:'produitsPerimes', component:CorrectionStockComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_CORRECTION_STOCK'] } },
         {path:'dashboards', component:DashboardSaasComponent},
         {path:'wizard', component:AdministrationComponent},
 

@@ -10,8 +10,10 @@ export class GestockEndpoint {
     static readonly gestock = `${SERVICE_GESTOCK_PREFIX}/typeStructures`;
     static readonly gestock_magasin = `${SERVICE_GESTOCK_PREFIX}/magasin`;
     static readonly gestock_correctionStock = `${SERVICE_GESTOCK_PREFIX}/correctionStock`;
+    static readonly gestock_produit_perime = `${SERVICE_GESTOCK_PREFIX}/expiredProduct`;
     static readonly gestock_produit = `${SERVICE_GESTOCK_PREFIX}/produit`;
     static readonly gestock_categorie = `${SERVICE_GESTOCK_PREFIX}/categorie`;
+    static readonly gestock_famille = `${SERVICE_GESTOCK_PREFIX}/famille`;
     static readonly gestock_creance = `${SERVICE_GESTOCK_PREFIX}/creance`;
     static readonly gestock_fournisseur = `${SERVICE_GESTOCK_PREFIX}/fournisseur`;
     static readonly gestock_transfert = `${SERVICE_GESTOCK_PREFIX}/transfertStock`;
