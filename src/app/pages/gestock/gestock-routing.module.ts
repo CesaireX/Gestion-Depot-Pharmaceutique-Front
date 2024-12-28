@@ -50,6 +50,8 @@ import {AddProduitMagasinComponent} from "./add-produit-magasin/add-produit-maga
 import {Transfert_stockComponent} from "./transfertStock/transfert_stock.component";
 import {AssuranceComponent} from "./assurance/assurance.component";
 import {FamilleComponent} from "./famille/famille.component";
+import {VenteComponent} from "../vente/vente.component";
+import {VenteAssuranceComponent} from "../vente-assurance/vente-assurance.component";
 
 export const gestockRoutes: Routes = [{
     path:'',
@@ -114,8 +116,15 @@ export const gestockRoutes: Routes = [{
         {path:'paiement', component:PaiementComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_CORRECTION_STOCK'] }},
         {path:'factureFournisseur', component:FactureFournisseurComponent , canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FACTURE_FOURNISSEUR'] }},
         {path:'factureFournisseur/:id', component: FactureFournisseurComponent , canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FACTURE_FOURNISSEUR'] }},
-        {path:'factureClient', component:FactureClientComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FACTURE_CLIENT'] } },
+        {path:'factureClient1', component:FactureClientComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FACTURE_CLIENT'] } },
         {path:'factureClient/:id', component:FactureClientComponent , canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FACTURE_CLIENT'] }},
+
+        {path:'factureClient', component:VenteComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FACTURE_CLIENT'] } },
+        {path:'factureClientNonRembourse', component:VenteAssuranceComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FACTURE_CLIENT'] } },
+        {path:'factureClientRembourse', component:VenteAssuranceComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FACTURE_CLIENT'] } },
+
+        {path:'factureClient1/:id', component:VenteComponent , canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FACTURE_CLIENT'] }},
+
 
         {path:'achatpararticle', component:AchatParArticleComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_ACHAT_ARTICLE'] }},
         {path:'achatparfournisseur', component:AchatParFournisseurComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FOURNISSEUR_ACHAT'] }},

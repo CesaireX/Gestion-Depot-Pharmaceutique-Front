@@ -504,7 +504,8 @@ export interface RapportActivite{
       montantVente?: number;
       montantEncaisse?:number;
       montantDepense?:number;
-      reste?:number;
+      montantAssuranceNonRembourse?:number;
+    reste?:number;
       credit?:number;
       etat?:number;
       totalCredit?: number;
@@ -826,13 +827,17 @@ export class Facture {
     fournisseurPrenom?: string;
     remise?: number;
 
-    // Lorsqu'on enregistre automatiquement avec un versement
-    modePaiement?: string; // Supposant que Mode_paiement est un enum ou une classe
+    modePaiement?: string;
     paiement?: number;
     numeroCheque?: string;
     nomAssure?: string;
+    nomPatient?: string;
+    matriculeAssure?: string;
+    codeIDAssure?: string;
+    agePatient?: string;
+    relationAssure?: string;
     assure? : boolean;
-
+    rembourseParAssureur? : boolean;
     montant_total?: number;
     reste?: number;
     ajustement?: number;
@@ -855,4 +860,11 @@ export class Assurance {
     libelle?: string;
     hauteur?: number;
     societyId?: number;
+}
+
+export class VentesDuJourData{
+    id?: number;
+    nombreVentes?: number;
+    montantEncaisse?: number;
+
 }

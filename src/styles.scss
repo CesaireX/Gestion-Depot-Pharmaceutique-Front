@@ -526,12 +526,13 @@ small.form-text {
     .totals {
         display: flex;
         flex-direction: row;
-        width: 45%;
+        width: 80%;
         background-color: #f9f9fb;
         padding: 15px 1%;
         border-radius: 5px;
         justify-content: space-between;
-        margin-left: 15%;
+        //margin-right: 4%;
+        //margin-left: 15%;
 
         .totals-row,
         .totals-row2,

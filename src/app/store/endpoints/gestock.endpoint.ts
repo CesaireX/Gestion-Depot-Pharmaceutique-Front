@@ -106,6 +106,7 @@ export class GestockEndpoint {
     static readonly etat_depense = `${SERVICE_GESTOCK_PREFIX}/etat-depense/`;
     static readonly encaissement = `${SERVICE_GESTOCK_PREFIX}/etat-encaissement/`;
     static readonly rapportActivite = `${SERVICE_GESTOCK_PREFIX}/etat-rapport-activite/`;
+    static readonly vente_du_jr = `${SERVICE_GESTOCK_PREFIX}/ventes-du-jour/`;
     static readonly chiffreAffaireParTrimestre = `${SERVICE_GESTOCK_PREFIX}/etat-chiffreAffaire/`;
 
     static readonly gestock_bon_commande = `${SERVICE_GESTOCK_PREFIX}/boncommande`;

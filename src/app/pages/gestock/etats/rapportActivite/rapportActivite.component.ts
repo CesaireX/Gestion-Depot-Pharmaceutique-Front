@@ -83,7 +83,6 @@ export class RapportActiviteComponent implements OnInit {
         this.checkValue();
         this.societyId = JSON.parse(this.tokenStorage.getsociety()!);
         this.getRapport();
-        this.loadArticle();
     }
 
     loadArticle() {

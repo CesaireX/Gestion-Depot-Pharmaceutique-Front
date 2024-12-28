@@ -1,0 +1,797 @@
+<p-toast position="top-center"></p-toast>
+<div *ngIf="chrgmt" class="spinner-overlay">
+    <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
+</div>
+<div *ngIf="!createOrModify" class="container1">
+    <div class="header-special">
+        <p style="font-size: large; margin-bottom: 25px">
+            <i class="pi pi-shopping-bag" style="font-size: 1.5rem"></i>
+            ventes
+        </p>
+        <button (click)="retour()" class="p-button-primary small-button " icon="pi pi-arrow-left" pButton>
+            <span>Voir les ventes</span>
+        </button>
+
+    </div>
+    <div class="flex radio-buttons" style="margin-bottom: 9px">
+        <p-radioButton (onClick)="clearDropdowns()" [(ngModel)]="selectedType" label="Non Assuré" name="assurance"
+                       value="nonAssure"></p-radioButton>&nbsp;&nbsp;
+        <p-radioButton (onClick)="clearDropdowns()" [(ngModel)]="selectedType" label="Assuré" name="assurance"
+                       value="assure"></p-radioButton>&nbsp;&nbsp;
+    </div>
+
+    <p-messages [(value)]="messages!" [enableService]="false" [style]="{width: '50%'}"></p-messages>
+    <form #factureForm="ngForm" autocomplete="off" name="factureForm" novalidate role="form">
+        <div class="form-container111">
+            <div class="form-group">
+                <label for="bonCommandeNumber">N° de la vente <span style="color: red">*</span></label>
+                <div class="input-with-button">
+                    <input [(ngModel)]="newBonCommandeNumber" disabled id="bonCommandeNumber" name="bonCommandeNumber"
+                           pInputText type="text">
+                    <button (click)="customizeBonCommandeNumber()" class="icon-button" type="button">
+                        <i class="pi pi-cog"></i>
+                    </button>
+                </div>
+            </div>
+            <div *ngIf="selectedType === 'assure'" class="form-group">
+                <label for="nomAssure">Nom complet de l'adhérent</label>
+                <input [(ngModel)]="nomAssure" id="nomAssure" name="nomAssure"
+                       pInputText placeholder="Entrer le nom complet de l'assuré" type="text">
+            </div>
+            <div *ngIf="selectedType === 'assure'" class="form-group">
+                <label for="nomPatient">Nom complet du patient</label>
+                <input [(ngModel)]="nomPatient" id="nomPatient" name="nomPatient"
+                       pInputText placeholder="Entrer le nom complet du patient" type="text">
+            </div>
+            <div *ngIf="selectedType === 'assure'" class="form-group">
+                <label for="matriculeAssure">Matricule de l'adhérent</label>
+                <input [(ngModel)]="matriculeAssure" id="matriculeAssure" name="matriculeAssure"
+                       pInputText placeholder="Entrer le matricule" type="text">
+            </div>
+            <div *ngIf="selectedType === 'assure'" class="form-group">
+                <label for="codeIDAssure">Code ID de l'adhérent</label>
+                <input [(ngModel)]="codeIDAssure" id="codeIDAssure" name="codeIDAssure" pInputText
+                       placeholder="Entrer le Code ID" type="text">
+            </div>
+            <div *ngIf="selectedType === 'assure'" class="form-group">
+                <label for="agePatient">Âge du patient</label>
+                <input [(ngModel)]="agePatient" id="agePatient" name="agePatient" pInputText
+                       placeholder="Entrer l'âge du patient" type="number">
+            </div>
+            <div *ngIf="selectedType === 'assure'" class="form-group">
+                <label for="relationAssure">Relation avec l'adhérent</label>
+                <input [(ngModel)]="relationAssure" id="relationAssure" name="relationAssure"
+                       pInputText placeholder="Ex: Conjoint, Enfant" type="text">
+            </div>
+            <div class="form-group">
+                <label for="dateFacture">Date</label>
+                <p-calendar [(ngModel)]="dateFacture" [style]="{width: '100%'}" dateFormat="dd MM yy" id="dateFacture"
+                            name="dateFacture"></p-calendar>
+            </div>
+        </div>
+
+        <div class="container2">
+            <!-- 1ère partie : product-selection à gauche -->
+            <div class="product-selection">
+                <p-table #dt1 (onRowUnselect)="onProductDeselected($event.data)" [(selection)]="selectedProducts"
+                         [globalFilterFields]="['nom']"
+                         [loading]="loading"
+                         [paginator]="true" [responsive]="true" [rowHover]="true"
+                         [rows]="10"
+                         [selectionMode]="'multiple'"
+                         [value]="articleOptions"
+                         responsiveLayout="scroll" styleClass="product-table custom-table">
+                    <ng-template pTemplate="caption">
+                        <div class="flex justify-content-between flex-column sm:flex-row align-items-center">
+
+                        <span class="p-input-icon-left">
+                <i class="pi pi-search"></i>
+                <input #filter (input)="onGlobalFilter(dt1, $event)" class="w-full" pInputText
+                       placeholder="Rechercher" type="text"/>
+            </span>
+                            <h4 class="mb-2 sm:mb-0">Liste des produits</h4>
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 50px;">
+                                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                            </th>
+                            <th>Nom du produit</th>
+                            <th>Prix (FCFA)</th>
+                            <th>Forme</th>
+                            <th>Famille</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template let-index="rowIndex" let-product pTemplate="body">
+                        <tr (click)="addProduct(product)"
+                            [pSelectableRow]="product">
+                            <td>
+                                <p-tableCheckbox [value]="product"></p-tableCheckbox>
+                            </td>
+                            <td style="font-weight: bold">{{ product.nom }}</td>
+                            <td>{{ product.prixventettc | customNumber }}</td>
+                            <td>{{ product.categorieLibelle }}</td>
+                            <td>{{ product.familleLibelle }}</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+
+                <!-- 4ème partie : Montant total et Nbr vente avec bouton Historique -->
+                <div class="totals-summary">
+                    <div class="total-amount">
+                        <label class="total-label">
+                            <span class="title">Total vente:</span>
+                            <span class="amount">{{ ventesDuJourData.montantEncaisse }} FCFA</span>
+                        </label>
+                        <label class="total-label">
+                            <span class="title">Nombre de ventes:</span>
+                            <span class="amount">{{ ventesDuJourData.nombreVentes }} ventes</span>
+                        </label>
+                    </div>
+                    <button (click)="goToVenteParArticle()" class="historique-button">Historique vente</button>
+                </div>
+
+            </div>
+
+            <!-- 2ème partie : Tableau d'articles à droite -->
+            <div class="article-section">
+                <p style="font-size: medium; margin-top: 30px; font-weight: bold">Tableau d’articles</p>
+                <div class="table-wrapper">
+                    <table class="article-table">
+                        <thead>
+                        <tr>
+                            <th>PRODUIT</th>
+                            <th>QUANTITÉ</th>
+                            <th>PRIX (FCFA)</th>
+                            <th *ngIf="selectedType === 'assure'">ASSURANCE (%)</th>
+                            <th>MONTANT (FCFA)</th>
+                            <th *ngIf="bonCommande.id==null" class="small-column"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr *ngFor="let article of articles; let i = index">
+                            <td>{{ article.produitNom }}</td>
+                            <td>
+                                <p-inputNumber
+                                    (onInput)="onQuantiteChange($event, i)"
+                                    [(ngModel)]="article.quantite"
+                                    [maxFractionDigits]="2"
+                                    [max]="article.initialQuantite"
+                                    [minFractionDigits]="0"
+                                    [min]="1"
+                                    [name]="'article-' + i + '-quantite'"
+                                    [showButtons]="true"
+                                    [style]="{ width: '100%' }"
+                                    locale="de-DE"
+                                    mode="decimal"
+                                    pInputNumber
+                                ></p-inputNumber>
+                                <div *ngIf="article.produitId && article.magasin">
+                            <span [ngStyle]="{ color: 'red' }">
+                                quantité max : {{ article.initialQuantite | customNumber }}
+                            </span>
+                                </div>
+                            </td>
+                            <td>
+                                <span *ngIf="bonCommande.id">{{ article.produitPrix }}</span>
+                                <p-inputNumber
+                                    (onInput)="onPrixChange($event, i)"
+                                    *ngIf="!bonCommande.id"
+                                    [(ngModel)]="article.produitPrix"
+                                    [minFractionDigits]="0"
+                                    [min]="0"
+                                    [name]="'article-' + i + '-prix'"
+                                    [showButtons]="true"
+                                    [style]="{ width: '100%' }"
+                                    locale="de-DE"
+                                    pInputNumber
+                                ></p-inputNumber>
+                            </td>
+                            <td *ngIf="selectedType === 'assure'">
+                                <p-dropdown
+                                    (onChange)="onAssuranceChange($event, i)"
+                                    [(ngModel)]="article.assurance"
+                                    [filterBy]="'libelle'"
+                                    [filter]="true"
+                                    [name]="'article-' + i + '-assurances'"
+                                    [options]="assurances"
+                                    [showClear]="true"
+                                    [style]="{ width: '100%' }"
+                                    appendTo="body"
+                                    placeholder="Sélectionner une assurance"
+                                >
+                                    <ng-template let-assurancess pTemplate="item">
+                                        <div class="flex align-items-center fournisseurs-item">
+                                            <div>{{ assurancess?.label }} &nbsp;&nbsp; [{{ assurancess?.value }}%]</div>
+                                        </div>
+                                    </ng-template>
+                                    <ng-template let-assurancess pTemplate="selectedItem">
+                                        <div>{{ assurancess?.label }} &nbsp;&nbsp; [{{ assurancess?.value }}%]</div>
+                                    </ng-template>
+                                </p-dropdown>
+                            </td>
+                            <td>{{ article.montant.toFixed(2) | customNumber }}</td>
+                            <td *ngIf="bonCommande.id==null" class="small-column">
+                                <button (click)="supprimerLigne(i)"
+                                        [disabled]="articles.length === 1"
+                                        class="p-button-danger small-button"
+                                        icon="pi pi-trash"
+                                        pButton
+                                        pTooltip="Supprimer le produit de le liste"
+                                        tooltipPosition="top"
+                                        type="button"></button>
+                            </td>
+
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 3ème partie : Totals row 2 -->
+                <div class="totals-row2">
+                    <div class="totals">
+                        <div class="totals-row">
+                            <div><label>Sous-total</label></div>
+                            <div><label>Remise</label></div>
+                            <div><label>Ajustement</label></div>
+                            <div><label style="font-weight: bold; font-size: 15px">Total</label></div>
+                        </div>
+                        <div class="totals-row2">
+                            <div></div>
+                            <div>
+                                <p-inputNumber (onInput)="onRemiseChange($event)" [(ngModel)]="remise"
+                                               [maxFractionDigits]="2"
+                                               [minFractionDigits]="0" [min]="0" [showButtons]="true"
+                                               locale="de-DE" mode="decimal"
+                                               name="remise" pInputNumber styleClass="input-styling">
+                                </p-inputNumber>
+                            </div>
+                            <div>
+                                <p-inputNumber (onInput)="onAjustementChange($event)" [(ngModel)]="ajustement"
+                                               [maxFractionDigits]="2" [minFractionDigits]="2"
+                                               [showButtons]="true" locale="de-DE" mode="decimal"
+                                               name="ajustement"
+                                               pInputNumber styleClass="input-styling">
+                                </p-inputNumber>
+                            </div>
+                            <div></div>
+                        </div>
+                        <div class="totals-row3">
+                            <div><span>{{ sousTotal | customNumber }} FCFA</span></div>
+                            <div>(-){{ remise | customNumber }} FCFA</div>
+                            <div>{{ ajustement | customNumber }} FCFA</div>
+                            <div><span style="font-weight: bold; font-size: 15px">{{ total | customNumber }} FCFA</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="payment-section"
+                     style="display: flex; justify-content: space-between; align-items: center; gap: 20px;">
+                    <!-- Montant donné -->
+                    <div class="payment-row" style="flex: 1; display: flex; align-items: center; gap: 10px;">
+                        <label style="font-weight: bold;">Montant donné par le client (FCFA) :</label>
+                        <p-inputNumber (onInput)="calculerMonnaie($event)"
+                                       [(ngModel)]="montantDonne"
+                                       [maxFractionDigits]="2"
+                                       [minFractionDigits]="0"
+                                       [min]="0"
+                                       [showButtons]="true"
+                                       class="input-field"
+                                       locale="de-DE"
+                                       mode="decimal"
+                                       name="montantDonne"
+                                       pInputNumber></p-inputNumber>
+                    </div>
+
+                    <!-- Monnaie à rendre -->
+                    <div class="payment-row" style="flex: 1; display: flex; align-items: center; gap: 10px;">
+                        <label style="font-weight: bold;">Monnaie à rendre (FCFA) :</label>
+                        <span style="font-size: 16px; color: green; font-weight: bold;">
+                            {{ monnaie | customNumber }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="article-footer">
+                    <div class="layout-footer">
+            <span>
+                <button (click)="onSubmit(factureForm)" class="btn btn-primary" type="submit">
+                    <span>Enregistrer</span>
+                </button>
+                <button (click)="annler()" class="btn btn-secondary" type="button">
+                    Annuler
+                </button>
+            </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="errorMessage" style="color: red; margin-top: 10px;">
+            {{ errorMessage }}
+        </div>
+
+    </form>
+</div>
+
+<div *ngIf="createOrModify" style="display: flex; ">
+    <div [ngClass]="{'shrink': isSecondaryActive}" class="card primary" style="height: 100%;">
+        <div class="header55">
+            <h1>Toutes les ventes</h1>
+            <div class="header-actions">
+                <button (click)="createModify({})" *ngIf="droits.includes('AJOUTER_FACTURE_CLIENT')"
+                        class="p-button-primary small-button" pButton><i
+                    class="pi pi-plus"></i>Nouvelle Vente
+                </button>
+                <button class="p-button-secondary small-button p-button-icon-only" icon="pi pi-ellipsis-v"
+                        pButton></button>
+            </div>
+        </div>
+        <p-toolbar *ngIf="selectedfactures.length>0">
+            <div class="p-toolbar-group-left">
+                <button (click)="effectuer_paiement_en_bloc()" class="p-button-outlined" icon="pi pi-money-bill"
+                        label="Paiement en bloc" pButton
+                        type="button"></button>
+                <span>{{ selectedfactures.length }} Facture(s) sélectionné</span>
+            </div>
+        </p-toolbar>
+        <p-table #dt
+                 [(selection)]="selectedfactures"
+                 [globalFilterFields]="['dateFacture', 'numeroFacture', 'reference', 'client.nom', 'statut', 'dateEcheance', 'montantTotal', 'reste']"
+                 [loading]="loading" [paginator]="true"
+                 [rowHover]="true" [rowsPerPageOptions]="[25,50,100]"
+                 [rows]="25" [value]="filteredFactures"
+                 dataKey="id" responsiveLayout="scroll"
+                 selectionMode="single">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+							<i class="pi pi-search"></i>
+							<input #filter (input)="onGlobalFilter(dt, $event)" class="w-full" pInputText
+                                   placeholder="Rechercher" type="text"/>
+						</span>
+                </div>
+            </ng-template>
+
+            <!--                        <ng-template pTemplate="caption">
+                                        <div class="flex justify-content-between flex-column sm:flex-row">
+                                            <p-dropdown
+                                                [options]="clients"
+                                                (onChange)="getfacturebyclients($event)"
+                                                pTooltip="filtrez les factures par clients"
+                                                tooltipPosition="top"
+                                                [(ngModel)]="clientselected"
+                                                [showClear]="true"
+                                                optionLabel="nom"
+                                                appendTo="body"
+                                                [filter]="true"
+                                                [filterBy]="'nom,prenom'"
+                                                [style]="{width: '210px'}"
+                                                name="client"
+                                                placeholder="Filtrer par client"
+                                                [emptyFilterMessage]="'Aucun élément trouvé'"
+                                                [autoDisplayFirst]="false">
+
+                                                <ng-template let-clients pTemplate="item">
+                                                    <div class="flex align-items-center clients-item">
+                                                        <div>{{ clients?.nom }} {{ clients?.prenom }}</div>
+                                                    </div>
+                                                </ng-template>
+
+                                                <ng-template let-item pTemplate="selectedItem">
+                                                    {{ item?.nom }} {{ item?.prenom }}
+                                                </ng-template>
+                                            </p-dropdown>
+
+                                        </div>
+                                    </ng-template>-->
+            <ng-template pTemplate="header">
+                <tr class="large-row">
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Date
+                        </div>
+                    </th>
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            N° de la vente
+                        </div>
+                    </th>
+
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Fait par
+                        </div>
+                    </th>
+
+                    <!--<th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            N° de Bon commande
+                        </div>
+                    </th>-->
+                    <!--<th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Client
+                        </div>
+                    </th>-->
+                    <!--                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                            <div class="flex justify-content-between align-items-center">
+                                                Statut
+                                            </div>
+                                        </th>-->
+
+                    <!--                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                                            <div class="flex justify-content-between align-items-center">
+                                                Date d'échéance
+                                            </div>
+                                        </th>-->
+                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Montant
+                        </div>
+                    </th>
+                    <!-- <th style="min-width: 10rem; background-color: rgb(236,236,236)">
+                         <div class="flex justify-content-between align-items-center">
+                             Solde Dû
+                         </div>
+                     </th>-->
+                </tr>
+            </ng-template>
+            <ng-template let-facture pTemplate="body">
+                <tr (click)="onRowSelect(facture)" [pSelectableRow]="facture" class="large-row"
+                    style="padding-top: 10px; padding-bottom: 10px;">
+                    <td>{{ facture.date_facture | customDate }}</td>
+                    <td>{{ facture.numero }}</td>
+                    <td>{{ facture.createdBy }}</td>
+                    <!--<td>{{ facture.numeroboncommande }}</td>
+                    <td>{{ facture.clientNom }} {{ facture.clientPrenom }}</td>-->
+                    <!--                   <td>
+                       <span [ngClass]="{
+                           'status-en-attente': facture.status === 'EN_ATTENTE',
+                           'status-partiellement-payee': facture.status === 'PARTIELLEMENT_PAYEE',
+                           'status-payee': facture.status === 'PAYEE'
+                       }">
+                           {{ formatStatus(facture.status) }}
+                       </span>
+                                       </td>-->
+                    <!--
+                                        <td>{{ facture.date_echeance | customDate}}</td>
+                    -->
+                    <td>{{ facture.montant_total | customNumber }} FCFA</td>
+                    <!-- <td *ngIf="facture.reste!==0" [ngStyle]="{ color: 'red' }">{{ facture.reste | customNumber}} FCFA</td>
+                     <td *ngIf="facture.reste===0" style="color: green"> vente Réglée</td>-->
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="summary">
+                <div class="flex align-items-center justify-content-between">
+                    Au total il y'a {{ filteredFactures.length }} Vente(s).
+                </div>
+            </ng-template>
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+    <div [ngClass]="{'active': isSecondaryActive}" class="card secondary" style="height: 100%;">
+        <div class="headerfact">
+            <div class="facture-header">
+                <h5>{{ facture.numero }}</h5>
+                <span (click)="close()" class="close-button">&#10006;</span>
+            </div>
+            <div class="actions">
+                <button (click)="createModify(facture)"
+                        *ngIf="facture.montant_total===facture.reste  && droits.includes('MODIFIER_FACTURE_CLIENT')"
+                        class="btn">
+                    <i class="pi pi-pencil"></i> Modifier
+                </button>
+                <button (click)="generatePDF()" class="btn">
+                    <i class="pi pi-file-pdf"></i> PDF/Impression <i class="fas fa-caret-down"></i>
+                </button>
+                <!--<button (click)="effectuer_paiement(facture.id!)" *ngIf="facture.reste!>0 && droits.includes('AJOUTER_ENCAISSEMENT')" class="btn">
+                    <i class="pi pi-money-bill"></i> Paiement
+                </button>-->
+                <button (click)="deleteElement(facture)"
+                        *ngIf="facture.montant_total===facture.reste  && droits.includes('SUPPRIMER_FACTURE_CLIENT')"
+                        class="btn"
+                ><i class="pi pi-trash"></i>Supprimer
+                </button>
+
+                <button class="btn">
+                    <i class="pi pi-ellipsis-v"></i>
+                </button>
+            </div>
+        </div>
+        <!--<p-accordion>
+            <p-accordionTab>
+                <ng-template pTemplate="header">
+                    Paiements <span class="badge">{{ facture.listPaiements?.length }}</span>
+                </ng-template>
+                <ng-template pTemplate="content">
+                    <p-table [value]="facture.listPaiements!">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>N° de paiement</th>
+                                <th>Date</th>
+                                <th>Montant</th>
+                                <th>Action</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template let-recu pTemplate="body">
+                            <tr>
+                                <td>{{ recu.numero }}</td>
+                                <td>{{ recu.date_paiement | customDate }}</td>
+                                <td>{{ recu.montant | customNumber}} FCFA</td>
+                                <td>
+                                    <button (click)="viewRecu(recu)" class="p-button-text" icon="pi pi-eye" pButton
+                                            type="button"></button>
+&lt;!&ndash;                                    <button (click)="modifier_paiement(recu.id)" class="p-button-text" icon="pi pi-pencil" pButton&ndash;&gt;
+&lt;!&ndash;                                            type="button"></button>&ndash;&gt;
+                                    <button (click)="deleteRecu(recu)" class="p-button-text" icon="pi pi-trash" pButton
+                                            type="button"></button>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </ng-template>
+            </p-accordionTab>
+        </p-accordion>-->
+        <br>
+        <h6 *ngIf="!recuState">Vue en mode PDF
+            <p-inputSwitch [(ngModel)]="checked"/>
+        </h6>
+        <div *ngIf="!recuState && !checked" class="bon-commande-detail">
+            <div class="main-content">
+                <div class="info-section">
+                    <div class="info-block">
+                        <div class="bc">RECU DE PAIEMENT</div>
+                        <div style="margin-top: 5px; display: flex;">
+                            <strong style="min-width: 250px;">N° de la vente</strong>
+                            <span>: {{ facture.numero }}</span>
+                        </div>
+                        <div *ngIf="facture.assure==true" style="margin-top: 10px; display: flex;">
+                            <strong style="min-width: 250px;">Nom de l'adhérent</strong>
+                            <span>: {{ facture.nomAssure }}</span>
+                        </div>
+                        <div *ngIf="facture.assure==true" style="margin-top: 5px; display: flex;">
+                            <strong style="min-width: 250px;">Matricule de l'adhérent</strong>
+                            <span>: {{ facture.matriculeAssure }}</span>
+                        </div>
+                        <div *ngIf="facture.assure==true" style="margin-top: 5px; display: flex;">
+                            <strong style="min-width: 250px;">Code ID de l'adhérent</strong>
+                            <span>: {{ facture.codeIDAssure }}</span>
+                        </div>
+                        <div *ngIf="facture.assure==true" style="margin-top: 5px; display: flex;">
+                            <strong style="min-width: 250px;">Nom du patient</strong>
+                            <span>: {{ facture.nomPatient }}</span>
+                        </div>
+                        <div *ngIf="facture.assure==true" style="margin-top: 5px; display: flex;">
+                            <strong style="min-width: 250px;">Age du patient</strong>
+                            <span>: {{ facture.agePatient }} ans</span>
+                        </div>
+                        <div *ngIf="facture.assure==true" style="margin-top: 5px; display: flex;">
+                            <strong style="min-width: 250px;">Relation avec l'adhérent</strong>
+                            <span>: {{ facture.relationAssure }}</span>
+                        </div>
+                        <br/>
+                        <br/>
+
+                        <div class="div-right-left">
+                            <div class="div-right">
+                                <div>Statut</div>
+                                <div *ngIf="facture.numeroboncommande">N° de la commande client</div>
+                                <div *ngIf="facture.numeroboncommande">N° de la commande client</div>
+                                <div>Date</div>
+                                <!--                                <div>Date d'échéance</div>-->
+                                <!--                                <div>Montant payé</div>-->
+                                <div>Total payé</div>
+                            </div>
+                            <div class="div-left">
+                                <div>
+                                    <span [ngClass]="{
+                                    'status-en-attente': facture.rembourseParAssureur === false,
+                                    'status-payee': facture.rembourseParAssureur === true
+                                    }">
+                                        {{ formatStatus(facture.rembourseParAssureur) }}
+                                    </span>
+                                </div>
+                                <div (click)="viewBon(facture)" *ngIf="facture.numeroboncommande"
+                                     class="link-like"> {{ facture.numeroboncommande }}
+                                </div>
+                                <div>{{ facture.date_facture | customDate }}</div>
+                                <!--                                <div> {{facture.date_echeance | customDate}}</div>-->
+                                <!--                                <div><strong> {{facture.reste | customNumber}} FCFA</strong></div>-->
+                                <div><strong> {{ facture.montant_total | customNumber }} FCFA</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <div class="address-block">
+                         <div class="first2">
+                             <div style=" margin-top: 5px;"><strong>Adresse du client</strong>
+                             </div>
+                             <div style=" margin-top: 5px;"> {{facture.numero}}
+                             </div>
+                         </div>
+                     </div>-->
+                </div>
+
+                <div class="articles-section">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Produits et description</th>
+                            <th>Quantité</th>
+                            <!--                            <th>Dépot de sortie</th>-->
+                            <th>Prix</th>
+                            <!--
+                                                        <th>Taxe</th>
+                            -->
+                            <th *ngIf="facture.assure==true">Assurance</th>
+                            <th>Montant</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr *ngFor="let item of commandes">
+                            <td>{{ item.produitNom }}</td>
+                            <td>{{ item.quantite! | customNumber }}</td>
+                            <!--                            <td>{{ item.magasinNom! }}</td>-->
+                            <td>{{ item.produitPrix! | customNumber }} FCFA</td>
+                            <!--
+                                                        <td>{{ item.taxeLibelle}} ({{ item.taxehauteur != null ? item.taxehauteur : 0 }}) %</td>
+                            -->
+                            <td *ngIf="facture.assure==true">{{ item.assuranceLibelle }}
+                                ({{ item.assuranceHauteur != null ? item.assuranceHauteur : 0 }}) %
+                            </td>
+                            <td>
+                                {{
+                                    (item.quantite! * item.produitPrix! *
+                                        (item.taxehauteur != null ? (1 + item.taxehauteur! / 100) : 1))
+                                        .toFixed(2) | customNumber
+                                }} FCFA
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="total-section">
+                    <div class="div-right-left2">
+                        <div class="div-right">
+                            <div>Sous-total:</div>
+                            <!--<div>Remise:</div>
+                            <div>Ajustement:</div>-->
+                            <div>Total payé:</div>
+                        </div>
+                        <div class="div-left">
+                            <div> {{ facture.sous_total | customNumber }} FCFA</div>
+                            <!--<div>(-){{facture.remise | customNumber}} FCFA</div>
+                            <div>{{facture.ajustement | customNumber}} FCFA</div>-->
+                            <div>{{ facture.montant_total | customNumber }} FCFA</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="recuState && !checked" class="container">
+            <div class="header">
+                <h1>{{ societegetted.nom }}</h1>
+                <p>Burkina Faso</p>
+                <p>+226 {{ societegetted.tel }}</p>
+                <p>+226 {{ societegetted.fixe }}</p>
+            </div>
+            <div class="payment-receipt">
+                <h2>REÇU DE PAIEMENT</h2>
+                <div class="payment-info">
+                    <div>
+                        <p><strong>Date du paiement:</strong> {{ paiementtowatch.date_paiement | customDate }}</p>
+                        <p><strong>Numéro du reçu:</strong>{{ paiementtowatch.numero }}</p>
+                        <p><strong>Mode de paiement:</strong> {{ paiementtowatch.modePaiement }}</p>
+                    </div>
+                    <div class="amount-received">
+                        <p>Montant reçu</p>
+                        <h3>{{ paiementtowatch.montant }} FCFA</h3>
+                    </div>
+                </div>
+                <p><strong>Payer par:</strong> <a href="#">{{ facture.clientNom }} {{ facture.clientPrenom }}</a></p>
+            </div>
+            <div class="payment-details">
+                <h3>Paiement pour</h3>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Numéro de facture</th>
+                        <th>Date de facture</th>
+                        <th>Montant de la facture</th>
+                        <th>Montant du paiement</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr *ngFor="let facture of facturestoWach, let i = index">
+                        <td>{{ facture.numero }}</td>
+                        <td>{{ facture.createdDate | customDate }}</td>
+                        <td>{{ facture.montant_total }} FCFA</td>
+                        <td>{{ paiementtowatch.invoicePayments?.[facture.id!] }} FCFA</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div *ngIf="checked" class="commande-client" id="commandeClient">
+
+            <div class="title">
+                <div class="company-info">
+                    <div class="upload">
+                        <img *ngIf="societegetted.logo" alt="" height=50
+                             src="data:image/PNG; base64,{{societegetted.logo}}" style="margin-right: 1250px"
+                             width=50>
+                        <img *ngIf="!societegetted.logo" alt=""
+                             height=50 src="assets/layout/images/gstock.png" style="margin-right: 1250px" width=50>
+                    </div>
+                </div>
+                <div class="info">
+                    <p>{{ societegetted.nom }}<br>Burkina Faso<br>{{ societegetted.tel }}<br>{{ societegetted.email }}
+                    </p>
+                </div>
+            </div>
+            <div class="order-info" style="margin-top: -120px">
+                <p><strong>RECU</strong></p>
+                <p><strong>N° de RECU :</strong> {{ facture.numero }}</p>
+                <p><strong>Date du reçu :</strong> {{ facture.date_facture | customDate }}</p>
+                <!--<p><strong>Date d'échéance :</strong> {{facture.date_echeance | customDate}}</p>
+                <p><strong>Solde Dû :</strong> {{facture.reste | customNumber}} FCFA</p>
+                <p *ngIf="facture.boncommandeId!=null"><strong>Numéro du bon de
+                    commande:</strong> {{facture.numeroboncommande}}</p>-->
+                <p><strong>Ouagadougou le {{ facture.createdDate | customDate }}</strong></p>
+            </div>
+            <!--            <div class="billing-info">
+                            <p><strong>Facturer à :</strong><br>
+                                {{ facture.clientNom }} {{ facture.clientPrenom }}<br>
+                                <span *ngIf="facture.telClient">Téléphone: +226 {{ facture.telClient }}</span>
+                            </p>
+                        </div>-->
+            <div class="article-section">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Article & Description</th>
+                        <th>Quantité</th>
+                        <th>Prix</th>
+                        <th>Montant</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr *ngFor="let item of commandes">
+                        <td>{{ item.produitNom }}</td>
+                        <td>{{ item.quantite | customNumber }} {{ item.produitUnite }}</td>
+                        <td>{{ item.produitPrix | customNumber }} FCFA</td>
+                        <td>{{ item.quantite! * item.produitPrix! | customNumber }} FCFA</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="total-section">
+                <p><strong>Sous-total:</strong> {{ facture.sous_total | customNumber }} FCFA</p>
+                <p><strong>Total:</strong> {{ facture.montant_total | customNumber }} FCFA</p>
+                <!--
+                                <p><strong>Solde Dû :</strong> {{facture.reste | customNumber}} FCFA</p>
+                -->
+            </div>
+            <!--
+                        <p>Arrêté le facture à {{ facture.montant_total | numberToWords }} FRANCS CFA</p>
+            -->
+        </div>
+    </div>
+</div>
+<p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                 position="top">
+    <p-footer style="display: flex;">
+        <button (click)="cd.reject()" class="btnannulate"
+        ><i class="pi pi-close"></i>Annuler
+        </button>
+        <button (click)="cd.accept()" class="btnvalidate"
+        ><i class="pi pi-confirm"></i>Confirmer
+        </button>
+    </p-footer>
+</p-confirmDialog>

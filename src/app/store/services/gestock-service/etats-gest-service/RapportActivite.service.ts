@@ -2,7 +2,13 @@ import {Injectable} from "@angular/core";
 import {HttpClient, HttpParams, HttpResponse} from "@angular/common/http";
 
 import {Observable} from "rxjs";
-import {Dates, Encaissement, RapportActivite, ResponseGeneric} from "../../../entities/gestock.entity";
+import {
+    Dates,
+    Encaissement,
+    RapportActivite,
+    ResponseGeneric,
+    VentesDuJourData
+} from "../../../entities/gestock.entity";
 import {CrudService} from "../../../../../../Utils/generic-crud/crud.service";
 import {GestockEndpoint} from "../../../endpoints/gestock.endpoint";
 
@@ -30,4 +36,9 @@ export class RapportActiviteService extends CrudService<RapportActivite, number>
         return this.http.post<HttpResponse<Blob>>(GestockEndpoint.rapportActivite + "export2/" + idsociete, dates,  {observe: 'response', responseType: 'blob' as 'json'} );
     }
 
+
+
+    getVentesDuJour(idsociete: number): Observable<ResponseGeneric<VentesDuJourData>> {
+        return this.http.get<ResponseGeneric<VentesDuJourData>>(GestockEndpoint.vente_du_jr+ idsociete);
+    }
 }

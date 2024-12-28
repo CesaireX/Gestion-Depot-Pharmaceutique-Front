@@ -69,6 +69,8 @@ import {NumberToWordsPipe} from "../../store/pipe/numberToWords.pipe";
 import {Transfert_stockComponent} from "./transfertStock/transfert_stock.component";
 import {AssuranceComponent} from "./assurance/assurance.component";
 import {FamilleComponent} from "./famille/famille.component";
+import {VenteComponent} from "../vente/vente.component";
+import {VenteAssuranceComponent} from "../vente-assurance/vente-assurance.component";
 @NgModule({
     declarations: [
         MagasinComponent,
@@ -77,7 +79,6 @@ import {FamilleComponent} from "./famille/famille.component";
         FamilleComponent,
         ClientComponent,
         FournisseurComponent,
-        DepenseComponent,
         UniteMesureComponent,
         UniteMesureComponent,
         Entree_stockComponent,
@@ -134,7 +135,9 @@ import {FamilleComponent} from "./famille/famille.component";
         FournisseurCrediteurComponent,
         FournisseurHistoriqueComponent,
         CustomDatePipe,
-        AddProduitMagasinComponent
+        AddProduitMagasinComponent,
+        VenteComponent,
+        VenteAssuranceComponent
     ],
     imports: [
         CommonModule, SharedCommonsModule, StepsModule,

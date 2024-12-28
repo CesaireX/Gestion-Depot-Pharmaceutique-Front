@@ -60,6 +60,10 @@
                 <span class="bold-text value">{{rapportActivite.reste | customNumber}} FCFA</span><br><hr>
 -->
                 <span class="bold-text value">{{((rapportActivite.montantVente!)-(rapportActivite.montantDepense!))! | customNumber}} FCFA</span><br><hr>
+
+                <span class="bold-text label">Montant à rembourser par assureurs:</span>
+                <span class="bold-text value">{{rapportActivite.montantAssuranceNonRembourse | customNumber}} FCFA</span><br><hr>
+
             </div>
         </div>
 

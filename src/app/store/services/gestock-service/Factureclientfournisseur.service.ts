@@ -38,6 +38,15 @@ export class FactureFournisseurClientService extends CrudService<Facture, number
         return this.http.get<ResponseGeneric<Facture[]>>(GestockEndpoint.gestock_by_society_facture + '/' + id + '/clients');
     }
 
+    findNonRembourseClientInvoicesBySocieteId(id: number): Observable<ResponseGeneric<Facture[]>> {
+        return this.http.get<ResponseGeneric<Facture[]>>(GestockEndpoint.gestock_by_society_facture + '/' + id + '/clients/non-rembourse');
+    }
+
+    findRembourseClientInvoicesBySocieteId(id: number): Observable<ResponseGeneric<Facture[]>> {
+        return this.http.get<ResponseGeneric<Facture[]>>(GestockEndpoint.gestock_by_society_facture + '/' + id + '/clients/rembourse');
+    }
+
+
     updateFacture(t: Facture): Observable<Facture> {
         let base = GestockEndpoint.gestock_facture + '/modifier';
         return this.http.put<Facture>(base, t);
@@ -46,6 +55,10 @@ export class FactureFournisseurClientService extends CrudService<Facture, number
     DeleteFacture(t: Facture): Observable<Facture> {
         let base = GestockEndpoint.gestock_facture + '/annuler';
         return this.http.post<Facture>(base, t);
+    }
+
+    markAsRembourse(factureId: number): Observable<any> {
+        return this.http.post<any>(`${GestockEndpoint.gestock_facture}/${factureId}/rembourse`, {});
     }
 
 }

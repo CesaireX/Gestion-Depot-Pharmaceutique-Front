@@ -64,9 +64,33 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                         ]
                     },
                     {
+                        label: 'Ventes',
+                        icon: 'pi pi-fw pi-plus-circle',
+                        routerLink: ['/gestock/factureClient']
+                    },
+                    {
+                        label: 'Clients assurés',
+                        icon: 'pi pi-fw pi-users',
+                        items: [
+                            {
+                                label: 'Factures Non Remboursées',
+                                icon: 'pi pi-plus-circle',
+                                routerLink: ['/gestock/factureClientNonRembourse'],
+                                queryParams: { type: 'NON_REMBOURSE' },
+                            },
+                            {
+                                label: 'Factures Remboursées',
+                                icon: 'pi pi-plus-circle',
+                                routerLink: ['/gestock/factureClientRembourse'],
+                                queryParams: { type: 'REMBOURSE' },
+                            }
+                        ]
+                    },
+
+                   /* {
                         label: 'Ventes', icon: 'pi pi-fw pi-shopping-cart',expanded: true,
                         items: [
-                            /*{
+                            /!*{
                                 label: 'Clients',
                                 icon: 'pi pi-fw pi-globe',
                                 routerLink: ['/gestock/client']
@@ -85,19 +109,19 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                 label: 'Livraisons',
                                 icon: 'pi pi-fw pi-plus-circle',
                                 routerLink: ['/gestock/livraison']
-                            },*/
+                            },*!/
                             {
                                 label: 'Factures',
                                 icon: 'pi pi-fw pi-plus-circle',
                                 routerLink: ['/gestock/factureClient']
                             },
-                            /*{
+                            /!*{
                                 label: 'Encaissements',
                                 icon: 'pi pi-fw pi-plus-circle',
                                 routerLink: ['/gestock/caisse']
-                            }*/
+                            }*!/
                         ]
-                    },
+                    }*/
                     {
                         label: 'Achats', icon: 'pi pi-database',
                         items: [
