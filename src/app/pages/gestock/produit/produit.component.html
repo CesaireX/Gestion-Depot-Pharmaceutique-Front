@@ -367,69 +367,28 @@
 
         <h5>Stock d'ouverture</h5>
         <br>
-        <div *ngIf="produit.isUsed == 0||produit.isUsed==null||false">
+        <div *ngIf="produit.isUsed == 0 || produit.isUsed == null || false">
             <div class="grid p-fluid">
                 <div class="field col-6 md-3">
+                    <!-- Griser le dropdown si un seul magasin est disponible -->
                     <p-dropdown class="form-control" id="magasin" [options]="magasins" [(ngModel)]="selectedMagasin"
                                 optionLabel="nom" name="magasinId" [filter]="true"
-                                (onChange)="onMagasinChange($event)"
                                 placeholder="Ajouter dans un magasin"
                                 [resetFilterOnHide]='true'
-                                [style]="{'width':'100%'}">
+                                [style]="{'width':'100%'}" [disabled]="magasins.length === 1">
                     </p-dropdown>
                 </div>
                 <div class="field col-5 md-3">
                     <p-inputNumber type="number" id="stockInitial" name="stockInitial" pInputNumber
-                                   mode="decimal"  [maxFractionDigits]="2"
-                                   locale="de-DE" [minFractionDigits]="0" (onInput)="verifierInitialStock($event)" [(ngModel)]="stockInitial" [style]="{'width': '100%'}" [min]=1 [showButtons]="true">
+                                   mode="decimal" [maxFractionDigits]="2" locale="de-DE" [minFractionDigits]="0"
+                                   [(ngModel)]="stockInitial" [style]="{'width': '100%'}"
+                                   [min]="1" [showButtons]="true"
+                                   (onBlur)="addLigneMagasin()">
                     </p-inputNumber>
                 </div>
-                <div class="field col-1 md-4">
-                    <label for="magasin"></label>
-                    <button *ngIf="!selectedMagasin" [disabled]="true" pButton pRipple type="button"
-                            icon="pi pi-plus" class="btn btn-success" (click)="ajouterLigneBesoin()"></button>
-                    <button *ngIf="selectedMagasin && verifierStockInitial!>=1" [disabled]="false" pButton
-                            pRipple type="button"
-                            icon="pi pi-plus" class="btn btn-success" (click)="ajouterLigneBesoin()"></button>
-                </div>
             </div>
-            <div class="field col-12 md-3">
-                <p-table [value]="ligneMagasins" [tableStyle]="{'min-width': '50rem'}">
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th style="width:50%;">Dépot</th>
-                            <th>Stock Initial</th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-ligneMagasin let-i="index">
-                        <tr>
-                            <td>{{ ligneMagasin.magasinNom }}</td>
-                            <td>
-                                <p-inputNumber  type="text" pinputnumber  placeholder="{{ligneMagasin.stockInitial}}"
-                                                (onInput)="changeStockInitial2($event, ligneMagasin)" name="quantité" [showButtons]="true"
-                                                locale="de-DE" [minFractionDigits]="0" [(ngModel)]="stockInitialArray[ligneMagasin.magasinId]"  [min]="0">
-                                </p-inputNumber>
-                            </td>
-                            <td>
-                                <button *ngIf="produit.id" pButton pRipple icon="pi pi-trash"
-                                        pTooltip="Supprimer"
-                                        class="p-mr-2 p-button-sm p-button-danger" tooltipPosition="left"
-                                        (click)="onDeleteLigne(ligneMagasin, produit.id)">
-                                </button>
-                            </td>
-                            <td>
-                                <button *ngIf="!produit.id" pButton pRipple icon="pi pi-trash"
-                                        pTooltip="Supprimer au front"
-                                        class="p-mr-2 p-button-sm p-button-danger" tooltipPosition="left"
-                                        (click)="onDeleteLigne2(ligneMagasin)">
-                                </button>
-                            </td>
-                        </tr>
-                    </ng-template>
-                </p-table>
-            </div>
-            <br><br><br>
         </div>
+
     </form>
     <div style="bottom: 0; position: fixed; width: 100%" class="layout-footer p-d-flex p-ai-center p-p-4 p-shadow-z">
             <span style="font-weight: bold">

@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {
     Assurance,
     BonCommande,
@@ -233,14 +233,11 @@ export class VenteComponent implements OnInit {
         const today = new Date();
         const formattedDate = formatDate(today, 'yyyyMMdd', 'en-US');
 
-        // Convertir lastCommandNumber en nombre pour l'incrémenter
         const lastNumber = parseInt(lastCommandNumber, 10);
         const newCommandNumber = lastNumber + 1;
 
-        // Déterminer la longueur nécessaire pour les zéros initiaux (ici, toujours 5 chiffres)
         const commandNumberLength = lastCommandNumber.toString().length;
 
-        // Générer le nouveau numéro de bon de commande avec le format de longueur correcte
         return `FA/${this.tokenStorage.getusername().charAt(0).toUpperCase()}${this.tokenStorage.getusername().charAt(1).toUpperCase()}/${formattedDate}-${this.padNumber(newCommandNumber, commandNumberLength)}`;
     }
 
@@ -408,7 +405,6 @@ export class VenteComponent implements OnInit {
         this.total = this.bonCommande?.montant_total!;
     }
 
-
     loadInvoices(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.factureService.findClientInvoicesBySocieteId(JSON.parse(this.tokenStorage.getsociety()!)).subscribe(
@@ -450,35 +446,59 @@ export class VenteComponent implements OnInit {
         );
     }
 
-    ajouterLigne() {
-        this.articles.push({
-            produitId: 0,
-            magasin: undefined,
-            quantite: 1,
-            produitPrix: 0,
-            taxe: 0,
-            assurance: 0,
-            montant: 0,
-            initialQuantite: 0,
-            taxeLibelle: '',
-            assuranceLibelle: '',
-            produitNom: '',
-            stocks: [],
-            commandeId: null
+
+    onRowSelected(event: any): void {
+        console.log('yyyy')
+        this.addProduct(event.data);
+    }
+
+    onRowUnselected(event: any): void {
+        console.log('rrrrrr')
+        this.onProductDeselected(event.data);
+    }
+
+    onSelectionChange(event: any): void {
+        const selected = event.value; // Produits actuellement sélectionnés
+        const previousSelected = this.articles.map(article => article.produitId);
+
+        // Ajout des nouveaux produits sélectionnés
+        selected.forEach((product: any) => {
+            if (!previousSelected.includes(product.id)) {
+                this.addProduct(product); // Appelle la méthode pour ajouter le produit
+            }
+        });
+
+        // Suppression des produits désélectionnés
+        this.articles.forEach((article, index) => {
+            if (!selected.some((product: any) => product.id === article.produitId)) {
+                this.supprimerLigne(index); // Supprime la ligne correspondante
+            }
         });
     }
 
+
+    onCheckboxChange(event: any, product: any): void {
+        const isChecked = event.checked;
+        console.log(isChecked)
+        if (isChecked) {
+            this.addProduct(product); // Ajouter le produit si coché
+        } else {
+            this.onProductDeselected(product); // Retirer le produit si décoché
+        }
+    }
+
     supprimerLigne(index: number) {
-        if (this.articles.length > 1) {
+        if (this.articles.length > 0) {
             const removedArticle = this.articles[index];
             this.articles.splice(index, 1);
 
-            // Décocher l'article dans le tableau
-            this.selectedProducts = this.selectedProducts.filter(product => product !== removedArticle);
-
+            if (removedArticle.produitId) {
+                this.selectedProducts = this.selectedProducts.filter(product => product.id !== removedArticle.produitId);
+            }
             this.calculateTotal();
         }
     }
+
 
     calculerMonnaie(event: any): void {
         this.montantDonne = event.value;
@@ -490,46 +510,10 @@ export class VenteComponent implements OnInit {
     }
 
     onProductDeselected(product: any) {
-        // Vérifier si l'article est présent dans la liste des articles et le supprimer
-        const index = this.articles.findIndex(article => article === product);
-        if (index !== -1) {
-            this.articles.splice(index, 1);
-            this.calculateTotal();
-        }
+        const index = this.articles.findIndex(article => article.produitId === product.id);
+        this.supprimerLigne(index);
     }
 
-
-    onArticleClear(index: number) {
-        this.resetArticleFields(index);
-        this.updateMontant(index);
-        this.calculateTotal();
-    }
-
-    resetArticleFields(index: number) {
-        this.articles[index].produitId = 0;
-        this.articles[index].produitPrix = 0;
-        this.articles[index].quantite = 1;
-        this.articles[index].taxe = 0;
-        this.articles[index].assurance = 0;
-        this.articles[index].magasin = undefined;
-    }
-
-    onArticleChange(event: any, index: number) {
-        console.log(index)
-        this.resetArticleFields(index)
-        const selectedArticle = this.articleOptions.find(article => article.id === event.value);
-        if (selectedArticle) {
-            this.articles[index].produitId = selectedArticle.id!;
-            this.articles[index].produitPrix = selectedArticle.prixventettc || 0;
-        }
-        this.updateMontant(index);
-        this.calculateTotal();
-
-        // if (!this.bonCommande){
-        this.loadStockDetails(selectedArticle?.id!, index)
-        //}
-
-    }
 
     clearDropdowns() {
         this.articles.forEach(article => {

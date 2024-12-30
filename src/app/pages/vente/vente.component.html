@@ -73,8 +73,8 @@
         <div class="container2">
             <!-- 1ère partie : product-selection à gauche -->
             <div class="product-selection">
-                <p-table #dt1 (onRowUnselect)="onProductDeselected($event.data)" [(selection)]="selectedProducts"
-                         [globalFilterFields]="['nom']"
+                <p-table #dt1  (onRowSelect)="onRowSelected($event)" (onRowUnselect)="onRowUnselected($event)"  [(selection)]="selectedProducts"
+                         [globalFilterFields]="['nom', 'categorieLibelle','familleLibelle']"
                          [loading]="loading"
                          [paginator]="true" [responsive]="true" [rowHover]="true"
                          [rows]="10"
@@ -95,7 +95,7 @@
                     <ng-template pTemplate="header">
                         <tr>
                             <th style="width: 50px;">
-                                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                                <p-tableHeaderCheckbox *ngIf="1<0"> </p-tableHeaderCheckbox>
                             </th>
                             <th>Nom du produit</th>
                             <th>Prix (FCFA)</th>
@@ -104,10 +104,10 @@
                         </tr>
                     </ng-template>
                     <ng-template let-index="rowIndex" let-product pTemplate="body">
-                        <tr (click)="addProduct(product)"
+                        <tr
                             [pSelectableRow]="product">
                             <td>
-                                <p-tableCheckbox [value]="product"></p-tableCheckbox>
+                                <p-tableCheckbox [value]="product" (change)="onCheckboxChange($event, product)"></p-tableCheckbox>
                             </td>
                             <td style="font-weight: bold">{{ product.nom }}</td>
                             <td>{{ product.prixventettc | customNumber }}</td>
@@ -214,7 +214,7 @@
                             <td>{{ article.montant.toFixed(2) | customNumber }}</td>
                             <td *ngIf="bonCommande.id==null" class="small-column">
                                 <button (click)="supprimerLigne(i)"
-                                        [disabled]="articles.length === 1"
+
                                         class="p-button-danger small-button"
                                         icon="pi pi-trash"
                                         pButton

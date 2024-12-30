@@ -535,6 +535,44 @@ export class ProduitComponent implements OnInit {
         this.selectedMagasin = {};
         this.loadMagasin();
     }
+
+    addLigneMagasin(): void {
+        if (this.selectedMagasin && this.stockInitial) {
+            const ligne: LigneMagasin = {
+                magasinId: this.selectedMagasin.id,
+                magasinNom: this.selectedMagasin.nom,
+                stockInitial: +this.stockInitial,
+            };
+            this.ligneMagasins.push(ligne);
+        }
+
+        // Réinitialiser les champs
+        this.stockInitial = '';
+        this.nomMagas = '';
+        this.selectedMagasin = {};
+    }
+
+
+    private checkLigneMagasin(): void {
+        const ligneMagasinExist = this.ligneMagasins.find(lig => lig.magasinNom === this.nomMagas);
+        if (ligneMagasinExist) {
+            this.ligneMagasins.forEach(lig => {
+                if (lig && lig.magasinNom === this.nomMagas) {
+                    if (lig.stockInitial) {
+                        lig.stockInitial = lig.stockInitial + +this.stockInitial;
+                    }
+                }
+            });
+        } else {
+            const ligne: LigneMagasin = {
+                magasinId: this.searchedMagasin,
+                magasinNom: this.nomMagas,
+                stockInitial: +this.stockInitial,
+            };
+            this.ligneMagasins.push(ligne);
+        }
+    }
+
     changeStockInitial2(event: any, ligneMagasin: any) {
         const newValue = event.value;
         if (ligneMagasin != null) {
@@ -557,26 +595,6 @@ export class ProduitComponent implements OnInit {
 
     verifierInitialStock(event : any) {
         this.verifierStockInitial = event.value;
-    }
-
-    private checkLigneMagasin(): void {
-        const ligneMagasinExist = this.ligneMagasins.find(lig => lig.magasinNom === this.nomMagas);
-        if (ligneMagasinExist) {
-            this.ligneMagasins.forEach(lig => {
-                if (lig && lig.magasinNom === this.nomMagas) {
-                    if (lig.stockInitial) {
-                        lig.stockInitial = lig.stockInitial + +this.stockInitial;
-                    }
-                }
-            });
-        } else {
-            const ligne: LigneMagasin = {
-                magasinId: this.searchedMagasin,
-                magasinNom: this.nomMagas,
-                stockInitial: +this.stockInitial,
-            };
-            this.ligneMagasins.push(ligne);
-        }
     }
 
     onGlobalFilter(table: Table, event: Event) {
