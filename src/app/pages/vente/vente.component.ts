@@ -150,6 +150,7 @@ export class VenteComponent implements OnInit {
     droits: any;
     montantDonne: number = 0;
     monnaie: number = 0;
+    display: boolean = false;
     @ViewChild('printSection') printSection!: ElementRef;
     ventesDuJourData: VentesDuJourData = {};
 
@@ -838,6 +839,10 @@ export class VenteComponent implements OnInit {
         }
     }
 
+
+    showDialog(): void {
+        this.display = true;
+    }
     resetForm() {
         this.facture = {};
         this.client = undefined;
@@ -860,6 +865,8 @@ export class VenteComponent implements OnInit {
         this.messages = [];
         this.bonCommandeId = undefined;
         this.bonCommande = {};
+        this.montantDonne=0;
+        this.monnaie=0;
     }
 
     commandesToArticles(commandes: Commande[]): any[] {

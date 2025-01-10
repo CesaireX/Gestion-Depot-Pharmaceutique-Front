@@ -17,7 +17,7 @@ interface ExportColumn {
     dataKey: string;
 }
 @Component({
-    selector: 'app-inventaire',
+    selector: 'app-vente-article',
     templateUrl: './venteParArticle.component.html',
     styleUrls: ['./venteParArticle.component.scss']
 })

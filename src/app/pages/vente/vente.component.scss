@@ -148,7 +148,7 @@ a:hover {
     .product-selection {
         flex: 1;
         max-width: 43%;
-        margin-right: 20px;
+        margin-right: 5px;
         background-color: #f0f5ff;
         padding: 15px;
         border-radius: 8px;
@@ -157,7 +157,7 @@ a:hover {
 
     .article-section {
         flex: 1;
-        max-width: 53%;
+        max-width: 57%;
         background-color: #f0f5ff;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         padding: 15px;
@@ -330,7 +330,7 @@ a:hover {
 
 
 .payment-section {
-    margin-top: 20px;
+    //margin-top: 20px;
     padding: 10px;
     border-top: 1px solid #ddd;
 }
@@ -342,6 +342,29 @@ a:hover {
     gap: 10px;
 }
 
+.totals-section {
+    margin-top: 20px;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+}
+
+.totalss-row {
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.layout-footer {
+    display: flex; /* Utilise Flexbox pour contrôler l'alignement */
+    justify-content: flex-end; /* Aligne les éléments à droite */
+    padding: 10px; /* Optionnel, pour l'espacement */
+    background-color: #f9f9f9; /* Optionnel, pour style */
+}
+
+.footer-buttons button {
+    margin-left: 10px; /* Espacement entre les boutons */
+}
 
 
 .form-container111 {

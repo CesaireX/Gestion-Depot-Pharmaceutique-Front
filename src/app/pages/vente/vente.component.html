@@ -129,14 +129,14 @@
                             <span class="amount">{{ ventesDuJourData.nombreVentes }} ventes</span>
                         </label>
                     </div>
-                    <button (click)="goToVenteParArticle()" class="historique-button">Historique vente</button>
+                    <button (click)="showDialog()" class="historique-button">Historique vente</button>
                 </div>
 
             </div>
 
             <!-- 2ème partie : Tableau d'articles à droite -->
             <div class="article-section">
-                <p style="font-size: medium; margin-top: 30px; font-weight: bold">Tableau d’articles</p>
+                <p style="font-size: medium; margin-top: 30px; font-weight: bold">Tableau de produits sélectionnés</p>
                 <div class="table-wrapper">
                     <table class="article-table">
                         <thead>
@@ -229,17 +229,17 @@
                 </div>
 
                 <!-- 3ème partie : Totals row 2 -->
-                <div class="totals-row2">
+                <!--<div class="totals-row2">
                     <div class="totals">
                         <div class="totals-row">
-                            <div><label>Sous-total</label></div>
-                            <div><label>Remise</label></div>
-                            <div><label>Ajustement</label></div>
+&lt;!&ndash;                            <div><label>Sous-total</label></div>&ndash;&gt;
+                            &lt;!&ndash;<div><label>Remise</label></div>
+                            <div><label>Ajustement</label></div>&ndash;&gt;
                             <div><label style="font-weight: bold; font-size: 15px">Total</label></div>
                         </div>
                         <div class="totals-row2">
                             <div></div>
-                            <div>
+                            &lt;!&ndash;<div>
                                 <p-inputNumber (onInput)="onRemiseChange($event)" [(ngModel)]="remise"
                                                [maxFractionDigits]="2"
                                                [minFractionDigits]="0" [min]="0" [showButtons]="true"
@@ -254,16 +254,26 @@
                                                name="ajustement"
                                                pInputNumber styleClass="input-styling">
                                 </p-inputNumber>
-                            </div>
+                            </div>&ndash;&gt;
                             <div></div>
                         </div>
                         <div class="totals-row3">
-                            <div><span>{{ sousTotal | customNumber }} FCFA</span></div>
-                            <div>(-){{ remise | customNumber }} FCFA</div>
-                            <div>{{ ajustement | customNumber }} FCFA</div>
+&lt;!&ndash;                            <div><span>{{ sousTotal | customNumber }} FCFA</span></div>&ndash;&gt;
+                          &lt;!&ndash;  <div>(-){{ remise | customNumber }} FCFA</div>
+                            <div>{{ ajustement | customNumber }} FCFA</div>&ndash;&gt;
                             <div><span style="font-weight: bold; font-size: 15px">{{ total | customNumber }} FCFA</span>
                             </div>
                         </div>
+                    </div>
+                </div>-->
+
+                <div class="totals-section"
+                     style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                    <div class="totalss-row" style="flex: 1; display: flex; align-items: center; gap: 10px;">
+                        <label style="font-weight: bold;">Total (FCFA) :</label>
+                    </div>
+                    <div class="totalss-row" style="flex: 1; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-weight: bold; font-size: 15px">{{ total | customNumber }} FCFA</span>
                     </div>
                 </div>
                 <div class="payment-section"
@@ -293,18 +303,17 @@
                     </div>
                 </div>
 
-                <div class="article-footer">
-                    <div class="layout-footer">
-            <span>
-                <button (click)="onSubmit(factureForm)" class="btn btn-primary" type="submit">
-                    <span>Enregistrer</span>
-                </button>
-                <button (click)="annler()" class="btn btn-secondary" type="button">
-                    Annuler
-                </button>
-            </span>
-                    </div>
+                <div class="layout-footer">
+                    <span class="footer-buttons">
+                        <button (click)="onSubmit(factureForm)" class="btn btn-primary" type="submit">
+                            <span>Enregistrer</span>
+                        </button>
+                        <button (click)="annler()" class="btn btn-secondary" type="button">
+                            Annuler
+                        </button>
+                    </span>
                 </div>
+
             </div>
         </div>
 
@@ -314,6 +323,14 @@
 
     </form>
 </div>
+
+<p-dialog [(visible)]="display" header="Vente Article" [modal]="true" [style]="{width: '80%', height: '90%'}" [closable]="true">
+    <app-vente-article></app-vente-article>
+    <ng-template pTemplate="footer">
+        <button type="button" pButton label="Fermer" class="p-button-secondary" (click)="display = false"></button>
+    </ng-template>
+</p-dialog>
+
 
 <div *ngIf="createOrModify" style="display: flex; ">
     <div [ngClass]="{'shrink': isSecondaryActive}" class="card primary" style="height: 100%;">

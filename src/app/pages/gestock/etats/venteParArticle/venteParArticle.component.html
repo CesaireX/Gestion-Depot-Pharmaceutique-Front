@@ -48,9 +48,9 @@
         <div style="display : flex; align-items: center; align-content: center; justify-content: center">
             <h5>Vente Par Article</h5>
         </div>
-        <p-table #dt [value]="ventes" [paginator]="true" [loading]="loading" [rows]="25"
+        <p-table #dt [value]="ventes" [paginator]="true" [loading]="loading" [rows]="10"
                  responsiveLayout="scroll" [exportHeader]="'customExportHeader'"
-                 [rowsPerPageOptions]="[25,50,100]" [rowHover]="true"
+                 [rowsPerPageOptions]="[10, 25,50,100]" [rowHover]="true"
                  [globalFilterFields]="['nomProduit','unite']">
             <ng-template pTemplate="caption">
                 <div class="flex justify-content-between flex-column sm:flex-row">
