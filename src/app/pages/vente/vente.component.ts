@@ -867,6 +867,7 @@ export class VenteComponent implements OnInit {
         this.bonCommande = {};
         this.montantDonne=0;
         this.monnaie=0;
+        this.selectedProducts=[];
     }
 
     commandesToArticles(commandes: Commande[]): any[] {
