@@ -480,7 +480,6 @@ export class VenteComponent implements OnInit {
 
     onCheckboxChange(event: any, product: any): void {
         const isChecked = event.checked;
-        console.log(isChecked)
         if (isChecked) {
             this.addProduct(product); // Ajouter le produit si coché
         } else {
