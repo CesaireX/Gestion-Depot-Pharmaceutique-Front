@@ -8,10 +8,6 @@
             <i class="pi pi-shopping-bag" style="font-size: 1.5rem"></i>
             ventes
         </p>
-        <button (click)="retour()" class="p-button-primary small-button " icon="pi pi-arrow-left" pButton>
-            <span>Voir les ventes</span>
-        </button>
-
     </div>
     <div class="flex radio-buttons" style="margin-bottom: 9px">
         <p-radioButton (onClick)="clearDropdowns()" [(ngModel)]="selectedType" label="Non Assuré" name="assurance"
@@ -129,7 +125,9 @@
                             <span class="amount">{{ ventesDuJourData.nombreVentes }} ventes</span>
                         </label>
                     </div>
-                    <button (click)="showDialog()" class="historique-button">Historique vente</button>
+                    <button (click)="retour()" class="historique-button" icon="pi pi-eye"
+                            pButton pTooltip="Historiques des ventes">
+                    </button>
                 </div>
 
             </div>
