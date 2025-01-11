@@ -213,7 +213,7 @@
                             <td *ngIf="bonCommande.id==null" class="small-column">
                                 <button (click)="supprimerLigne(i)"
 
-                                        class="p-button-danger small-button"
+                                        class="small-button"
                                         icon="pi pi-trash"
                                         pButton
                                         pTooltip="Supprimer le produit de le liste"
@@ -306,7 +306,7 @@
                         <button (click)="onSubmit(factureForm)" class="btn btn-primary" type="submit">
                             <span>Enregistrer</span>
                         </button>
-                        <button (click)="annler()" class="btn btn-secondary" type="button">
+                        <button (click)="retour()" class="btn btn-secondary" type="button">
                             Annuler
                         </button>
                     </span>
