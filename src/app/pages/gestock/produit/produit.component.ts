@@ -184,9 +184,6 @@ export class ProduitComponent implements OnInit {
         this.display2 = true;
     }
 
-    onDeleteLigne2(ligneMagasin: any) {
-        this.ligneMagasins = this.ligneMagasins.filter((elem: any) => elem !== ligneMagasin);
-    }
 
     add(produitValue: any) {
         if (produitValue === null) {
@@ -303,13 +300,20 @@ export class ProduitComponent implements OnInit {
 
 
     loadLignesMagasinByProduit(id: number) {
-        this.ligneService.findAllByBesoin(id).subscribe(
-            resp => {
-                console.log(resp.payload)
+        this.ligneService.findAllByBesoin(id).subscribe(resp => {
+            if (resp.payload && resp.payload.length > 0) {
                 this.ligneMagasins = resp.payload;
+                // Par exemple, si vous attendez qu'une seule ligne existe :
+                const ligne = this.ligneMagasins[0];
+                this.stockInitial = ligne.stockInitial?.toString()!;
+                // Si besoin, vérifiez et mettez à jour selectedMagasin en fonction de la ligne récupérée
+                if (ligne.magasinId) {
+                    this.selectedMagasin = this.magasins.find(magasin => magasin.id === ligne.magasinId);
+                }
             }
-        )
+        });
     }
+
 
     loadCategorie() {
         this.categorieService.findbysociety(JSON.parse(this.tokenStorage.getsociety()!)).subscribe(

@@ -120,6 +120,7 @@ export const gestockRoutes: Routes = [{
         {path:'factureClient/:id', component:FactureClientComponent , canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FACTURE_CLIENT'] }},
 
         {path:'factureClient', component:VenteComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FACTURE_CLIENT'] } },
+        {path:'factureClientHistorique', component:VenteComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FACTURE_CLIENT'] } },
         {path:'factureClientNonRembourse', component:VenteAssuranceComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FACTURE_CLIENT'] } },
         {path:'factureClientRembourse', component:VenteAssuranceComponent, canActivate: [AuthorizationGuard], data: { roles: ['VOIR_FACTURE_CLIENT'] } },
 

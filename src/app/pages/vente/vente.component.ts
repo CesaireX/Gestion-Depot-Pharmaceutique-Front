@@ -9,7 +9,6 @@ import {
     Magasin,
     PaiementFactureDTO,
     Produit,
-    Recu,
     Societe,
     Sortie_stock,
     Taxe,
@@ -26,7 +25,7 @@ import {OverlayPanel} from "primeng/overlaypanel";
 import {Table} from "primeng/table";
 import {BonCommandeService} from "../../store/services/gestock-service/BonCommandeService";
 import {ActivatedRoute, Router} from "@angular/router";
-import {forkJoin, map} from "rxjs";
+import {forkJoin, lastValueFrom, map} from "rxjs";
 import {FactureFournisseurClientService} from "../../store/services/gestock-service/Factureclientfournisseur.service";
 import {LigneMagasinService} from "../../store/services/gestock-service/LigneMagasin.service";
 import {RecuService} from "../../store/services/gestock-service/Recu.service";
@@ -73,19 +72,15 @@ export class VenteComponent implements OnInit {
     loading: boolean = true;
     facture: Facture = {};
     factureSelect: Facture = {};
-    taxes: { id: number, label: string, value: number }[] = [];
-    assurances: { id: number, label: string, value: number }[] = [];
+    assurances: Assurance[] = [];
+    selectedAssurance?: Assurance = {};
     selectedProducts: any;
     articles: {
         produitId: number,
         magasin: any | undefined,
-        quantite: number,
+        quantite: number | null;
         produitPrix: number,
         produitNom: string,
-        taxeLibelle: string,
-        assuranceLibelle: string,
-        taxe: number,
-        assurance: number,
         montant: number,
         initialQuantite: number,
         stocks?: StockDetail[],
@@ -110,8 +105,14 @@ export class VenteComponent implements OnInit {
     matriculeAssure: string = '';
     codeIDAssure: string = '';
     agePatient: string = '';
+    sexePatient: string = '';
     nomAssure: string = '';
     relationAssure: string = '';
+
+    sexeOptions = [
+        { label: 'Homme', value: 'Homme' },
+        { label: 'Femme', value: 'Femme' }
+    ];
 
     remiseOptions = [
         {label: '%', value: 0},
@@ -153,7 +154,9 @@ export class VenteComponent implements OnInit {
     display: boolean = false;
     @ViewChild('printSection') printSection!: ElementRef;
     ventesDuJourData: VentesDuJourData = {};
-
+    totalAvecAssurance: number = 0;
+    montantAssurance: number = 0;
+    montantAPayer: number = 0;
     constructor(
         protected messageService: MessageService,
         private tokenStorage: TokenStorage,
@@ -179,6 +182,10 @@ export class VenteComponent implements OnInit {
     ngOnInit(): void {
         this.initialize();
         this.getVentesDuJour();
+        this.route.paramMap.subscribe(params => {
+            const mode = params.get('mode');
+            this.createOrModify = mode !== 'create'; // Si mode=history, on est dans l'historique
+        });
     }
 
     async initialize() {
@@ -195,7 +202,6 @@ export class VenteComponent implements OnInit {
             await Promise.all([societePromise, loadInvoicesPromise]);
 
             const societe = await societePromise;
-            console.log(societe);
             this.societegetted = societe!.payload;
 
             await this.loadData();
@@ -203,13 +209,11 @@ export class VenteComponent implements OnInit {
             this.bonCommandeId = +this.route.snapshot.paramMap.get('id')!;
             if (this.bonCommandeId) {
                 this.selectBonCommandeDatas(this.bonCommandeId);
-                console.log(this.bonCommandeId);
             }
 
             this.route.queryParams.subscribe((params) => {
                 this.idfacture = params['idfacture'];
                 if (this.idfacture != null) {
-                    console.log(this.factures);
                     // @ts-ignore
                     this.facture = this.factures.find(fact => fact.id == this.idfacture);
                     this.onRowSelect(this.facture);
@@ -314,11 +318,10 @@ export class VenteComponent implements OnInit {
             this.loadall().toPromise()
         ]);
         this.clients = allData!.clients;
-        console.log(this.clients)
         this.articleOptions = allData!.articleOptions;
         this.magasins = allData!.magasins;
-        this.taxes = allData!.taxes;
         this.assurances = allData!.assurances;
+        console.log( this.assurances )
     }
 
     loadall() {
@@ -334,13 +337,7 @@ export class VenteComponent implements OnInit {
             })))
         );
 
-        const assurances$ = this.assuranceService.findbysociety(society).pipe(
-            map((res: any) => res.payload.map((ass: Assurance) => ({
-                id: ass.id!,
-                label: ass.libelle!,
-                value: ass.hauteur!
-            })))
-        );
+        const assurances$ = this.assuranceService.findbysociety(society);
 
         return forkJoin({
             clients: clients$,
@@ -354,28 +351,12 @@ export class VenteComponent implements OnInit {
                 articleOptions: results.articleOptions.payload,
                 magasins: results.magasins.payload,
                 taxes: results.taxes,
-                assurances: results.assurances
+                assurances: results.assurances.payload
             }))
         );
     }
 
-    loadCommandesByBonCommande(id: number) {
-        this.bonCommandeService.getCommandeByBonId(id).subscribe(
-            (res) => {
-                const filteredCommandes = res.payload.filter((commande: Commande) => commande.quantitefacturee !== commande.quantite);
 
-                this.articles = this.commandesToArticles(filteredCommandes);
-                this.commandes = filteredCommandes;
-
-                this.articles.forEach((article, index) => {
-                    this.loadStockDetails(article.produitId, index);
-                });
-
-                this.calculateTotal(); // Recalculate the totals
-                console.log(this.commandes);
-            }
-        );
-    }
 
     async selectBonCommandeDatas(id: number) {
         if (id) {
@@ -395,7 +376,6 @@ export class VenteComponent implements OnInit {
             this.createOrModify = false;
         }
 
-        this.loadCommandesByBonCommande(this.bonCommande?.id!);
         console.log(this.bonCommandes);
         console.log(this.bonCommande);
 
@@ -404,6 +384,7 @@ export class VenteComponent implements OnInit {
         this.fraisExpedition = this.bonCommande?.frais_expedition!;
         this.ajustement = this.bonCommande?.ajustement!;
         this.total = this.bonCommande?.montant_total!;
+        this.montantAssurance = this.bonCommande?.montantAssurance!;
     }
 
     loadInvoices(): Promise<void> {
@@ -412,6 +393,7 @@ export class VenteComponent implements OnInit {
                 (res) => {
                     this.factures = res.payload;
                     this.filteredFactures = this.factures;
+                    console.log(this.filteredFactures)
                     this.loading = false;
 
                     // Obtenez le dernier numéro de commande
@@ -458,26 +440,6 @@ export class VenteComponent implements OnInit {
         this.onProductDeselected(event.data);
     }
 
-    onSelectionChange(event: any): void {
-        const selected = event.value; // Produits actuellement sélectionnés
-        const previousSelected = this.articles.map(article => article.produitId);
-
-        // Ajout des nouveaux produits sélectionnés
-        selected.forEach((product: any) => {
-            if (!previousSelected.includes(product.id)) {
-                this.addProduct(product); // Appelle la méthode pour ajouter le produit
-            }
-        });
-
-        // Suppression des produits désélectionnés
-        this.articles.forEach((article, index) => {
-            if (!selected.some((product: any) => product.id === article.produitId)) {
-                this.supprimerLigne(index); // Supprime la ligne correspondante
-            }
-        });
-    }
-
-
     onCheckboxChange(event: any, product: any): void {
         const isChecked = event.checked;
         if (isChecked) {
@@ -502,82 +464,19 @@ export class VenteComponent implements OnInit {
 
     calculerMonnaie(event: any): void {
         this.montantDonne = event.value;
-        if (this.montantDonne >= this.total) {
-            this.monnaie = this.montantDonne - this.total;
+
+        // Vérifier si le montant donné est supérieur ou égal au montant à payer (après assurance)
+        if (this.montantDonne >= this.montantAPayer) {
+            this.monnaie = this.montantDonne - this.montantAPayer;
         } else {
             this.monnaie = 0;
         }
     }
 
+
     onProductDeselected(product: any) {
         const index = this.articles.findIndex(article => article.produitId === product.id);
         this.supprimerLigne(index);
-    }
-
-
-    clearDropdowns() {
-        this.articles.forEach(article => {
-            article.assurance = 0;
-        });
-    }
-
-    addProduct(product: any): void {
-        // Vérifiez si le produit est déjà dans la liste
-        if (this.articles.some(article => article.produitId === product.id)) {
-            this.errorMessage = "Ce produit est déjà ajouté.";
-            return;
-        }
-
-        // Créez un nouvel article en initialisant les propriétés de manière appropriée
-        const newArticle = {
-            produitId: product.id,  // Assurez-vous que le produit ID est correctement défini
-            produitNom: product.nom,  // Le nom du produit
-            magasin: undefined,
-            quantite: 1,
-            produitPrix: product.prixventettc || 0,  // Prix du produit, avec valeur par défaut à 0
-            taxe: 0,
-            assurance: 0,
-            montant: 0,
-            initialQuantite: 0,  // La quantité initiale sera définie après le chargement des stocks
-            taxeLibelle: '',
-            assuranceLibelle: '',
-            stocks: [],  // Initialisez les stocks vides
-            commandeId: null
-        };
-
-        // Ajoutez le nouvel article à la liste des articles
-        this.articles.push(newArticle);
-
-        // Mettez à jour le montant pour cet article
-        this.updateMontant(this.articles.length - 1);
-
-        // Calculez le total
-        this.calculateTotal();
-
-        // Chargez les détails du stock pour ce produit et l'article ajouté
-        this.loadStockDetails(product.id, this.articles.length - 1);
-
-        // Réinitialisez les messages d'erreur
-        this.errorMessage = '';
-    }
-
-
-    onQuantiteChange(event: any, index: number): void {
-        this.articles[index].quantite = event.value;
-        this.updateMontant(index);
-        this.calculateTotal();
-    }
-
-    onPrixChange(event: any, index: number): void {
-        this.articles[index].produitPrix = event.value;
-        this.updateMontant(index);
-        this.calculateTotal();
-    }
-
-    onTaxeChange(event: any, index: number): void {
-        this.articles[index].taxe = event.value;
-        this.updateMontant(index);
-        this.calculateTotal();
     }
 
     getVentesDuJour(): void {
@@ -596,77 +495,102 @@ export class VenteComponent implements OnInit {
         );
     }
 
-
-    onAssuranceChange(event: any, index: number): void {
-        this.articles[index].assurance = event.value;
-        this.updateMontantAssurance(index);
-        this.calculateTotalAssurance();
-    }
-
-    updateMontantAssurance(index: number): void {
-        const article = this.articles[index];
-        const articleTotal = article.quantite * article.produitPrix;
-        const assuranceCouverture = articleTotal * (article.assurance / 100);
-        article.montant = articleTotal - assuranceCouverture;
-    }
-
-    calculateTotalAssurance(): void {
-        this.sousTotal = this.articles.reduce((acc, article) => {
-            return acc + article.montant;
-        }, 0);
-
-        let remiseValue = 0;
-        if (this.remiseType === 0) {
-            remiseValue = this.sousTotal * (this.remise / 100);
-        } else if (this.remiseType === 1) {
-            remiseValue = this.remise;
+    addProduct(product: any): void {
+        // Vérifiez si le produit est déjà dans la liste
+        if (this.articles.some(article => article.produitId === product.id)) {
+            this.errorMessage = "Ce produit est déjà ajouté.";
+            return;
         }
+        // Créez un nouvel article avec l'assurance globale si elle existe
+        const newArticle = {
+            produitId: product.id,
+            produitNom: product.nom,
+            magasin: undefined,
+            quantite: null,
+            produitPrix: product.prixventettc || 0,
+            montant: 0,
+            initialQuantite: 0,
+            taxeLibelle: '',
+            stocks: [],
+            commandeId: null
+        };
 
-        this.total = this.sousTotal - remiseValue + this.ajustement;
-        this.total = +this.total.toFixed(2);
-        this.sousTotal = +this.sousTotal.toFixed(2);
+        this.articles.push(newArticle);
+        this.updateMontantWithAssurance(this.articles.length - 1);
+        this.calculateTotal();
+        this.loadStockDetails(product.id, this.articles.length - 1);
+        this.errorMessage = '';
+    }
+
+    onQuantiteChange(event: any, index: number): void {
+        this.articles[index].quantite = event.value;
+        this.updateMontantWithAssurance(index);
+        this.calculateTotal();
+    }
+
+    onPrixChange(event: any, index: number): void {
+        this.articles[index].produitPrix = event.value;
+        this.updateMontantWithAssurance(index);
+        this.calculateTotal();
     }
 
 
-    updateMontant(index: number): void {
+    onGlobalAssuranceChange(): void {
+        this.calculateTotal();
+    }
+
+    updateMontantWithAssurance(index: number): void {
         const article = this.articles[index];
-        const articleTotal = article.quantite * article.produitPrix;
-        const taxeTotal = articleTotal * (article.taxe / 100);
-        article.montant = articleTotal + taxeTotal;
+        if (article.quantite != null) {
+            const articleTotal = article.quantite * article.produitPrix;
+            article.montant = articleTotal ;
+            article.montant = +article.montant.toFixed(2);
+        }
     }
+
 
     calculateTotal(): void {
-        this.sousTotal = this.articles.reduce((acc, article) => {
-            return (acc + article.montant);
-        }, 0);
+        // Calcul du sous-total (montant total sans assurance)
+        this.sousTotal = this.articles.reduce((acc, article) => acc + article.montant, 0);
+        this.sousTotal = +this.sousTotal.toFixed(2);
 
-        let remiseValue = 0;
-        if (this.remiseType === 0) {
-            remiseValue = this.sousTotal * (this.remise / 100);
-        } else if (this.remiseType === 1) {
-            remiseValue = this.remise;
-        }
+        // Conserver le montant total sans assurance
+        this.total = this.sousTotal;
 
-        this.total = this.sousTotal - remiseValue + this.ajustement;
+        // Calcul de la prise en charge par l'assurance
+        const assuranceHauteur: number = (this.selectedAssurance != null &&
+            typeof this.selectedAssurance.hauteur === 'number' &&
+            !isNaN(this.selectedAssurance.hauteur))
+            ? this.selectedAssurance.hauteur
+            : 0;
 
-        // Formater le total avec deux chiffres après la virgule
-        this.total = +this.total.toFixed(2);
-        this.sousTotal = +this.sousTotal.toFixed(2)
-        if (this.montantDonne >= this.total) {
-            this.monnaie = this.montantDonne - this.total;
+        const assuranceCouverture = this.sousTotal * (assuranceHauteur / 100);
+        this.montantAssurance = +assuranceCouverture.toFixed(2);
+
+        // Calcul du montant à payer (après déduction de l'assurance)
+        this.montantAPayer = this.sousTotal - this.montantAssurance;
+        this.montantAPayer = +this.montantAPayer.toFixed(2);
+
+        // Calcul de la monnaie rendue basé sur le montant à payer
+        if (this.montantDonne >= this.montantAPayer) {
+            this.monnaie = this.montantDonne - this.montantAPayer;
         } else {
             this.monnaie = 0;
         }
     }
 
-    onRemiseChange(event: any): void {
-        this.remise = event.value;
-        this.calculateTotal();
+
+
+
+    calculateMontantAssure(facture: any): number {
+        console.log(facture.assuranceValue)
+        return (facture.montant_total * (facture.assuranceValue || 0)) / 100;
     }
 
-    onAjustementChange(event: any): void {
-        this.ajustement = event.value;
-        this.calculateTotal();
+    calculateMontant(facture:any, item: any): number {
+        console.log(facture.assuranceValue)
+        const assuranceMultiplier = (facture.assuranceValue || 0) / 100;
+        return ((item.quantite! * item.produitPrix!)-(item.quantite! * item.produitPrix! * assuranceMultiplier));
     }
 
     scrollToTop() {
@@ -691,6 +615,20 @@ export class VenteComponent implements OnInit {
             return this.factures.some(value => value.numero === this.newBonCommandeNumber);
         }
     }
+
+    async loadAllArticles(): Promise<void> {
+        this.loading = true; // Début du chargement
+        try {
+            const societyId = JSON.parse(this.tokenStorage.getsociety()!);
+            const res = await lastValueFrom(this.produitService.findbysociety(societyId));
+            this.articleOptions = res.payload;
+        } catch (error) {
+            console.error("Erreur lors du chargement des produits :", error);
+        } finally {
+            this.loading = false; // Fin du chargement, qu'il y ait une erreur ou non
+        }
+    }
+
 
     onSubmit(ngForm: NgForm) {
         this.errorMessage = '';
@@ -736,7 +674,7 @@ export class VenteComponent implements OnInit {
                     {severity: 'error', detail: `L'article à la ligne ${i + 1}  n'est pas dans le magasin selectionné.`}
                 ];
                 return;
-            } else if (this.articles[i].initialQuantite < this.articles[i].quantite) {
+            } else if (this.articles[i].quantite==null||(this.articles[i].initialQuantite < this.articles[i].quantite!)) {
                 this.scrollToTop();
                 this.messages = [
                     {
@@ -759,15 +697,18 @@ export class VenteComponent implements OnInit {
             this.facture.remise = this.remise;
             this.facture.sous_total = this.sousTotal;
             this.facture.montant_total = this.total;
+            this.facture.montantAssurance = this.montantAssurance;
             this.facture.clientId = this.client?.id;
             this.facture.boncommandeId = this.bonCommande.id;
-
+            console.log(this.selectedAssurance)
+            this.facture.assuranceId = this.selectedAssurance?.id ;
             if (this.selectedType == 'assure') {
                 this.facture.nomAssure = this.nomAssure;
                 this.facture.nomPatient = this.nomPatient;
                 this.facture.matriculeAssure = this.matriculeAssure;
                 this.facture.codeIDAssure = this.codeIDAssure;
                 this.facture.agePatient = this.agePatient;
+                this.facture.sexePatient = this.sexePatient;
                 this.facture.relationAssure = this.relationAssure;
                 this.facture.assure = true;
             }
@@ -788,11 +729,13 @@ export class VenteComponent implements OnInit {
                         this.factureService.updateFacture(this.facture).subscribe(
                             () => {
                                 this.getVentesDuJour();
+                                this.loadAllArticles();
                                 this.loadInvoices().then(() => {
                                     this.resetForm();
                                     // @ts-ignore
                                     this.facture = this.factures.find(f => f.id == id)
-                                    this.onRowSelect(this.facture)
+                                    //this.onRowSelect(this.facture)
+
                                     this.chrgmt = false;
                                     this.showMessage('success', 'Modification', 'Modification effectuée avec succès !');
                                     this.createOrModify = false;
@@ -805,6 +748,7 @@ export class VenteComponent implements OnInit {
                         this.factureService.save(this.facture).subscribe(
                             () => {
                                 this.getVentesDuJour();
+                                this.loadAllArticles();
                                 this.loadInvoices().then(() => {
                                     // @ts-ignore
                                     this.chrgmt = false;
@@ -820,13 +764,6 @@ export class VenteComponent implements OnInit {
                             }
                         );
                     }
-
-                    /*                    if(this.bonCommandeId){
-                                            this.createOrModify = false;
-                                            this.resetForm();
-                                            this.router.navigate(['gestock/factureClient']).then(r => {
-                                            });
-                                        }*/
                 }
             });
         } else {
@@ -839,9 +776,6 @@ export class VenteComponent implements OnInit {
     }
 
 
-    showDialog(): void {
-        this.display = true;
-    }
     resetForm() {
         this.facture = {};
         this.client = undefined;
@@ -851,7 +785,10 @@ export class VenteComponent implements OnInit {
         this.matriculeAssure = '';
         this.codeIDAssure = '';
         this.agePatient = '';
+        this.sexePatient = '';
         this.relationAssure = '';
+        this.selectedAssurance={};
+        this.selectedType = 'nonAssure';
         this.dateFacture = new Date();
         this.dateEcheance = new Date();
         this.isDeliveryDateValid = true;
@@ -859,47 +796,16 @@ export class VenteComponent implements OnInit {
         this.sousTotal = 0;
         this.remise = 0;
         this.ajustement = 0;
-        this.total = 0;
         this.remiseType = 0;
         this.messages = [];
         this.bonCommandeId = undefined;
         this.bonCommande = {};
         this.montantDonne=0;
         this.monnaie=0;
+        this.total = 0;
+        this.montantAssurance=0;
+        this.montantAPayer=0;
         this.selectedProducts=[];
-    }
-
-    commandesToArticles(commandes: Commande[]): any[] {
-        return commandes.map(command => {
-            const taxe = this.taxes.find(t => t.id === command.taxeId);
-            const articleTotal = (command.quantite! - command.quantitefacturee!) * command.produitPrix!;
-            const taxeTotal = articleTotal * (taxe ? taxe.value / 100 : 0);
-            const assurance = this.assurances.find(t => t.id === command.assuranceId);
-            const assuranceCouverture = articleTotal * (assurance ? assurance.value / 100 : 0);
-
-            const magasin = this.magasins.find(m => m.id === command.magasinId);
-            let initialQuantite1;
-            if (this.facture.id) {
-                // @ts-ignore
-                initialQuantite1 = command.quantitefacturee + command.quantite;
-            } else {
-                initialQuantite1 = command.quantite! - command.quantitefacturee!;
-            }
-
-            return {
-                produitId: command.produitId,
-                magasin: magasin,
-                produitNom: command.produitNom,
-                quantite: command.quantite! - command.quantitefacturee!,
-                initialQuantite: initialQuantite1,
-                produitPrix: command.produitPrix,
-                taxe: taxe ? taxe.value : 0,
-                taxeLibelle: command.taxeLibelle,
-                assurance: assurance,
-                montant: articleTotal + taxeTotal - assuranceCouverture,
-                commandeId: command.id
-            };
-        });
     }
 
     transformToSortie(article: any): Sortie_stock {
@@ -908,22 +814,18 @@ export class VenteComponent implements OnInit {
             commandeId: article.commandeId,
             produitId: article.produitId,
             magasinId: article.magasin.idMagasin,
-            taxeId: this.getTaxeId(article.taxe),
             produitNom: article.produitNom,
             produitPrix: article.produitPrix,
             quantite: article.quantite,
-            assuranceId: this.getAssuranceId(article.assurance),
             societyId: JSON.parse(this.tokenStorage.getsociety()!),
         };
     }
 
     async sortieStockToArticles(sorties: Sortie_stock[]): Promise<any[]> {
         return Promise.all(sorties.map(async (sortie) => {
-            const taxe = this.taxes.find(t => t.id === sortie.taxeId);
             const articleTotal = sortie.quantite! * sortie.produitPrix!;
-            const taxeTotal = articleTotal * (taxe ? taxe.value / 100 : 0);
             const assurance = this.assurances.find(t => t.id === sortie.assuranceId);
-            const assuranceCouverture = articleTotal * (assurance ? assurance.value / 100 : 0);
+            const assuranceCouverture = articleTotal * (assurance ? assurance.hauteur! / 100 : 0);
 
             const magasin = this.magasins.find(m => m.id === sortie.magasinId);
             let initialQuantite1;
@@ -958,27 +860,12 @@ export class VenteComponent implements OnInit {
                 magasin: magasin,
                 quantite: sortie.quantite,
                 produitPrix: sortie.produitPrix,
-                taxe: taxe ? taxe.value : 0,
-                assurance: assurance ? assurance.value : 0,
-                montant: articleTotal + taxeTotal - assuranceCouverture,
+                montant: articleTotal  - assuranceCouverture,
                 initialQuantite: initialQuantite1,
             };
         }));
     }
 
-    getTaxeId(taxeValue?: number): number | undefined {
-        const taxe = this.taxes.find(t => t.value === taxeValue);
-        return taxe ? taxe.id : undefined;
-    }
-
-    getAssuranceId(assuranceValue?: number): number | undefined {
-        const assurance = this.assurances.find(t => t.value === assuranceValue);
-        return assurance ? assurance.id : undefined;
-    }
-
-    validateDeliveryDate() {
-        this.isDeliveryDateValid = this.dateEcheance >= this.dateFacture;
-    }
 
     onGlobalFilter(table: Table, event: Event) {
         table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
@@ -991,26 +878,6 @@ export class VenteComponent implements OnInit {
         this.isSecondaryActive = true;
         this.loadSortieByInvoice(facture.id!)
         this.getPaiementsByFactureId(facture.id!)
-    }
-
-    viewRecu(recu: any) {
-        console.log(recu)
-        this.recuState = true;
-        this.facturestoWach = []
-        this.paiementtowatch = recu
-        console.log(this.paiementtowatch)
-        for (const factureId in this.paiementtowatch.invoicePayments) {
-            if (this.paiementtowatch.invoicePayments.hasOwnProperty(factureId)) {
-                const amount = this.paiementtowatch.invoicePayments[factureId];
-
-                this.factureService.findOne(Number(factureId)).subscribe(facture => {
-                    console.log(`Facture ID: ${factureId}, Amount: ${amount}`);
-                    this.facturetoWach = facture.payload
-                    this.facturestoWach.push(this.facturetoWach)
-                    console.log(this.facturestoWach)
-                })
-            }
-        }
     }
 
     deleteElement(factureToDelete: Facture) {
@@ -1041,44 +908,15 @@ export class VenteComponent implements OnInit {
         });
     }
 
-    deleteRecu(recuToDelete: Recu) {
-        let id = this.facture.id;
-        this.confirmationService.confirm({
-            header: 'Confirmation',
-            message: 'Etes-vous sûr de vouloir annuler le paiement?',
-            accept: () => {
-                if (recuToDelete === null) {
-                    return;
-                } else {
-
-                    if (recuToDelete.id != null) {
-                        this.chrgmt = true;
-                        this.paymentService.deletePayment(recuToDelete.id, "factureclient").subscribe(
-                            () => {
-                                this.loadInvoices().then(() => { // utilisez .then() pour attendre que loadInvoices soit terminé
-                                    // @ts-ignore
-                                    this.facture = this.factures.find(fact => fact.id == id);
-                                    this.showMessage('success', 'SUPPRESSION', 'Suppression effectuée avec succès !');
-                                    this.onRowSelect(this.facture)
-                                    this.chrgmt = false;
-                                });
-                            },
-                            error => {
-                                console.error(error);
-                            }
-                        );
-                    }
-                }
-            }
-        });
-    }
 
     async createModify(facture: Facture) {
         this.chrgmt = true;
         try {
             if (facture.id) {
+                console.log(facture.assuranceId)
                 this.client = this.clients.find(t => t.id === facture.clientId);
-
+                this.selectedAssurance = this.assurances.find(t => t.id === facture.assuranceId);
+                console.log(this.selectedAssurance)
                 console.log(this.facture);
                 if (this.facture.assure == true) {
                     this.selectedType = 'assure'
@@ -1087,6 +925,7 @@ export class VenteComponent implements OnInit {
                     this.matriculeAssure = this.facture.matriculeAssure!;
                     this.codeIDAssure = this.facture.codeIDAssure!;
                     this.agePatient = this.facture.agePatient!;
+                    this.sexePatient = this.facture.sexePatient!;
                     this.relationAssure = this.facture.relationAssure!;
                 }
                 if (this.facture.boncommandeId) {
@@ -1132,6 +971,8 @@ export class VenteComponent implements OnInit {
                 this.remise = facture.remise!;
                 this.ajustement = facture.ajustement!;
                 this.total = facture.montant_total!;
+                this.montantAssurance = facture.montantAssurance!;
+                this.montantAPayer = facture.montant_total!-facture.montantAssurance!;
                 this.remiseType = 0;
             } else {
                 this.resetForm();
@@ -1157,53 +998,6 @@ export class VenteComponent implements OnInit {
         }
     }
 
-
-    filterMagasins() {
-        if (this.searchQuery) {
-            // @ts-ignore
-            this.filteredMagasins = this.magasins.filter(magasin => magasin.nom.toLowerCase().includes(this.searchQuery.toLowerCase()));
-        } else {
-            this.filteredMagasins = this.magasins;
-        }
-    }
-
-    // Méthode pour attribuer le premier magasin par défaut
-
-
-    setDefaultMagasin(index: number) {
-        // @ts-ignore
-        if (this.articles[index].stocks && this.articles[index].stocks.length > 0) {
-            // Affecter le premier magasin de la liste
-            // @ts-ignore
-            this.articles[index].magasin = this.articles[index].stocks[0];
-
-            // Mettre à jour la quantité initiale disponible
-            this.articles[index].initialQuantite = this.articles[index].magasin.stock_physique_dispo_vente;
-            console.log('Premier magasin attribué par défaut :', this.articles[index].magasin);
-        }
-    }
-
-    magasinSelect(event: TableRowSelectEvent, op: OverlayPanel, index: number) {
-        op.hide();
-        this.articles[index].magasin = event.data;
-        console.log(event.data);
-        //if(!this.bonCommande){
-        if (this.articles[index].magasin) {
-            this.articles[index].initialQuantite = this.articles[index].magasin.stock_physique_dispo_vente; // Mettre à jour le stock disponible
-        }
-        // }
-    }
-
-    refreshBoncommandeData() {
-        if (this.bonCommande) {
-            // this.selectBonCommandeDatas();
-        }
-    }
-
-    effectuer_paiement(idFacture: number) {
-        this.router.navigate(['gestock/caisse'], {queryParams: {idfacture: idFacture}});
-    }
-
     effectuer_paiement_en_bloc() {
         this.selectedfactures.forEach(v => {
             if (v.id != null) {
@@ -1215,9 +1009,6 @@ export class VenteComponent implements OnInit {
         this.router.navigate(['gestock/paiement'], {queryParams: {idfactures: idsString}});
     }
 
-    onBonCommandeClear() {
-        this.resetForm()
-    }
 
     loadStockDetails(produitId: number, index: number) {
         this.articles[index].stocks = [];
@@ -1258,42 +1049,17 @@ export class VenteComponent implements OnInit {
         });
     }
 
-    getfacturebyclients(event: any) {
-        console.log(event.value)
-        if (event.value != null) {
-            this.filteredFactures = this.factures.filter(facture => facture.clientId === event.value.id)
-        } else {
-            this.selectedfactures = []
-            this.filteredFactures = this.factures
-        }
-    }
-
     viewBon(facture: Facture) {
         this.router.navigate(['gestock/commandeClient'], {queryParams: {idtowatch: facture.boncommandeId}});
     }
 
     retour() {
         this.createOrModify = true;
-        this.facture = this.factureSelect
-    }
-
-    annler() {
-
-    }
-
-    cancel() {
-        this.createOrModify = true;
-        this.resetForm();
-        this.router.navigate(['gestock/factureClient']).then(r => {
-        });
+       // this.facture = this.factureSelect
     }
 
     close() {
         this.isSecondaryActive = false;
-    }
-
-    goToVenteParArticle() {
-        this.router.navigate(['gestock/ventepararticle']);
     }
 
     private getPaiementsByFactureId(factureId: number) {
@@ -1306,5 +1072,26 @@ export class VenteComponent implements OnInit {
                 })
             }
         );
+    }
+
+    annler() {
+        this.resetForm();
+    }
+
+    clearDropdowns() {
+        this.nomAssure = '';
+        this.nomPatient = '';
+        this.matriculeAssure = '';
+        this.codeIDAssure = '';
+        this.agePatient = '';
+        this.sexePatient = '';
+        this.relationAssure = '';
+        this.montantDonne=0;
+        this.monnaie=0;
+        this.total = 0;
+        this.montantAssurance=0;
+        this.montantAPayer=0;
+        this.selectedAssurance={};
+        this.articles=[];
     }
 }

@@ -55,14 +55,45 @@
                        placeholder="Entrer l'âge du patient" type="number">
             </div>
             <div *ngIf="selectedType === 'assure'" class="form-group">
+                <label for="sexePatient">Sexe du patient</label>
+                <p-dropdown [(ngModel)]="sexePatient" [options]="sexeOptions" placeholder="Sélectionner le sexe"
+                            id="sexePatient" name="sexePatient" [style]="{width: '100%'}">
+                </p-dropdown>
+            </div>
+
+            <div *ngIf="selectedType === 'assure'" class="form-group">
                 <label for="relationAssure">Relation avec l'adhérent</label>
                 <input [(ngModel)]="relationAssure" id="relationAssure" name="relationAssure"
                        pInputText placeholder="Ex: Conjoint, Enfant" type="text">
             </div>
-            <div class="form-group">
+<!--            <div class="form-group">
                 <label for="dateFacture">Date</label>
                 <p-calendar [(ngModel)]="dateFacture" [style]="{width: '100%'}" dateFormat="dd MM yy" id="dateFacture"
                             name="dateFacture"></p-calendar>
+            </div>-->
+            <div *ngIf="selectedType === 'assure'" class="form-group">
+                <label for="assurance">Assurance (%)</label>
+                <p-dropdown
+                    (onChange)="onGlobalAssuranceChange()"
+                    [(ngModel)]="selectedAssurance"
+                    [options]="assurances"
+                    [showClear]="true"
+                    id="assurance"
+                    name="assurance"
+                    [style]="{ width: '100%' }"
+                    appendTo="body"
+                    optionLabel="libelle"
+                    placeholder="Sélectionner une assurance"
+                >
+                    <ng-template let-assurances pTemplate="item">
+                        <div class="flex align-items-center fournisseurs-item">
+                            <div>{{ assurances?.libelle }} &nbsp;&nbsp; [{{ assurances?.hauteur }}%]</div>
+                        </div>
+                    </ng-template>
+                    <ng-template let-item pTemplate="selectedItem">
+                        <div>{{ item?.libelle }} &nbsp;&nbsp; [{{ item?.hauteur }}%]</div>
+                    </ng-template>
+                </p-dropdown>
             </div>
         </div>
 
@@ -95,8 +126,9 @@
                             </th>
                             <th>Nom du produit</th>
                             <th>Prix (FCFA)</th>
+                            <th>Quantitité</th>
                             <th>Forme</th>
-                            <th>Famille</th>
+<!--                            <th>Famille</th>-->
                         </tr>
                     </ng-template>
                     <ng-template let-index="rowIndex" let-product pTemplate="body">
@@ -107,8 +139,9 @@
                             </td>
                             <td style="font-weight: bold">{{ product.nom }}</td>
                             <td>{{ product.prixventettc | customNumber }}</td>
+                            <td>{{ product.quantiteTotal | customNumber }}</td>
                             <td>{{ product.categorieLibelle }}</td>
-                            <td>{{ product.familleLibelle }}</td>
+<!--                            <td>{{ product.familleLibelle }}</td>-->
                         </tr>
                     </ng-template>
                 </p-table>
@@ -142,7 +175,6 @@
                             <th>PRODUIT</th>
                             <th>QUANTITÉ</th>
                             <th>PRIX (FCFA)</th>
-                            <th *ngIf="selectedType === 'assure'">ASSURANCE (%)</th>
                             <th>MONTANT (FCFA)</th>
                             <th *ngIf="bonCommande.id==null" class="small-column"></th>
                         </tr>
@@ -160,6 +192,7 @@
                                     [min]="1"
                                     [name]="'article-' + i + '-quantite'"
                                     [showButtons]="true"
+                                    [allowEmpty]="true"
                                     [style]="{ width: '100%' }"
                                     locale="de-DE"
                                     mode="decimal"
@@ -186,7 +219,7 @@
                                     pInputNumber
                                 ></p-inputNumber>
                             </td>
-                            <td *ngIf="selectedType === 'assure'">
+                            <!--<td *ngIf="selectedType === 'assure'">
                                 <p-dropdown
                                     (onChange)="onAssuranceChange($event, i)"
                                     [(ngModel)]="article.assurance"
@@ -208,7 +241,7 @@
                                         <div>{{ assurancess?.label }} &nbsp;&nbsp; [{{ assurancess?.value }}%]</div>
                                     </ng-template>
                                 </p-dropdown>
-                            </td>
+                            </td>-->
                             <td>{{ article.montant.toFixed(2) | customNumber }}</td>
                             <td *ngIf="bonCommande.id==null" class="small-column">
                                 <button (click)="supprimerLigne(i)"
@@ -226,52 +259,41 @@
                     </table>
                 </div>
 
-                <!-- 3ème partie : Totals row 2 -->
-                <!--<div class="totals-row2">
-                    <div class="totals">
-                        <div class="totals-row">
-&lt;!&ndash;                            <div><label>Sous-total</label></div>&ndash;&gt;
-                            &lt;!&ndash;<div><label>Remise</label></div>
-                            <div><label>Ajustement</label></div>&ndash;&gt;
-                            <div><label style="font-weight: bold; font-size: 15px">Total</label></div>
-                        </div>
-                        <div class="totals-row2">
-                            <div></div>
-                            &lt;!&ndash;<div>
-                                <p-inputNumber (onInput)="onRemiseChange($event)" [(ngModel)]="remise"
-                                               [maxFractionDigits]="2"
-                                               [minFractionDigits]="0" [min]="0" [showButtons]="true"
-                                               locale="de-DE" mode="decimal"
-                                               name="remise" pInputNumber styleClass="input-styling">
-                                </p-inputNumber>
-                            </div>
-                            <div>
-                                <p-inputNumber (onInput)="onAjustementChange($event)" [(ngModel)]="ajustement"
-                                               [maxFractionDigits]="2" [minFractionDigits]="2"
-                                               [showButtons]="true" locale="de-DE" mode="decimal"
-                                               name="ajustement"
-                                               pInputNumber styleClass="input-styling">
-                                </p-inputNumber>
-                            </div>&ndash;&gt;
-                            <div></div>
-                        </div>
-                        <div class="totals-row3">
-&lt;!&ndash;                            <div><span>{{ sousTotal | customNumber }} FCFA</span></div>&ndash;&gt;
-                          &lt;!&ndash;  <div>(-){{ remise | customNumber }} FCFA</div>
-                            <div>{{ ajustement | customNumber }} FCFA</div>&ndash;&gt;
-                            <div><span style="font-weight: bold; font-size: 15px">{{ total | customNumber }} FCFA</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>-->
-
-                <div class="totals-section"
+                <div *ngIf="selectedType != 'assure'" class="totals-section"
                      style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                     <div class="totalss-row" style="flex: 1; display: flex; align-items: center; gap: 10px;">
                         <label style="font-weight: bold;">Total (FCFA) :</label>
                     </div>
                     <div class="totalss-row" style="flex: 1; display: flex; align-items: center; gap: 10px;">
                         <span style="font-weight: bold; font-size: 15px">{{ total | customNumber }} FCFA</span>
+                    </div>
+                </div>
+                <div  *ngIf="selectedType === 'assure'" class="totals-section"
+                     style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                    <div class="totalss-row" style="flex: 1; display: flex; align-items: center; gap: 10px;">
+                        <label style="font-weight: bold;">Montant total :</label>
+                    </div>
+                    <div class="totalss-row" style="flex: 1; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-weight: bold; font-size: 15px">{{ total | customNumber }} FCFA</span>
+                    </div>
+                </div>
+                <div  *ngIf="selectedType === 'assure'" class="totals-section"
+                      style="display: flex; justify-content: space-between; align-items: center; gap: 10px; ">
+                    <div class="totalss-row" style="flex: 1; display: flex; align-items: center; gap: 10px;">
+                        <label style="font-weight: bold;">Prise en charge par l'assurance :</label>
+                    </div>
+                    <div class="totalss-row" style="flex: 1; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-weight: bold; font-size: 15px">{{ montantAssurance | customNumber }} FCFA</span>
+                    </div>
+                </div>
+                <div  *ngIf="selectedType === 'assure'" class="totals-section"
+                      style="display: flex; justify-content: space-between; align-items: center; gap: 10px;
+                        background-color: #74dfaf;">
+                    <div class="totalss-row" style="flex: 1; display: flex; align-items: center; gap: 10px;">
+                        <label style="font-weight: bold;">Montant à payer :</label>
+                    </div>
+                    <div class="totalss-row" style="flex: 1; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-weight: bold; font-size: 15px">{{ montantAPayer | customNumber }} FCFA</span>
                     </div>
                 </div>
                 <div class="payment-section"
@@ -306,7 +328,7 @@
                         <button (click)="onSubmit(factureForm)" class="btn btn-primary" type="submit">
                             <span>Enregistrer</span>
                         </button>
-                        <button (click)="retour()" class="btn btn-secondary" type="button">
+                        <button (click)="annler()" class="btn btn-secondary" type="button">
                             Annuler
                         </button>
                     </span>
@@ -368,39 +390,6 @@
 						</span>
                 </div>
             </ng-template>
-
-            <!--                        <ng-template pTemplate="caption">
-                                        <div class="flex justify-content-between flex-column sm:flex-row">
-                                            <p-dropdown
-                                                [options]="clients"
-                                                (onChange)="getfacturebyclients($event)"
-                                                pTooltip="filtrez les factures par clients"
-                                                tooltipPosition="top"
-                                                [(ngModel)]="clientselected"
-                                                [showClear]="true"
-                                                optionLabel="nom"
-                                                appendTo="body"
-                                                [filter]="true"
-                                                [filterBy]="'nom,prenom'"
-                                                [style]="{width: '210px'}"
-                                                name="client"
-                                                placeholder="Filtrer par client"
-                                                [emptyFilterMessage]="'Aucun élément trouvé'"
-                                                [autoDisplayFirst]="false">
-
-                                                <ng-template let-clients pTemplate="item">
-                                                    <div class="flex align-items-center clients-item">
-                                                        <div>{{ clients?.nom }} {{ clients?.prenom }}</div>
-                                                    </div>
-                                                </ng-template>
-
-                                                <ng-template let-item pTemplate="selectedItem">
-                                                    {{ item?.nom }} {{ item?.prenom }}
-                                                </ng-template>
-                                            </p-dropdown>
-
-                                        </div>
-                                    </ng-template>-->
             <ng-template pTemplate="header">
                 <tr class="large-row">
                     <th style="min-width: 10rem; background-color: rgb(236,236,236)">
@@ -420,63 +409,22 @@
                         </div>
                     </th>
 
-                    <!--<th style="min-width: 10rem; background-color: rgb(236,236,236)">
-                        <div class="flex justify-content-between align-items-center">
-                            N° de Bon commande
-                        </div>
-                    </th>-->
-                    <!--<th style="min-width: 10rem; background-color: rgb(236,236,236)">
-                        <div class="flex justify-content-between align-items-center">
-                            Client
-                        </div>
-                    </th>-->
-                    <!--                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
-                                            <div class="flex justify-content-between align-items-center">
-                                                Statut
-                                            </div>
-                                        </th>-->
-
-                    <!--                    <th style="min-width: 10rem; background-color: rgb(236,236,236)">
-                                            <div class="flex justify-content-between align-items-center">
-                                                Date d'échéance
-                                            </div>
-                                        </th>-->
                     <th style="min-width: 10rem; background-color: rgb(236,236,236)">
                         <div class="flex justify-content-between align-items-center">
                             Montant
                         </div>
                     </th>
-                    <!-- <th style="min-width: 10rem; background-color: rgb(236,236,236)">
-                         <div class="flex justify-content-between align-items-center">
-                             Solde Dû
-                         </div>
-                     </th>-->
+
                 </tr>
             </ng-template>
             <ng-template let-facture pTemplate="body">
                 <tr (click)="onRowSelect(facture)" [pSelectableRow]="facture" class="large-row"
                     style="padding-top: 10px; padding-bottom: 10px;">
-                    <td>{{ facture.date_facture | customDate }}</td>
+                    <td>{{ facture.createdDate | ArrayToDatePipe }}</td>
                     <td>{{ facture.numero }}</td>
                     <td>{{ facture.createdBy }}</td>
-                    <!--<td>{{ facture.numeroboncommande }}</td>
-                    <td>{{ facture.clientNom }} {{ facture.clientPrenom }}</td>-->
-                    <!--                   <td>
-                       <span [ngClass]="{
-                           'status-en-attente': facture.status === 'EN_ATTENTE',
-                           'status-partiellement-payee': facture.status === 'PARTIELLEMENT_PAYEE',
-                           'status-payee': facture.status === 'PAYEE'
-                       }">
-                           {{ formatStatus(facture.status) }}
-                       </span>
-                                       </td>-->
-                    <!--
-                                        <td>{{ facture.date_echeance | customDate}}</td>
-                    -->
                     <td>{{ facture.montant_total | customNumber }} FCFA</td>
-                    <!-- <td *ngIf="facture.reste!==0" [ngStyle]="{ color: 'red' }">{{ facture.reste | customNumber}} FCFA</td>
-                     <td *ngIf="facture.reste===0" style="color: green"> vente Réglée</td>-->
-                </tr>
+                    </tr>
             </ng-template>
             <ng-template pTemplate="summary">
                 <div class="flex align-items-center justify-content-between">
@@ -505,9 +453,6 @@
                 <button (click)="generatePDF()" class="btn">
                     <i class="pi pi-file-pdf"></i> PDF/Impression <i class="fas fa-caret-down"></i>
                 </button>
-                <!--<button (click)="effectuer_paiement(facture.id!)" *ngIf="facture.reste!>0 && droits.includes('AJOUTER_ENCAISSEMENT')" class="btn">
-                    <i class="pi pi-money-bill"></i> Paiement
-                </button>-->
                 <button (click)="deleteElement(facture)"
                         *ngIf="facture.montant_total===facture.reste  && droits.includes('SUPPRIMER_FACTURE_CLIENT')"
                         class="btn"
@@ -519,283 +464,226 @@
                 </button>
             </div>
         </div>
-        <!--<p-accordion>
-            <p-accordionTab>
-                <ng-template pTemplate="header">
-                    Paiements <span class="badge">{{ facture.listPaiements?.length }}</span>
-                </ng-template>
-                <ng-template pTemplate="content">
-                    <p-table [value]="facture.listPaiements!">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th>N° de paiement</th>
-                                <th>Date</th>
-                                <th>Montant</th>
-                                <th>Action</th>
-                            </tr>
-                        </ng-template>
-                        <ng-template let-recu pTemplate="body">
-                            <tr>
-                                <td>{{ recu.numero }}</td>
-                                <td>{{ recu.date_paiement | customDate }}</td>
-                                <td>{{ recu.montant | customNumber}} FCFA</td>
-                                <td>
-                                    <button (click)="viewRecu(recu)" class="p-button-text" icon="pi pi-eye" pButton
-                                            type="button"></button>
-&lt;!&ndash;                                    <button (click)="modifier_paiement(recu.id)" class="p-button-text" icon="pi pi-pencil" pButton&ndash;&gt;
-&lt;!&ndash;                                            type="button"></button>&ndash;&gt;
-                                    <button (click)="deleteRecu(recu)" class="p-button-text" icon="pi pi-trash" pButton
-                                            type="button"></button>
-                                </td>
-                            </tr>
-                        </ng-template>
-                    </p-table>
-                </ng-template>
-            </p-accordionTab>
-        </p-accordion>-->
+
         <br>
         <h6 *ngIf="!recuState">Vue en mode PDF
             <p-inputSwitch [(ngModel)]="checked"/>
         </h6>
-        <div *ngIf="!recuState && !checked" class="bon-commande-detail">
-            <div class="main-content">
-                <div class="info-section">
-                    <div class="info-block">
-                        <div class="bc">RECU DE PAIEMENT</div>
-                        <div style="margin-top: 5px; display: flex;">
-                            <strong style="min-width: 250px;">N° de la vente</strong>
-                            <span>: {{ facture.numero }}</span>
-                        </div>
-                        <div *ngIf="facture.assure==true" style="margin-top: 10px; display: flex;">
-                            <strong style="min-width: 250px;">Nom de l'adhérent</strong>
-                            <span>: {{ facture.nomAssure }}</span>
-                        </div>
-                        <div *ngIf="facture.assure==true" style="margin-top: 5px; display: flex;">
-                            <strong style="min-width: 250px;">Matricule de l'adhérent</strong>
-                            <span>: {{ facture.matriculeAssure }}</span>
-                        </div>
-                        <div *ngIf="facture.assure==true" style="margin-top: 5px; display: flex;">
-                            <strong style="min-width: 250px;">Code ID de l'adhérent</strong>
-                            <span>: {{ facture.codeIDAssure }}</span>
-                        </div>
-                        <div *ngIf="facture.assure==true" style="margin-top: 5px; display: flex;">
-                            <strong style="min-width: 250px;">Nom du patient</strong>
-                            <span>: {{ facture.nomPatient }}</span>
-                        </div>
-                        <div *ngIf="facture.assure==true" style="margin-top: 5px; display: flex;">
-                            <strong style="min-width: 250px;">Age du patient</strong>
-                            <span>: {{ facture.agePatient }} ans</span>
-                        </div>
-                        <div *ngIf="facture.assure==true" style="margin-top: 5px; display: flex;">
-                            <strong style="min-width: 250px;">Relation avec l'adhérent</strong>
-                            <span>: {{ facture.relationAssure }}</span>
-                        </div>
-                        <br/>
-                        <br/>
-
-                        <div class="div-right-left">
-                            <div class="div-right">
-                                <div>Statut</div>
-                                <div *ngIf="facture.numeroboncommande">N° de la commande client</div>
-                                <div *ngIf="facture.numeroboncommande">N° de la commande client</div>
-                                <div>Date</div>
-                                <!--                                <div>Date d'échéance</div>-->
-                                <!--                                <div>Montant payé</div>-->
-                                <div>Total payé</div>
-                            </div>
-                            <div class="div-left">
-                                <div>
-                                    <span [ngClass]="{
-                                    'status-en-attente': facture.rembourseParAssureur === false,
-                                    'status-payee': facture.rembourseParAssureur === true
-                                    }">
-                                        {{ formatStatus(facture.rembourseParAssureur) }}
-                                    </span>
-                                </div>
-                                <div (click)="viewBon(facture)" *ngIf="facture.numeroboncommande"
-                                     class="link-like"> {{ facture.numeroboncommande }}
-                                </div>
-                                <div>{{ facture.date_facture | customDate }}</div>
-                                <!--                                <div> {{facture.date_echeance | customDate}}</div>-->
-                                <!--                                <div><strong> {{facture.reste | customNumber}} FCFA</strong></div>-->
-                                <div><strong> {{ facture.montant_total | customNumber }} FCFA</strong></div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- <div class="address-block">
-                         <div class="first2">
-                             <div style=" margin-top: 5px;"><strong>Adresse du client</strong>
-                             </div>
-                             <div style=" margin-top: 5px;"> {{facture.numero}}
-                             </div>
-                         </div>
-                     </div>-->
-                </div>
-
-                <div class="articles-section">
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>Produits et description</th>
-                            <th>Quantité</th>
-                            <!--                            <th>Dépot de sortie</th>-->
-                            <th>Prix</th>
-                            <!--
-                                                        <th>Taxe</th>
-                            -->
-                            <th *ngIf="facture.assure==true">Assurance</th>
-                            <th>Montant</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr *ngFor="let item of commandes">
-                            <td>{{ item.produitNom }}</td>
-                            <td>{{ item.quantite! | customNumber }}</td>
-                            <!--                            <td>{{ item.magasinNom! }}</td>-->
-                            <td>{{ item.produitPrix! | customNumber }} FCFA</td>
-                            <!--
-                                                        <td>{{ item.taxeLibelle}} ({{ item.taxehauteur != null ? item.taxehauteur : 0 }}) %</td>
-                            -->
-                            <td *ngIf="facture.assure==true">{{ item.assuranceLibelle }}
-                                ({{ item.assuranceHauteur != null ? item.assuranceHauteur : 0 }}) %
-                            </td>
-                            <td>
-                                {{
-                                    (item.quantite! * item.produitPrix! *
-                                        (item.taxehauteur != null ? (1 + item.taxehauteur! / 100) : 1))
-                                        .toFixed(2) | customNumber
-                                }} FCFA
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="total-section">
-                    <div class="div-right-left2">
-                        <div class="div-right">
-                            <div>Sous-total:</div>
-                            <!--<div>Remise:</div>
-                            <div>Ajustement:</div>-->
-                            <div>Total payé:</div>
-                        </div>
-                        <div class="div-left">
-                            <div> {{ facture.sous_total | customNumber }} FCFA</div>
-                            <!--<div>(-){{facture.remise | customNumber}} FCFA</div>
-                            <div>{{facture.ajustement | customNumber}} FCFA</div>-->
-                            <div>{{ facture.montant_total | customNumber }} FCFA</div>
-                        </div>
+        <div *ngIf="!recuState && !checked" >
+            <div class="surface-card p-4 shadow-2 border-round">
+                <!-- En-tête du reçu -->
+                <div class="text-center mb-5">
+                    <div class="text-3xl font-bold text-900 mb-3">REÇU DE PAIEMENT</div>
+                    <div class="text-500 mb-2">Date : {{ facture.createdDate | ArrayToDatePipe }}</div>
+                    <div class="text-600">N° de la vente : {{ facture.numero }}</div>
+                    <div *ngIf="facture.assure" class="status-container">
+                        <span class="status-title">Statut:</span>
+                        <span [ngClass]="{
+                        'status-en-attente': facture.rembourseParAssureur === false,
+                        'status-payee': facture.rembourseParAssureur === true
+                    }">
+                        {{ formatStatus(facture.rembourseParAssureur!) }}
+                    </span>
                     </div>
                 </div>
+
+                <!-- Informations du patient -->
+                <p-card *ngIf="facture.assure" styleClass="mb-4">
+                    <ng-template pTemplate="header">
+                        <div class="text-xl font-bold text-900 mb-3">Informations Patient</div>
+                    </ng-template>
+                    <div class="grid">
+                        <div class="col-12 md:col-6 lg:col-3">
+                            <div class="text-500 mb-2">Nom de l'adhérent</div>
+                            <div class="text-900 font-medium">{{ facture.nomAssure }}</div>
+                        </div>
+                        <div class="col-12 md:col-6 lg:col-3">
+                            <div class="text-500 mb-2">Matricule</div>
+                            <div class="text-900 font-medium">{{ facture.matriculeAssure }}</div>
+                        </div>
+                        <div class="col-12 md:col-6 lg:col-3">
+                            <div class="text-500 mb-2">Code ID</div>
+                            <div class="text-900 font-medium">{{ facture.codeIDAssure }}</div>
+                        </div>
+                        <div class="col-12 md:col-6 lg:col-3">
+                            <div class="text-500 mb-2">Patient</div>
+                            <div class="text-900 font-medium">{{ facture.nomPatient }}</div>
+                        </div>
+                        <div class="col-12 md:col-6 lg:col-3">
+                            <div class="text-500 mb-2">Sexe</div>
+                            <div class="text-900 font-medium">{{ facture.sexePatient }}</div>
+                        </div>
+                        <div class="col-12 md:col-6 lg:col-3">
+                            <div class="text-500 mb-2">Âge</div>
+                            <div class="text-900 font-medium">{{ facture.agePatient }} ans</div>
+                        </div>
+                        <div class="col-12 md:col-6 lg:col-3">
+                            <div class="text-500 mb-2">Relation avec l'adhérent</div>
+                            <div class="text-900 font-medium">{{ facture.relationAssure }}</div>
+                        </div>
+                    </div>
+                </p-card>
+
+                <!-- Détails des produits -->
+                <p-card styleClass="mb-4">
+                    <ng-template pTemplate="header">
+                        <div class="text-xl font-bold text-900 mb-3">Détails des produits</div>
+                    </ng-template>
+                    <p-table [value]="commandes" styleClass="p-datatable-sm" [tableStyle]="{'min-width': '50rem'}">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Produits</th>
+                                <th class="text-right">Quantité</th>
+                                <th class="text-right">Prix</th>
+                                <th class="text-right">Montant</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr>
+                                <td>{{ item.produitNom }}</td>
+                                <td class="text-right">{{ item.quantite | customNumber }}</td>
+                                <td class="text-right">{{ item.produitPrix | customNumber }} FCFA</td>
+                                <td class="text-right">{{ (item.quantite * item.produitPrix) | customNumber }} FCFA</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </p-card>
+
+                <!-- Résumé du paiement -->
+                <p-card>
+                    <ng-template pTemplate="header">
+                        <div class="text-xl font-bold text-900 mb-3">Détails du paiement</div>
+                    </ng-template>
+                    <div class="flex flex-column gap-3">
+                        <div class="flex justify-content-between align-items-center">
+                            <span class="text-600">Montant réglé par l'assusrane  ({{facture.assuranceValue }}%):</span>
+                            <span class="text-900 font-medium">{{ facture.montantAssurance | customNumber }} FCFA</span>
+                        </div>
+                        <p-divider></p-divider>
+                        <div class="flex justify-content-between align-items-center">
+                            <span class="text-900 font-bold text-xl">Total payé:</span>
+                            <span class="text-900 font-bold text-xl">{{ (facture.montant_total! - facture.montantAssurance!) | customNumber }} FCFA</span>
+                        </div>
+                    </div>
+                </p-card>
             </div>
         </div>
-        <div *ngIf="recuState && !checked" class="container">
-            <div class="header">
-                <h1>{{ societegetted.nom }}</h1>
-                <p>Burkina Faso</p>
-                <p>+226 {{ societegetted.tel }}</p>
-                <p>+226 {{ societegetted.fixe }}</p>
-            </div>
-            <div class="payment-receipt">
-                <h2>REÇU DE PAIEMENT</h2>
-                <div class="payment-info">
-                    <div>
-                        <p><strong>Date du paiement:</strong> {{ paiementtowatch.date_paiement | customDate }}</p>
-                        <p><strong>Numéro du reçu:</strong>{{ paiementtowatch.numero }}</p>
-                        <p><strong>Mode de paiement:</strong> {{ paiementtowatch.modePaiement }}</p>
-                    </div>
-                    <div class="amount-received">
-                        <p>Montant reçu</p>
-                        <h3>{{ paiementtowatch.montant }} FCFA</h3>
-                    </div>
-                </div>
-                <p><strong>Payer par:</strong> <a href="#">{{ facture.clientNom }} {{ facture.clientPrenom }}</a></p>
-            </div>
-            <div class="payment-details">
-                <h3>Paiement pour</h3>
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Numéro de facture</th>
-                        <th>Date de facture</th>
-                        <th>Montant de la facture</th>
-                        <th>Montant du paiement</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr *ngFor="let facture of facturestoWach, let i = index">
-                        <td>{{ facture.numero }}</td>
-                        <td>{{ facture.createdDate | customDate }}</td>
-                        <td>{{ facture.montant_total }} FCFA</td>
-                        <td>{{ paiementtowatch.invoicePayments?.[facture.id!] }} FCFA</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div *ngIf="checked" class="commande-client" id="commandeClient">
-
-            <div class="title">
+        <div *ngIf="checked" class="receipt-container" id="commandeClient">
+            <header class="company-header">
                 <div class="company-info">
-                    <div class="upload">
-                        <img *ngIf="societegetted.logo" alt="" height=50
-                             src="data:image/PNG; base64,{{societegetted.logo}}" style="margin-right: 1250px"
-                             width=50>
-                        <img *ngIf="!societegetted.logo" alt=""
-                             height=50 src="assets/layout/images/gstock.png" style="margin-right: 1250px" width=50>
+                    <div class="company-name-section">
+                        <h2 class="company-name">{{ societegetted.nom }}</h2>
+
+                    </div>
+                    <div class="contact-and-date">
+                        <p>Burkina Faso</p>
+                        <div class="company-contact">
+                            <p>Tél: {{ societegetted.tel }}</p>
+                            <p>Email: {{ societegetted.email }}</p>
+                        </div>
+                        <div class="date-info">
+                            <p>Ouagadougou le : {{ facture.createdDate | customDate }}</p>
+                        </div>
                     </div>
                 </div>
-                <div class="info">
-                    <p>{{ societegetted.nom }}<br>Burkina Faso<br>{{ societegetted.tel }}<br>{{ societegetted.email }}
-                    </p>
+            </header>
+            <div class="surface-card p-4 shadow-2 border-round">
+                <!-- En-tête du reçu -->
+                <div class="text-center mb-5">
+                    <div class="text-3xl font-bold text-900 mb-3">REÇU DE PAIEMENT</div>
+                    <div class="text-600">N° de la vente : {{ facture.numero }}</div>
+                    <div *ngIf="facture.assure" class="status-container">
+                        <span class="status-title">Statut:</span>
+                        <span [ngClass]="{
+                        'status-en-attente': facture.rembourseParAssureur === false,
+                        'status-payee': facture.rembourseParAssureur === true
+                    }">
+                        {{ formatStatus(facture.rembourseParAssureur!) }}
+                    </span>
+                    </div>
                 </div>
+
+                <!-- Informations du patient -->
+                <p-card *ngIf="facture.assure" styleClass="mb-4">
+                    <ng-template pTemplate="header">
+                        <div class="text-xl font-bold text-900 mb-3">Informations Patient</div>
+                    </ng-template>
+                    <div class="grid">
+                        <div class="col-12 md:col-6 lg:col-3">
+                            <div class="text-500 mb-2">Nom de l'adhérent</div>
+                            <div class="text-900 font-medium">{{ facture.nomAssure }}</div>
+                        </div>
+                        <div class="col-12 md:col-6 lg:col-3">
+                            <div class="text-500 mb-2">Matricule</div>
+                            <div class="text-900 font-medium">{{ facture.matriculeAssure }}</div>
+                        </div>
+                        <div class="col-12 md:col-6 lg:col-3">
+                            <div class="text-500 mb-2">Code ID</div>
+                            <div class="text-900 font-medium">{{ facture.codeIDAssure }}</div>
+                        </div>
+                        <div class="col-12 md:col-6 lg:col-3">
+                            <div class="text-500 mb-2">Patient</div>
+                            <div class="text-900 font-medium">{{ facture.nomPatient }}</div>
+                        </div>
+                        <div class="col-12 md:col-6 lg:col-3">
+                            <div class="text-500 mb-2">Sexe</div>
+                            <div class="text-900 font-medium">{{ facture.sexePatient }}</div>
+                        </div>
+                        <div class="col-12 md:col-6 lg:col-3">
+                            <div class="text-500 mb-2">Âge</div>
+                            <div class="text-900 font-medium">{{ facture.agePatient }} ans</div>
+                        </div>
+                        <div class="col-12 md:col-6 lg:col-3">
+                            <div class="text-500 mb-2">Relation avec l'adhérent</div>
+                            <div class="text-900 font-medium">{{ facture.relationAssure }}</div>
+                        </div>
+                    </div>
+                </p-card>
+
+                <!-- Détails des produits -->
+                <p-card styleClass="mb-4">
+                    <ng-template pTemplate="header">
+                        <div class="text-xl font-bold text-900 mb-3">Détails des produits</div>
+                    </ng-template>
+                    <p-table [value]="commandes" styleClass="p-datatable-sm" [tableStyle]="{'min-width': '50rem'}">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Produits</th>
+                                <th class="text-right">Quantité</th>
+                                <th class="text-right">Prix</th>
+                                <th class="text-right">Montant</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr>
+                                <td>{{ item.produitNom }}</td>
+                                <td class="text-right">{{ item.quantite | customNumber }}</td>
+                                <td class="text-right">{{ item.produitPrix | customNumber }} FCFA</td>
+                                <td class="text-right">{{ (item.quantite * item.produitPrix) | customNumber }} FCFA</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </p-card>
+
+                <!-- Résumé du paiement -->
+                <p-card>
+                    <ng-template pTemplate="header">
+                        <div class="text-xl font-bold text-900 mb-3">Détails du paiement</div>
+                    </ng-template>
+                    <div class="flex flex-column gap-3">
+                        <div class="flex justify-content-between align-items-center">
+                            <span class="text-600">Montant réglé par l'assusrane  ({{facture.assuranceValue }}%):</span>
+                            <span class="text-900 font-medium">{{ facture.montantAssurance | customNumber }} FCFA</span>
+                        </div>
+                        <p-divider></p-divider>
+                        <div class="flex justify-content-between align-items-center">
+                            <span class="text-900 font-bold text-xl">Total payé:</span>
+                            <span class="text-900 font-bold text-xl">{{ (facture.montant_total! - facture.montantAssurance!) | customNumber }} FCFA</span>
+                        </div>
+                    </div>
+                </p-card>
             </div>
-            <div class="order-info" style="margin-top: -120px">
-                <p><strong>RECU</strong></p>
-                <p><strong>N° de RECU :</strong> {{ facture.numero }}</p>
-                <p><strong>Date du reçu :</strong> {{ facture.date_facture | customDate }}</p>
-                <!--<p><strong>Date d'échéance :</strong> {{facture.date_echeance | customDate}}</p>
-                <p><strong>Solde Dû :</strong> {{facture.reste | customNumber}} FCFA</p>
-                <p *ngIf="facture.boncommandeId!=null"><strong>Numéro du bon de
-                    commande:</strong> {{facture.numeroboncommande}}</p>-->
-                <p><strong>Ouagadougou le {{ facture.createdDate | customDate }}</strong></p>
-            </div>
-            <!--            <div class="billing-info">
-                            <p><strong>Facturer à :</strong><br>
-                                {{ facture.clientNom }} {{ facture.clientPrenom }}<br>
-                                <span *ngIf="facture.telClient">Téléphone: +226 {{ facture.telClient }}</span>
-                            </p>
-                        </div>-->
-            <div class="article-section">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Article & Description</th>
-                        <th>Quantité</th>
-                        <th>Prix</th>
-                        <th>Montant</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr *ngFor="let item of commandes">
-                        <td>{{ item.produitNom }}</td>
-                        <td>{{ item.quantite | customNumber }} {{ item.produitUnite }}</td>
-                        <td>{{ item.produitPrix | customNumber }} FCFA</td>
-                        <td>{{ item.quantite! * item.produitPrix! | customNumber }} FCFA</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="total-section">
-                <p><strong>Sous-total:</strong> {{ facture.sous_total | customNumber }} FCFA</p>
-                <p><strong>Total:</strong> {{ facture.montant_total | customNumber }} FCFA</p>
-                <!--
-                                <p><strong>Solde Dû :</strong> {{facture.reste | customNumber}} FCFA</p>
-                -->
-            </div>
-            <!--
-                        <p>Arrêté le facture à {{ facture.montant_total | numberToWords }} FRANCS CFA</p>
-            -->
+
         </div>
     </div>
 </div>

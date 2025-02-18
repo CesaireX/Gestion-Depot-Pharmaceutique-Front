@@ -63,7 +63,7 @@ username="";
                 ) { }
 
     ngOnInit(): void {
-        this.loadAll();
+        //this.loadAll();
         this.loadAllRole();
         this.modif=false;
         this.societyId = JSON.parse(this.tokenStorage.getsociety()!);

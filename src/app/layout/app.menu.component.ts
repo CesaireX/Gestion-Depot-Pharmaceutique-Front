@@ -66,7 +66,12 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                     {
                         label: 'Ventes',
                         icon: 'pi pi-fw pi-plus-circle',
-                        routerLink: ['/gestock/factureClient']
+                        routerLink: ['/gestock/factureClient', { mode: 'create' }]
+                    },
+                    {
+                        label: 'Historique des ventes',
+                        icon: 'pi pi-fw pi-history',
+                        routerLink: ['/gestock/factureClientHistorique', { mode: 'history' }]
                     },
                     {
                         label: 'Clients assurés',

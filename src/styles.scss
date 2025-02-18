@@ -320,9 +320,12 @@ small.form-text {
                 flex: 1;
 
                 .bc {
-                    font-size: 2em;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    font-size: 1em;
+                    margin-bottom:45px;
                 }
-
 
                 &:not(:last-child) {
                     margin-right: 20px;

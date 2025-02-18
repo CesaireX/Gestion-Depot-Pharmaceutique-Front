@@ -591,16 +591,14 @@ export class VenteAssuranceComponent implements OnInit {
     }
 
 
-    formatStatus(status?: string): string {
+    formatStatus(status?: boolean): string {
         switch (status) {
-            case 'EN_ATTENTE':
-                return 'En attente';
-            case 'PAYEE':
-                return 'Payée';
-            case 'PARTIELLEMENT_PAYEE':
-                return 'Partiellement payée';
+            case false:
+                return 'Non Remboursée';
+            case true:
+                return 'Remboursée';
             default:
-                return status!;
+                return 'Non Remboursée';
         }
     }
 

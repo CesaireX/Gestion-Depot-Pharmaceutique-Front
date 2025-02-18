@@ -68,7 +68,6 @@ export class AuthService  {
         this.token = data['token'];
         let jwtDecoder: any = jwtDecode(this.token);
         this.username = jwtDecoder.sub;
-        console.log(jwtDecoder)
         if (data['roles']) {
             this.role = data['roles'];
         }
@@ -92,6 +91,12 @@ export class AuthService  {
                 window.localStorage.setItem("UNDERGROUND", societyid);
                 const societyname = CryptoJS.AES.encrypt(JSON.stringify(String(societyName)),"this.token").toString();
                 window.localStorage.setItem("LOWERCASE", societyname);
+            }
+            // Redirection based on role
+            if (this.role.includes('CAISSE')) {
+                this.router.navigateByUrl("gestock/factureClient");
+            } else {
+                this.router.navigateByUrl("gestock/dashboards");
             }
         } catch (error) {
             console.error('Erreur lors du chargement des droitss :', error);

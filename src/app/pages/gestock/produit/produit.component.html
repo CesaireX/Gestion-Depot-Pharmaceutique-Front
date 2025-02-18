@@ -353,32 +353,13 @@
         </div>
 
 
-        <!--        <h5>Achat de l'article</h5>
-
-                <div class="form-group row">
-                    <label style="color: red" class="col-sm-3 col-form-label">Prix d'achat</label>
-                    <div class="col-sm-9 ml-7"> &lt;!&ndash; Ajouter une marge gauche &ndash;&gt;
-                        <p-inputNumber class="form-control" type="number" name="prixachatht" pInputNumber
-                                       [(ngModel)]="produit.prixachatht" [style]="{'width': '300px'}" [min]="0" [required]="true"
-                                       locale="de-DE" [minFractionDigits]="0" (onInput)="apply_ttc($event, 'achat')"  [showButtons]="true">
-                        </p-inputNumber>
-                    </div>
-                </div>-->
-
         <h5>Stock d'ouverture</h5>
         <br>
         <div *ngIf="produit.isUsed == 0 || produit.isUsed == null || false">
-            <div class="grid p-fluid">
-                <div class="field col-6 md-3">
-                    <!-- Griser le dropdown si un seul magasin est disponible -->
-                    <p-dropdown class="form-control" id="magasin" [options]="magasins" [(ngModel)]="selectedMagasin"
-                                optionLabel="nom" name="magasinId" [filter]="true"
-                                placeholder="Ajouter dans un magasin"
-                                [resetFilterOnHide]='true'
-                                [style]="{'width':'100%'}" [disabled]="magasins.length === 1">
-                    </p-dropdown>
-                </div>
-                <div class="field col-5 md-3">
+
+            <div class="form-group row">
+                <label style="color: red" class="col-sm-3 col-form-label">Quantité d'ouverture</label>
+                <div class="col-sm-9 ml-7">
                     <p-inputNumber type="number" id="stockInitial" name="stockInitial" pInputNumber
                                    mode="decimal" [maxFractionDigits]="2" locale="de-DE" [minFractionDigits]="0"
                                    [(ngModel)]="stockInitial" [style]="{'width': '100%'}"
@@ -390,9 +371,8 @@
         </div>
 
     </form>
-    <div style="bottom: 0; position: fixed; width: 100%" class="layout-footer p-d-flex p-ai-center p-p-4 p-shadow-z">
+    <div class="layout-footer p-d-flex p-ai-center p-p-4 p-shadow-z" style="position: relative; width: 100%;">
             <span style="font-weight: bold">
-
                 <button *ngIf="createormodif" (click)="SaveChoice(editForm, 'continuer')" type="button" [disabled]="editForm.invalid || loading" class="btn btn-primary">
                     <i *ngIf="loading && display" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
                     <span *ngIf="!loading || !display">Enregistrer et continuer</span>

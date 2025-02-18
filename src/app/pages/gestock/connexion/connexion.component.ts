@@ -133,14 +133,16 @@ export class ConnexionComponent implements OnInit {
         }
     }
 
-    selecteSociety(society: Societe){
-        this.authService.loadProfile(this.data, society.id!, society.nom!).then(r =>
-            this.router.navigateByUrl("gestock/dashboards")
-        );
+    loadOneSociety(data: any){
+        this.authService.loadProfile(data, this.idSocietySelected!, this.societyName!).then(r =>{
+        //this.router.navigateByUrl("gestock/dashboards")
+            console.log("connexion réussie")
+        }
+    );
     }
 
-    loadOneSociety(data: any){
-        this.authService.loadProfile(data, this.idSocietySelected!, this.societyName!).then(r =>
+    selecteSociety(society: Societe){
+        this.authService.loadProfile(this.data, society.id!, society.nom!).then(r =>
             this.router.navigateByUrl("gestock/dashboards")
         );
     }

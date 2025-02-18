@@ -71,6 +71,7 @@ import {AssuranceComponent} from "./assurance/assurance.component";
 import {FamilleComponent} from "./famille/famille.component";
 import {VenteComponent} from "../vente/vente.component";
 import {VenteAssuranceComponent} from "../vente-assurance/vente-assurance.component";
+import {ArrayToDatePipe} from "../../store/pipe/array-to-date-with-hour.pipe";
 @NgModule({
     declarations: [
         MagasinComponent,
@@ -114,7 +115,7 @@ import {VenteAssuranceComponent} from "../vente-assurance/vente-assurance.compon
         ResetPsswdComponent,
         CorrectionStockComponent,
         CustomNumberPipe,
-        CustomDatePipe,
+        ArrayToDatePipe,
         NumberToWordsPipe,
         PhoneNumberPipe,
         FormatNumberInputDirective,

@@ -178,6 +178,8 @@ export interface Produit {
     quantite_a_recevoir?: number;
     quantite_a_regler?: number;
     quantite_a_livrer?: number;
+
+    quantiteTotal?:number;
 }
 
 export interface Categorie {
@@ -706,6 +708,7 @@ export interface BonCommande{
     //Pour une commande client
     statutlivraison?: string;
     statutfacture?: string;
+    montantAssurance?:number;
 }
 
 export interface EventItem {
@@ -835,10 +838,15 @@ export class Facture {
     matriculeAssure?: string;
     codeIDAssure?: string;
     agePatient?: string;
+    sexePatient?: string;
+    assuranceId?:number;
+    assuranceLabel?:string;
+    assuranceValue?:number;
     relationAssure?: string;
     assure? : boolean;
     rembourseParAssureur? : boolean;
     montant_total?: number;
+    montantAssurance?: number;
     reste?: number;
     ajustement?: number;
     sous_total?: number;
