@@ -249,11 +249,11 @@ export class VenteAssuranceComponent implements OnInit {
     }
 
     validerRemboursement(factureId: number): void {
+        console.log("dddddddddddddddd")
         this.confirmationService.confirm({
-            message: 'Êtes-vous sûr de vouloir valider ce remboursement ?',
-            header: 'Confirmer le Remboursement',
-            icon: 'pi pi-exclamation-triangle',
-            accept: () => {
+                header: 'Confirmer le Remboursement',
+                message: 'Êtes-vous sûr de vouloir valider ce remboursement ?',
+                accept: () => {
                 this.factureService.markAsRembourse(factureId).subscribe({
                     next: () => {
                         this.messageService.add({
@@ -263,6 +263,7 @@ export class VenteAssuranceComponent implements OnInit {
                         });
                         this.isSecondaryActive = false;
                         this.loadInvoices(this.type!);
+                        console.log("ffffffffffffff")
                     },
                     error: (err) => {
                         this.messageService.add({
@@ -270,10 +271,12 @@ export class VenteAssuranceComponent implements OnInit {
                             summary: 'Erreur',
                             detail: 'Impossible de valider le remboursement.'
                         });
+                        console.log("gggggggggggg")
                     }
                 });
             },
-        });
+        }
+        );
     }
     startPdf() {
         const element = document.getElementById('commandeClient');

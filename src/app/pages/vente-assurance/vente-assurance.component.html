@@ -68,8 +68,6 @@
                     <td>{{ facture.createdDate | ArrayToDatePipe }}</td>
                     <td>{{ facture.numero }}</td>
                     <td>{{ facture.createdBy }}</td>
-
-                    -->
                     <td>{{ facture.montant_total | customNumber }} FCFA</td>
             </tr>
             </ng-template>
@@ -92,9 +90,10 @@
                 <span (click)="close()" class="close-button">&#10006;</span>
             </div>
             <div class="actions">
+
                 <button
-                    (click)="validerRemboursement(facture.id!)"
                     *ngIf="facture.rembourseParAssureur==false&&droits.includes('MODIFIER_FACTURE_CLIENT')"
+                    (click)="validerRemboursement(facture.id!)"
                     class="btn btn-success">
                     <i class="pi pi-check"></i> Valider le Remboursement
                 </button>
@@ -334,3 +333,15 @@
         </div>
     </div>
 </div>
+
+<p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
+                 position="top">
+    <p-footer style="display: flex;">
+        <button (click)="cd.reject()" class="btnannulate"
+        ><i class="pi pi-close"></i>Annuler
+        </button>
+        <button (click)="cd.accept()" class="btnvalidate"
+        ><i class="pi pi-confirm"></i>Confirmer
+        </button>
+    </p-footer>
+</p-confirmDialog>

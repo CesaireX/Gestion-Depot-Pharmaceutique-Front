@@ -37,7 +37,11 @@ export class FactureFournisseurClientService extends CrudService<Facture, number
     findClientInvoicesBySocieteId(id: number): Observable<ResponseGeneric<Facture[]>> {
         return this.http.get<ResponseGeneric<Facture[]>>(GestockEndpoint.gestock_by_society_facture + '/' + id + '/clients');
     }
-
+    findClientInvoicesBySocieteIdPaginated(id: number, page: number, size: number): Observable<ResponseGeneric<any>> {
+        return this.http.get<ResponseGeneric<any>>(
+            `${GestockEndpoint.gestock_by_society_facture}/${id}/clients/paginated?page=${page}&size=${size}`
+        );
+    }
     findNonRembourseClientInvoicesBySocieteId(id: number): Observable<ResponseGeneric<Facture[]>> {
         return this.http.get<ResponseGeneric<Facture[]>>(GestockEndpoint.gestock_by_society_facture + '/' + id + '/clients/non-rembourse');
     }

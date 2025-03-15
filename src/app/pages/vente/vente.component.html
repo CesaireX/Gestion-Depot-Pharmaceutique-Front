@@ -369,10 +369,18 @@
         <p-table #dt
                  [(selection)]="selectedfactures"
                  [globalFilterFields]="['dateFacture', 'numeroFacture', 'reference', 'client.nom', 'statut', 'dateEcheance', 'montantTotal', 'reste']"
-                 [loading]="loading" [paginator]="true"
-                 [rowHover]="true" [rowsPerPageOptions]="[25,50,100]"
-                 [rows]="25" [value]="filteredFactures"
-                 dataKey="id" responsiveLayout="scroll"
+                 [loading]="loading"
+                 [paginator]="true"
+                 [rowHover]="true"
+                 [rows]="pageSize"
+                 [totalRecords]="totalItems"
+                 [value]="filteredFactures"
+                 [lazy]="true"
+                 (onPage)="onPageChange($event)"
+                 [rowsPerPageOptions]="[5, 10, 25, 50]"
+                 currentPageReportTemplate="{first} à {last} sur {totalRecords}"
+                 dataKey="id"
+                 responsiveLayout="scroll"
                  selectionMode="single">
             <ng-template pTemplate="caption">
                 <div class="flex justify-content-between flex-column sm:flex-row">
@@ -421,7 +429,7 @@
             </ng-template>
             <ng-template pTemplate="summary">
                 <div class="flex align-items-center justify-content-between">
-                    Au total il y'a {{ filteredFactures.length }} Vente(s).
+                    Au total il y a {{ totalItems }} Vente(s).
                 </div>
             </ng-template>
             <ng-template pTemplate="loadingbody">

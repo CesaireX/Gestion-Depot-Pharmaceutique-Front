@@ -134,7 +134,6 @@ export class VenteComponent implements OnInit {
     recuState: boolean = false;
     idfacture: any;
 
-
     commandes1: Commande[] = [];
     newBonCommandeNumber: any;
     societyId: any;
@@ -157,6 +156,12 @@ export class VenteComponent implements OnInit {
     totalAvecAssurance: number = 0;
     montantAssurance: number = 0;
     montantAPayer: number = 0;
+
+    currentPage: number = 0;
+    pageSize: number = 25;
+    totalItems: number = 0;
+    totalPages: number = 0;
+
     constructor(
         protected messageService: MessageService,
         private tokenStorage: TokenStorage,
@@ -401,29 +406,35 @@ export class VenteComponent implements OnInit {
 
     loadInvoices(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            this.factureService.findClientInvoicesBySocieteId(JSON.parse(this.tokenStorage.getsociety()!)).subscribe(
-                (res) => {
-                    this.factures = res.payload;
-                    this.filteredFactures = this.factures;
-                    console.log(this.filteredFactures)
-                    this.loading = false;
+            this.factureService.findClientInvoicesBySocieteIdPaginated(this.tokenStorage.getsociety()!, this.currentPage, this.pageSize)
+                .subscribe(
+                    (res) => {
+                        this.factures = res.payload.content;
+                        this.filteredFactures = this.factures;
+                        this.totalItems = res.payload.totalItems;
+                        this.totalPages = res.payload.totalPages;
+                        this.currentPage = res.payload.currentPage;
+                        this.loading = false;
 
-                    // Obtenez le dernier numéro de commande
-                    let lastCommandNumber = '00000';  // valeur par défaut
-                    if (this.factures.length > 0 && this.factures[0].lastNumber != null) {
-                        lastCommandNumber = this.factures[0].lastNumber;
+                        let lastCommandNumber = '00000';
+                        if (this.factures.length > 0 && this.factures[0].lastNumber != null) {
+                            lastCommandNumber = this.factures[0].lastNumber;
+                        }
+                        this.newBonCommandeNumber = this.generateBonCommandeNumber(lastCommandNumber);
+
+                        resolve();
+                    },
+                    (error) => {
+                        reject(error);
                     }
-                    // Générer le nouveau numéro de bon de commande
-                    // @ts-ignore
-                    this.newBonCommandeNumber = this.generateBonCommandeNumber(lastCommandNumber);
-
-                    resolve(); // résoudre la promesse une fois les factures chargées
-                },
-                (error) => {
-                    reject(error); // rejeter la promesse en cas d'erreur
-                }
-            );
+                );
         });
+    }
+
+    onPageChange(event: any): void {
+        this.currentPage = event.first / event.rows; // Calcul du numéro de page
+        this.pageSize = event.rows;                  // Nombre de lignes par page
+        this.loadInvoices();                         // Chargement des données
     }
 
     loadSortieByInvoice(id: number) {
@@ -440,6 +451,7 @@ export class VenteComponent implements OnInit {
             }
         );
     }
+
 
 
     onRowSelected13(event: any): void {
