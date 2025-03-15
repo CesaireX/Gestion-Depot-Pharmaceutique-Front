@@ -94,7 +94,7 @@ export class AuthService  {
             }
             // Redirection based on role
             if (this.role.includes('CAISSE')) {
-                this.router.navigateByUrl("gestock/factureClient");
+                this.router.navigate(['/gestock/factureClient', { mode: 'create' }]); // Ajout du paramètre 'mode'
             } else {
                 this.router.navigateByUrl("gestock/dashboards");
             }

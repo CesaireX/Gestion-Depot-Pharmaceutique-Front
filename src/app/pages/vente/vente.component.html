@@ -100,14 +100,21 @@
         <div class="container2">
             <!-- 1ère partie : product-selection à gauche -->
             <div class="product-selection">
-                <p-table #dt1  (onRowSelect)="onRowSelected($event)" (onRowUnselect)="onRowUnselected($event)"  [(selection)]="selectedProducts"
+                <p-table #dt1
+                         (onRowSelect)="onRowSelected($event)"
+                         (onRowUnselect)="onRowUnselected($event)"
+                         [(selection)]="selectedProducts"
                          [globalFilterFields]="['nom', 'categorieLibelle','familleLibelle']"
                          [loading]="loading"
-                         [paginator]="true" [responsive]="true" [rowHover]="true"
-                         [rows]="10"
+                         [paginator]="false"
+                         [responsive]="true"
+                         [rowHover]="true"
+                         [scrollable]="true"
+                         [scrollHeight]="'400px'"
                          [selectionMode]="'multiple'"
                          [value]="articleOptions"
-                         responsiveLayout="scroll" styleClass="product-table custom-table">
+                         responsiveLayout="scroll"
+                         styleClass="product-table custom-table">
                     <ng-template pTemplate="caption">
                         <div class="flex justify-content-between flex-column sm:flex-row align-items-center">
 
@@ -122,7 +129,9 @@
                     <ng-template pTemplate="header">
                         <tr>
                             <th style="width: 50px;">
-                                <p-tableHeaderCheckbox *ngIf="1<0"> </p-tableHeaderCheckbox>
+                                <input  *ngIf="1<0" type="checkbox"
+                                       [checked]="isAllSelected()"
+                                       (change)="toggleAllSelection($event)">
                             </th>
                             <th>Nom du produit</th>
                             <th>Prix (FCFA)</th>
@@ -135,7 +144,9 @@
                         <tr
                             [pSelectableRow]="product">
                             <td>
-                                <p-tableCheckbox [value]="product" (change)="onCheckboxChange($event, product)"></p-tableCheckbox>
+                                <input type="checkbox"
+                                       [checked]="isProductSelected(product)"
+                                       (change)="onCheckboxChange($event, product)">
                             </td>
                             <td style="font-weight: bold">{{ product.nom }}</td>
                             <td>{{ product.prixventettc | customNumber }}</td>
@@ -179,7 +190,7 @@
                             <th *ngIf="bonCommande.id==null" class="small-column"></th>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="table-body-scroll">
                         <tr *ngFor="let article of articles; let i = index">
                             <td>{{ article.produitNom }}</td>
                             <td>
@@ -219,29 +230,6 @@
                                     pInputNumber
                                 ></p-inputNumber>
                             </td>
-                            <!--<td *ngIf="selectedType === 'assure'">
-                                <p-dropdown
-                                    (onChange)="onAssuranceChange($event, i)"
-                                    [(ngModel)]="article.assurance"
-                                    [filterBy]="'libelle'"
-                                    [filter]="true"
-                                    [name]="'article-' + i + '-assurances'"
-                                    [options]="assurances"
-                                    [showClear]="true"
-                                    [style]="{ width: '100%' }"
-                                    appendTo="body"
-                                    placeholder="Sélectionner une assurance"
-                                >
-                                    <ng-template let-assurancess pTemplate="item">
-                                        <div class="flex align-items-center fournisseurs-item">
-                                            <div>{{ assurancess?.label }} &nbsp;&nbsp; [{{ assurancess?.value }}%]</div>
-                                        </div>
-                                    </ng-template>
-                                    <ng-template let-assurancess pTemplate="selectedItem">
-                                        <div>{{ assurancess?.label }} &nbsp;&nbsp; [{{ assurancess?.value }}%]</div>
-                                    </ng-template>
-                                </p-dropdown>
-                            </td>-->
                             <td>{{ article.montant.toFixed(2) | customNumber }}</td>
                             <td *ngIf="bonCommande.id==null" class="small-column">
                                 <button (click)="supprimerLigne(i)"
@@ -306,6 +294,7 @@
                                        [maxFractionDigits]="2"
                                        [minFractionDigits]="0"
                                        [min]="0"
+                                       [allowEmpty]="true"
                                        [showButtons]="true"
                                        class="input-field"
                                        locale="de-DE"
@@ -325,9 +314,13 @@
 
                 <div class="layout-footer">
                     <span class="footer-buttons">
-                        <button (click)="onSubmit(factureForm)" class="btn btn-primary" type="submit">
-                            <span>Enregistrer</span>
-                        </button>
+                        <button
+                            (click)="onSubmit(factureForm)"
+                            class="btn btn-primary"
+                            type="submit"
+                            [disabled]="!hasValidQuantities()"> <!-- Désactiver si aucune quantité valide -->
+                              <span>Enregistrer</span>
+                            </button>
                         <button (click)="annler()" class="btn btn-secondary" type="button">
                             Annuler
                         </button>
@@ -450,6 +443,9 @@
                         class="btn">
                     <i class="pi pi-pencil"></i> Modifier
                 </button>
+                <button (click)="imprimerTicketThermique(facture)" class="btn">
+                    <i class="pi pi-print"></i> Imprimer le Ticket
+                </button>
                 <button (click)="generatePDF()" class="btn">
                     <i class="pi pi-file-pdf"></i> PDF/Impression <i class="fas fa-caret-down"></i>
                 </button>
@@ -555,7 +551,7 @@
                         <div class="text-xl font-bold text-900 mb-3">Détails du paiement</div>
                     </ng-template>
                     <div class="flex flex-column gap-3">
-                        <div class="flex justify-content-between align-items-center">
+                        <div *ngIf="facture.assure" class="flex justify-content-between align-items-center">
                             <span class="text-600">Montant réglé par l'assusrane  ({{facture.assuranceValue }}%):</span>
                             <span class="text-900 font-medium">{{ facture.montantAssurance | customNumber }} FCFA</span>
                         </div>
@@ -671,7 +667,7 @@
                         <div class="text-xl font-bold text-900 mb-3">Détails du paiement</div>
                     </ng-template>
                     <div class="flex flex-column gap-3">
-                        <div class="flex justify-content-between align-items-center">
+                        <div *ngIf="facture.assure" class="flex justify-content-between align-items-center">
                             <span class="text-600">Montant réglé par l'assusrane  ({{facture.assuranceValue }}%):</span>
                             <span class="text-900 font-medium">{{ facture.montantAssurance | customNumber }} FCFA</span>
                         </div>

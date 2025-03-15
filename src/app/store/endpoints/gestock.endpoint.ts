@@ -121,5 +121,6 @@ export class GestockEndpoint {
     static readonly boncommandeclient = `${SERVICE_GESTOCK_PREFIX}/boncommandeclient`;
     static readonly transactionclient = `${SERVICE_GESTOCK_PREFIX}/clients-historiques/month`;
     static readonly transactionfrs = `${SERVICE_GESTOCK_PREFIX}/frs-historiques/month`;
+    static gestock_impression = `${SERVICE_GESTOCK_PREFIX}/impression`;
 
 }

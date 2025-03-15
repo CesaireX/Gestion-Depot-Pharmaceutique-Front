@@ -61,4 +61,8 @@ export class FactureFournisseurClientService extends CrudService<Facture, number
         return this.http.post<any>(`${GestockEndpoint.gestock_facture}/${factureId}/rembourse`, {});
     }
 
+    imprimerTicket(facture: Facture): Observable<any> {
+        console.log(facture)
+        return this.http.post<Facture>(`${GestockEndpoint.gestock_impression}/ticket`, facture);
+    }
 }

@@ -319,10 +319,13 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                     if (subItem.label === 'Ajout Articles dans magasins' && !this.droits.includes('AJOUT_ARTICLES_MAGASINS')) {
                                         return false;
                                     }
-                                    if (subItem.label === 'Inventaire par magasin' && !this.droits.includes('VOIR_INVENTAIRE')) {
+                                    if (subItem.label === 'Inventaire par Dépots' && !this.droits.includes('VOIR_INVENTAIRE')) {
                                         return false;
                                     }
                                     if (subItem.label === 'Correction Stock' && !this.droits.includes('VOIR_CORRECTION_STOCK')) {
+                                        return false;
+                                    }
+                                     if (subItem.label === 'Sortie de produits périmés' && !this.droits.includes('VOIR_CORRECTION_STOCK')) {
                                         return false;
                                     }
                                     if (subItem.label === 'Transfert de stock' && !this.droits.includes('VOIR_LISTE_TRANSFERT_STOCK')) {
@@ -385,13 +388,13 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                     if (subItem.label === 'Ventes Par Client' && !this.droits.includes('VOIR_VENTE_PAR_CLIENT')) {
                                         return false;
                                     }
-                                    if (subItem.label === 'Ventes Par Article' && !this.droits.includes('VOIR_VENTE_PAR_ARTICLE')) {
+                                    if (subItem.label === 'Ventes Par Produits' && !this.droits.includes('VOIR_VENTE_PAR_ARTICLE')) {
                                         return false;
                                     }
                                     if (subItem.label === 'Achat Par Fournisseur' && !this.droits.includes('VOIR_FOURNISSEUR_ACHAT')) {
                                         return false;
                                     }
-                                    if (subItem.label === 'Achat Par Article' && !this.droits.includes('VOIR_ACHAT_ARTICLE')) {
+                                    if (subItem.label === 'Achat Par Produits' && !this.droits.includes('VOIR_ACHAT_ARTICLE')) {
                                         return false;
                                     }
                                     if (subItem.label === 'Liste des dépenses' && !this.droits.includes('VOIR_LISTE_DES_DEPENSE')) {
@@ -411,7 +414,10 @@ constructor(private authService:AuthService, private tokenStorage: TokenStorage)
                                     }
                                 }
                                 if (item.label === 'Paramétrages') {
-                                    if (subItem.label === 'Magasins' && !this.droits.includes('VOIR_MAGASINS')) {
+                                    if (subItem.label === 'Dépots' && !this.droits.includes('VOIR_MAGASINS')) {
+                                        return false;
+                                    }
+                                    if (subItem.label === 'Assurances' && !this.droits.includes('VOIR_MAGASINS')) {
                                         return false;
                                     }
                                     if (subItem.label === 'Formes des produits' && !this.droits.includes('VOIR_CATEGORIE')) {

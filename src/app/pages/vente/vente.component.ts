@@ -149,7 +149,7 @@ export class VenteComponent implements OnInit {
     chrgmt: boolean = false;
     facturestoWach: Facture[] = [];
     droits: any;
-    montantDonne: number = 0;
+    montantDonne: number | null = null;
     monnaie: number = 0;
     display: boolean = false;
     @ViewChild('printSection') printSection!: ElementRef;
@@ -225,7 +225,10 @@ export class VenteComponent implements OnInit {
             this.chrgmt = false; // Cacher le spinner après le chargement de toutes les données ou en cas d'erreur
         }
     }
-
+    hasValidQuantities(): boolean {
+        // @ts-ignore
+        return this.articles.some(article => article.quantite >= 1);
+    }
     customizeBonCommandeNumber() {
         const customNumber = prompt('Initialiser le numéro à :');
         if (customNumber) {
@@ -272,17 +275,6 @@ export class VenteComponent implements OnInit {
             }, 1); // Un court délai permet à Angular de mettre à jour la vue
         }
     }
-
-    print() {
-        const printContent = this.printSection.nativeElement.innerHTML;
-        const originalContents = document.body.innerHTML;
-
-        document.body.innerHTML = printContent;
-        window.print();
-        document.body.innerHTML = originalContents;
-        window.location.reload();  // Recharger la page pour restaurer le contenu original
-    }
-
     startPdf() {
         const element = document.getElementById('commandeClient');
 
@@ -313,6 +305,26 @@ export class VenteComponent implements OnInit {
             });
     }
 
+    imprimerTicketThermique(facture: Facture) {
+        if (!facture) {
+            this.messageService.add({severity: 'error', summary: 'Erreur', detail: 'Aucune facture sélectionnée'});
+            return;
+        }
+
+        this.factureService.imprimerTicket(facture).subscribe(
+            (response) => {
+                if (response && response.success) {
+                    this.messageService.add({severity: 'success', summary: 'Succès', detail: 'Ticket imprimé avec succès'});
+                } else {
+                    this.messageService.add({severity: 'error', summary: 'Erreur', detail: response.message || 'Erreur lors de l\'impression'});
+                }
+            },
+            (error) => {
+                console.error('Erreur d\'impression:', error);
+                this.messageService.add({severity: 'error', summary: 'Erreur', detail: 'Erreur lors de l\'impression du ticket'});
+            }
+        );
+    }
     async loadData() {
         const [allData] = await Promise.all([
             this.loadall().toPromise()
@@ -430,17 +442,17 @@ export class VenteComponent implements OnInit {
     }
 
 
-    onRowSelected(event: any): void {
+    onRowSelected13(event: any): void {
         console.log('yyyy')
         this.addProduct(event.data);
     }
 
-    onRowUnselected(event: any): void {
+    onRowUnselected1(event: any): void {
         console.log('rrrrrr')
         this.onProductDeselected(event.data);
     }
 
-    onCheckboxChange(event: any, product: any): void {
+    onCheckboxChanged(event: any, product: any): void {
         const isChecked = event.checked;
         if (isChecked) {
             this.addProduct(product); // Ajouter le produit si coché
@@ -466,11 +478,51 @@ export class VenteComponent implements OnInit {
         this.montantDonne = event.value;
 
         // Vérifier si le montant donné est supérieur ou égal au montant à payer (après assurance)
-        if (this.montantDonne >= this.montantAPayer) {
-            this.monnaie = this.montantDonne - this.montantAPayer;
+        if (this.montantDonne! >= this.montantAPayer) {
+            this.monnaie = parseFloat((this.montantDonne! - this.montantAPayer).toFixed(2));
         } else {
             this.monnaie = 0;
         }
+    }
+    isProductSelected(product: any): boolean {
+        return this.articles.some(article => article.produitId === product.id);
+    }
+
+    isAllSelected(): boolean {
+        return this.articleOptions && this.articleOptions.length > 0 &&
+            this.articles.length === this.articleOptions.length;
+    }
+
+    toggleAllSelection(event: any): void {
+        if (event.target.checked) {
+            // Sélectionner tous les produits qui ne sont pas déjà sélectionnés
+            this.articleOptions.forEach(product => {
+                if (!this.isProductSelected(product)) {
+                    this.addProduct(product);
+                }
+            });
+        } else {
+            // Désélectionner tous les produits
+            this.articles = [];
+            this.calculateTotal();
+        }
+    }
+
+    onCheckboxChange(event: any, product: any): void {
+        if (event.target.checked) {
+            this.addProduct(product);
+        } else {
+            this.onProductDeselected(product);
+        }
+    }
+    onRowSelected(event: any) {
+        const product = event.data;
+        this.addProduct(product);
+    }
+
+    onRowUnselected(event: any) {
+        const product = event.data;
+        this.onProductDeselected(product);
     }
 
 
@@ -572,8 +624,8 @@ export class VenteComponent implements OnInit {
         this.montantAPayer = +this.montantAPayer.toFixed(2);
 
         // Calcul de la monnaie rendue basé sur le montant à payer
-        if (this.montantDonne >= this.montantAPayer) {
-            this.monnaie = this.montantDonne - this.montantAPayer;
+        if (this.montantDonne! >= this.montantAPayer) {
+            this.monnaie = this.montantDonne! - this.montantAPayer;
         } else {
             this.monnaie = 0;
         }
@@ -688,6 +740,8 @@ export class VenteComponent implements OnInit {
 
 
         this.facture.societyId = JSON.parse(this.tokenStorage.getsociety()!);
+        this.facture.montantDonne = this.montantDonne!;
+        this.facture.monnaie = this.monnaie!;
         if (!this.ifExist()) {
             this.facture.numero = this.newBonCommandeNumber;
             this.facture.ajustement = this.ajustement;
@@ -700,7 +754,6 @@ export class VenteComponent implements OnInit {
             this.facture.montantAssurance = this.montantAssurance;
             this.facture.clientId = this.client?.id;
             this.facture.boncommandeId = this.bonCommande.id;
-            console.log(this.selectedAssurance)
             this.facture.assuranceId = this.selectedAssurance?.id ;
             if (this.selectedType == 'assure') {
                 this.facture.nomAssure = this.nomAssure;
@@ -714,7 +767,6 @@ export class VenteComponent implements OnInit {
             }
 
             if (this.facture.clientId) {
-                console.log("fffffff")
                 this.facture.listSorties = this.articles.map(article => this.transformToSortie(article));
             }
             this.facture.createdBy = "false";

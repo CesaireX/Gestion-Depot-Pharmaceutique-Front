@@ -275,18 +275,6 @@ export class VenteAssuranceComponent implements OnInit {
             },
         });
     }
-
-
-    print() {
-        const printContent = this.printSection.nativeElement.innerHTML;
-        const originalContents = document.body.innerHTML;
-
-        document.body.innerHTML = printContent;
-        window.print();
-        document.body.innerHTML = originalContents;
-        window.location.reload();  // Recharger la page pour restaurer le contenu original
-    }
-
     startPdf() {
         const element = document.getElementById('commandeClient');
 
@@ -317,6 +305,26 @@ export class VenteAssuranceComponent implements OnInit {
             });
     }
 
+    imprimerTicketThermique(facture: Facture) {
+        if (!facture) {
+            this.messageService.add({severity: 'error', summary: 'Erreur', detail: 'Aucune facture sélectionnée'});
+            return;
+        }
+
+        this.factureService.imprimerTicket(facture).subscribe(
+            (response) => {
+                if (response && response.success) {
+                    this.messageService.add({severity: 'success', summary: 'Succès', detail: 'Ticket imprimé avec succès'});
+                } else {
+                    this.messageService.add({severity: 'error', summary: 'Erreur', detail: response.message || 'Erreur lors de l\'impression'});
+                }
+            },
+            (error) => {
+                console.error('Erreur d\'impression:', error);
+                this.messageService.add({severity: 'error', summary: 'Erreur', detail: 'Erreur lors de l\'impression du ticket'});
+            }
+        );
+    }
 
     loadCommandesByBonCommande(id: number) {
         this.bonCommandeService.getCommandeByBonId(id).subscribe(

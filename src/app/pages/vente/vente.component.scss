@@ -229,16 +229,42 @@ a:hover {
     flex-direction: column;
     gap: 10px;
 }
+// Styles pour le bouton "Enregistrer" (primary)
+.btn-primary {
+    background-color: #28a745; // Vert foncé par défaut
+    border-color: #28a745;
+    color: white;
 
+    &:hover {
+        background-color: #218838; // Vert plus foncé au survol
+        border-color: #1e7e34;
+        color: white; // Assure que le texte reste lisible
+    }
+
+    &[disabled] { // Style pour le bouton désactivé
+        background-color: #6c757d; // Gris pour indiquer qu'il est inactif
+        border-color: #6c757d;
+        opacity: 0.65;
+        cursor: not-allowed;
+
+        &:hover {
+            background-color: #6c757d; // Pas de changement au survol quand désactivé
+            border-color: #6c757d;
+        }
+    }
+}
+
+
+// Styles existants (inchangés)
 .layout-footer {
-    display: flex; /* Utilise Flexbox pour contrôler l'alignement */
-    justify-content: flex-end; /* Aligne les éléments à droite */
-    padding: 10px; /* Optionnel, pour l'espacement */
-    background-color: #f9f9f9; /* Optionnel, pour style */
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px;
+    background-color: #f9f9f9;
 }
 
 .footer-buttons button {
-    margin-left: 10px; /* Espacement entre les boutons */
+    margin-left: 10px;
 }
 
 
@@ -356,3 +382,15 @@ a:hover {
         color: green; // Example color for "payée" status
     }
 }
+
+.product-table {
+    max-height: 500px; /* Hauteur approximative pour 10 lignes */
+    overflow-y: auto;
+}
+
+.table-wrapper {
+    max-height: 400px; /* Hauteur approximative pour 5 lignes */
+    overflow-y: auto;
+}
+
+

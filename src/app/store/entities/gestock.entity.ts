@@ -847,6 +847,8 @@ export class Facture {
     rembourseParAssureur? : boolean;
     montant_total?: number;
     montantAssurance?: number;
+    montantDonne?: number;
+    monnaie?: number ;
     reste?: number;
     ajustement?: number;
     sous_total?: number;

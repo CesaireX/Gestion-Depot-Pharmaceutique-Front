@@ -38,7 +38,6 @@ import {CascadeSelectModule} from 'primeng/cascadeselect';
 import {ChartModule} from 'primeng/chart';
 import {ChipModule} from 'primeng/chip';
 import {ChipsModule} from 'primeng/chips';
-import {CodeHighlighterModule} from 'primeng/codehighlighter';
 import {ConfirmPopupModule} from 'primeng/confirmpopup';
 import {ColorPickerModule} from 'primeng/colorpicker';
 import {DataViewModule} from 'primeng/dataview';
@@ -50,7 +49,6 @@ import {InputNumberModule} from 'primeng/inputnumber';
 import {InputMaskModule} from 'primeng/inputmask';
 import {InputSwitchModule} from 'primeng/inputswitch';
 import {KnobModule} from 'primeng/knob';
-import {LightboxModule} from 'primeng/lightbox';
 import {MegaMenuModule} from 'primeng/megamenu';
 import {MenubarModule} from 'primeng/menubar';
 import {OrderListModule} from 'primeng/orderlist';
@@ -104,7 +102,7 @@ import {DatePipe} from "@angular/common";
         CheckboxModule,
         ChipModule,
         ChipsModule,
-        CodeHighlighterModule,
+
         ConfirmDialogModule,
         ConfirmPopupModule,
         ColorPickerModule,
@@ -123,7 +121,6 @@ import {DatePipe} from "@angular/common";
         InputTextModule,
         InputTextareaModule,
         KnobModule,
-        LightboxModule,
         ListboxModule,
         MegaMenuModule,
         MenuModule,
@@ -193,7 +190,7 @@ import {DatePipe} from "@angular/common";
         CheckboxModule,
         ChipModule,
         ChipsModule,
-        CodeHighlighterModule,
+
         ConfirmDialogModule,
         ConfirmPopupModule,
         ColorPickerModule,
@@ -212,7 +209,6 @@ import {DatePipe} from "@angular/common";
         InputTextModule,
         InputTextareaModule,
         KnobModule,
-        LightboxModule,
         ListboxModule,
         MegaMenuModule,
         MenuModule,
