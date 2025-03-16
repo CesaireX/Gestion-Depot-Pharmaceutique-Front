@@ -386,7 +386,8 @@
                 <div class="flex justify-content-between flex-column sm:flex-row">
                     <span class="p-input-icon-left mb-2">
 							<i class="pi pi-search"></i>
-							<input #filter (input)="onGlobalFilter(dt, $event)" class="w-full" pInputText
+							<input #filter [(ngModel)]="searchTerm"
+                                   (input)="onSearch()" class="w-full" pInputText
                                    placeholder="Rechercher" type="text"/>
 						</span>
                 </div>

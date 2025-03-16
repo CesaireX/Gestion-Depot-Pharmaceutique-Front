@@ -67,6 +67,8 @@ export class VenteComponent implements OnInit {
     dateEcheance: Date = new Date();
     isDeliveryDateValid: boolean = true;
     isSecondaryActive = false;
+    searchTerm: string = '';
+    searchTimeout: any;
     // @ts-ignore
     items: MenuItem[];
     loading: boolean = true;
@@ -404,9 +406,19 @@ export class VenteComponent implements OnInit {
         this.montantAssurance = this.bonCommande?.montantAssurance!;
     }
 
-    loadInvoices(): Promise<void> {
+    loadInvoices(resetPage: boolean = false): Promise<void> {
+        if (resetPage) {
+            this.currentPage = 0;
+        }
+
         return new Promise<void>((resolve, reject) => {
-            this.factureService.findClientInvoicesBySocieteIdPaginated(this.tokenStorage.getsociety()!, this.currentPage, this.pageSize)
+            this.loading = true;
+            this.factureService.findClientInvoicesBySocieteIdPaginated(
+                this.tokenStorage.getsociety()!,
+                this.searchTerm,
+                this.currentPage,
+                this.pageSize
+            )
                 .subscribe(
                     (res) => {
                         this.factures = res.payload.content;
@@ -425,10 +437,26 @@ export class VenteComponent implements OnInit {
                         resolve();
                     },
                     (error) => {
+                        this.loading = false;
                         reject(error);
                     }
                 );
         });
+    }
+
+    onSearch(): void {
+        if (this.searchTimeout) {
+            clearTimeout(this.searchTimeout);
+        }
+
+        this.searchTimeout = setTimeout(() => {
+            this.loadInvoices(true); // Reset à la première page pour une nouvelle recherche
+        }, 300);
+    }
+
+    resetSearch(): void {
+        this.searchTerm = '';
+        this.loadInvoices(true);
     }
 
     onPageChange(event: any): void {
