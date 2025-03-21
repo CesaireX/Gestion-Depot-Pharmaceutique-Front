@@ -29,7 +29,7 @@ export class ConnexionComponent implements OnInit {
     email="";
     password ="";
     request?:"";
-
+    showPassword: boolean = false;
     listofsocieties : Userproperties[] = [];
      response: any;
     societyName: string | undefined;
@@ -99,6 +99,7 @@ export class ConnexionComponent implements OnInit {
     togglePassword() {
         this.hidePassword = !this.hidePassword;
     }
+
 
     connexion(editForm: NgForm) {
         this.loading = true;

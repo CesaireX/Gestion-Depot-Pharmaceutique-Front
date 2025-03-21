@@ -323,15 +323,16 @@ export class VenteComponent implements OnInit {
                 if (response && response.success) {
                     this.messageService.add({severity: 'success', summary: 'Succès', detail: 'Ticket imprimé avec succès'});
                 } else {
-                    this.messageService.add({severity: 'error', summary: 'Erreur', detail: response.message || 'Erreur lors de l\'impression'});
+                    this.messageService.add({severity: 'error', summary: 'Erreur', detail: response.message || 'Erreur lors de l\'impression! Verifier si l\'imprimante est connectée.'});
                 }
             },
             (error) => {
                 console.error('Erreur d\'impression:', error);
-                this.messageService.add({severity: 'error', summary: 'Erreur', detail: 'Erreur lors de l\'impression du ticket'});
+                this.messageService.add({severity: 'error', summary: 'Erreur', detail: 'Erreur lors de l\'impression du ticket! Verifier si l\'imprimante est connectée.'});
             }
         );
     }
+
     async loadData() {
         const [allData] = await Promise.all([
             this.loadall().toPromise()

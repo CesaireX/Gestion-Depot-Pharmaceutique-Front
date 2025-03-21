@@ -299,21 +299,45 @@ export class ProduitComponent implements OnInit {
     }
 
 
-    loadLignesMagasinByProduit(id: number) {
-        this.ligneService.findAllByBesoin(id).subscribe(resp => {
-            if (resp.payload && resp.payload.length > 0) {
-                this.ligneMagasins = resp.payload;
-                // Par exemple, si vous attendez qu'une seule ligne existe :
-                const ligne = this.ligneMagasins[0];
-                this.stockInitial = ligne.stockInitial?.toString()!;
-                // Si besoin, vérifiez et mettez à jour selectedMagasin en fonction de la ligne récupérée
-                if (ligne.magasinId) {
-                    this.selectedMagasin = this.magasins.find(magasin => magasin.id === ligne.magasinId);
+    loadLignesMagasinByProduit(id: number): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.ligneService.findAllByBesoin(id).subscribe(resp => {
+                if (resp.payload && resp.payload.length > 0) {
+                    this.ligneMagasins = resp.payload;
+                    const ligne = this.ligneMagasins[0];
+                    this.stockInitial = ligne.stockInitial?.toString() || '';
+
+                    if (ligne.magasinId) {
+                        this.selectedMagasin = this.magasins.find(magasin => magasin.id === ligne.magasinId);
+                    }
+                    resolve();
+                } else {
+                    this.ligneMagasins = [];
+                    resolve();
                 }
-            }
+            }, error => {
+                console.error('Erreur lors du chargement des lignes magasin', error);
+                reject(error);
+            });
         });
     }
 
+    updateLigneMagasin(): void {
+        if (this.selectedMagasin?.id && this.stockInitial) {
+            // Rechercher si une ligne existe déjà pour ce magasin
+            const existingLineIndex = this.ligneMagasins.findIndex(
+                ligne => ligne.magasinId === this.selectedMagasin?.id
+            );
+
+            if (existingLineIndex !== -1) {
+                // Mettre à jour la ligne existante
+                this.ligneMagasins[existingLineIndex].stockInitial = +this.stockInitial;
+            } else {
+                // Ajouter une nouvelle ligne
+                this.addLigneMagasin();
+            }
+        }
+    }
 
     loadCategorie() {
         this.categorieService.findbysociety(JSON.parse(this.tokenStorage.getsociety()!)).subscribe(
@@ -450,6 +474,7 @@ export class ProduitComponent implements OnInit {
                         });
                     });
                     editForm.resetForm();
+                    this.stockInitial='';
                 } else {
                     await this.performSaveOperation(async () => {
                         await new Promise((resolve, reject) => {
@@ -459,6 +484,7 @@ export class ProduitComponent implements OnInit {
                                     this.isSecondaryActive = false
                                     this.showMessage('success', 'Enregistrement', 'Article ajouté!');
                                     editForm.resetForm();
+                                    this.stockInitial='';
                                     this.ligneMagasins = []
                                     resolve(null);
                                 },
@@ -541,19 +567,30 @@ export class ProduitComponent implements OnInit {
     }
 
     addLigneMagasin(): void {
-        if (this.selectedMagasin && this.stockInitial) {
-            const ligne: LigneMagasin = {
-                magasinId: this.selectedMagasin.id,
-                magasinNom: this.selectedMagasin.nom,
-                stockInitial: +this.stockInitial,
-            };
-            this.ligneMagasins.push(ligne);
-        }
+        if (this.selectedMagasin?.id && this.stockInitial) {
+            // Vérifier si une ligne existe déjà pour ce magasin
+            const existingLineIndex = this.ligneMagasins.findIndex(
+                ligne => ligne.magasinId === this.selectedMagasin?.id
+            );
 
-        // Réinitialiser les champs
-        this.stockInitial = '';
-        this.nomMagas = '';
-        this.selectedMagasin = {};
+            if (existingLineIndex !== -1) {
+                // Mettre à jour la ligne existante
+                this.ligneMagasins[existingLineIndex].stockInitial = +this.stockInitial;
+            } else {
+                // Ajouter une nouvelle ligne
+                const ligne: LigneMagasin = {
+                    magasinId: this.selectedMagasin.id,
+                    magasinNom: this.selectedMagasin.nom,
+                    stockInitial: +this.stockInitial,
+                };
+                this.ligneMagasins.push(ligne);
+            }
+
+            // Ne pas réinitialiser les champs pour permettre la modification
+            // this.stockInitial = '';
+            // this.nomMagas = '';
+            // this.selectedMagasin = {};
+        }
     }
 
 

@@ -206,6 +206,7 @@ export class CorrectionStockComponent implements OnInit {
         //this.calculDif()
     }
 
+    // Dans la méthode stockTheorique(), mettre à jour également stockAvantCorrection
     stockTheorique() {
         if (this.produitSelected && this.magasinSelected) {
             const productId = this.produitSelected.id!;
@@ -215,16 +216,59 @@ export class CorrectionStockComponent implements OnInit {
                 response => {
                     this.correctionStock.stockTheorique = 0; // Reset stockTheorique
                     // @ts-ignore
-                       const ligne = response.payload
-                        this.correctionStock.stockTheorique! += ligne.stock_physique_dispo!;
+                    const ligne = response.payload;
 
-                    // Vous pouvez également appeler this.calculDif() ici si nécessaire
+                    // Mettre à jour stockTheorique et stockAvantCorrection avec la même valeur
+                    this.correctionStock.stockTheorique! += ligne.stock_physique_dispo!;
+                    this.correctionStock.stockAvantCorrection = ligne.stock_physique_dispo!;
+
+                    // Recalculer la différence si nécessaire
+                    this.calculDif1();
                 },
                 error => {
                     console.error('Erreur lors de la récupération des lignes de magasin:', error);
                 }
             );
         }
+    }
+
+// Mettre à jour la méthode save pour s'assurer que stockAvantCorrection est envoyé au serveur
+    save(editForm: NgForm) {
+        this.correctionStock.societyId = JSON.parse(this.tokenStorage.getsociety()!);
+        this.correctionStock.magasinId = this.magasinSelected?.id;
+        this.correctionStock.produitId = this.produitSelected?.id;
+        if (this.type === 'PERIME') {
+            this.correctionStock.productExpired = true;
+        } else {
+            this.correctionStock.productExpired = false;
+        }
+
+        // Assurez-vous que stockAvantCorrection est défini
+        if (!this.correctionStock.stockAvantCorrection && this.correctionStock.stockTheorique) {
+            this.correctionStock.stockAvantCorrection = this.correctionStock.stockTheorique;
+        }
+
+        this.confirmationService.confirm({
+            header: 'ENREGISTREMENT',
+            message: 'Voulez-vous vraiment enregistrer un nouvel correctionStock?',
+            accept: () => {
+                this.chrgmt = true;
+                this.correctionStockService.save(this.correctionStock).subscribe(
+                    () => {
+                        if (this.type === 'PERIME') {
+                            this.loadExpiredProducts();
+                        } else {
+                            this.loadAll();
+                        }
+                        this.showMessage('success', 'Ajout', 'Ajout effectué avec succès !');
+                        this.display = false;
+                        this.chrgmt = false;
+                        editForm.resetForm();
+                    },
+                    () => this.showMessage('error', 'Ajout', 'Echec Ajout !')
+                );
+            }
+        });
     }
 
 
@@ -238,40 +282,6 @@ export class CorrectionStockComponent implements OnInit {
 
     annuler() {
         this.display = false;
-    }
-
-    save(editForm: NgForm) {
-        this.correctionStock.societyId = JSON.parse(this.tokenStorage.getsociety()!);
-        this.correctionStock.magasinId = this.magasinSelected?.id;
-        this.correctionStock.produitId = this.produitSelected?.id;
-        if (this.type === 'PERIME') {
-            this.correctionStock.productExpired=true;
-        }else {
-            this.correctionStock.productExpired=false;
-        }
-            this.confirmationService.confirm({
-                header: 'ENREGISTREMENT',
-                message: 'Voulez-vous vraiment enregistrer un nouvel correctionStock?',
-
-                accept: () => {
-                    this.chrgmt = true;
-                        this.correctionStockService.save(this.correctionStock).subscribe(
-                            () => {
-                                if (this.type === 'PERIME') {
-                                    this.loadExpiredProducts();
-                                }else {
-                                    this.loadAll();
-                                }
-                                this.showMessage('success', 'Ajout', 'Ajout effectué avec succès !');
-                                this.display = false;
-                                this.chrgmt = false;
-                                editForm.resetForm();
-                            },
-
-                            () => this.showMessage('error', 'Ajout', 'Echec Ajout !')
-                        );
-                }
-            });
     }
 
     ifExist(): boolean {
@@ -358,5 +368,9 @@ export class CorrectionStockComponent implements OnInit {
         if (!this.produitSelected){
 
         }
+    }
+
+    close() {
+        this.isSecondaryActive = false;
     }
 }

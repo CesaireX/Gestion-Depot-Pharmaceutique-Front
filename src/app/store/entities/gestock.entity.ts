@@ -674,6 +674,8 @@ export interface CorrectionStock{
     datePeremption?:Date;
     productExpired?:boolean;
     societyId?: number;
+    stockAvantCorrection?: number;
+    stockApresCorrection?: number;
 }
 
 

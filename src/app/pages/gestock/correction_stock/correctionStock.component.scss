@@ -10,3 +10,9 @@
 .form-column {
     flex: 1; /* Chaque colonne prend autant d'espace que possible */
 }
+
+.head1{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

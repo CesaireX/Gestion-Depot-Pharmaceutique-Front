@@ -363,8 +363,8 @@
                     <p-inputNumber type="number" id="stockInitial" name="stockInitial" pInputNumber
                                    mode="decimal" [maxFractionDigits]="2" locale="de-DE" [minFractionDigits]="0"
                                    [(ngModel)]="stockInitial" [style]="{'width': '100%'}"
-                                   [min]="1" [showButtons]="true"
-                                   (onBlur)="addLigneMagasin()">
+                                   [min]="0" [showButtons]="true"
+                                   (onBlur)="updateLigneMagasin()">
                     </p-inputNumber>
                 </div>
             </div>

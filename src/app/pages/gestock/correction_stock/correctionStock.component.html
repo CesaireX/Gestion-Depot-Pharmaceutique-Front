@@ -2,6 +2,8 @@
 <div *ngIf="chrgmt" class="spinner-overlay">
     <p-progressSpinner ariaLabel="loading"></p-progressSpinner>
 </div>
+
+<!-- Vue principale - Liste des corrections de stock -->
 <div *ngIf="!display" style="display: flex">
     <div [ngClass]="{'shrink': isSecondaryActive}" class="card primary" style="height: 100%;">
         <div class="header55">
@@ -15,22 +17,24 @@
                         pButton></button>
             </div>
         </div>
-        <p-table #dt [globalFilterFields]="['libelle']" [loading]="loading" [paginator]="true" [rowHover]="true"
+        <p-table #dt [globalFilterFields]="['produitNom', 'famille', 'categorie']" [loading]="loading" [paginator]="true" [rowHover]="true"
                  [rowsPerPageOptions]="[25,50,100]" [rows]="25"
                  [value]="correctionStocks"
                  responsiveLayout="scroll">
             <ng-template pTemplate="caption">
+                <div class="flex justify-content-between flex-column sm:flex-row">
+                    <span class="p-input-icon-left mb-2">
+                        <i class="pi pi-search"></i>
+                        <input pInputText type="text" #filter (input)="onGlobalFilter(dt, $event)"
+                               placeholder="Rechercher..." class="w-full"/>
+                    </span>
+                </div>
             </ng-template>
             <ng-template pTemplate="header">
                 <tr>
                     <th style="min-width: 12rem; background-color: rgb(236,236,236)">
                         <div class="flex justify-content-between align-items-center">
                             Date
-                        </div>
-                    </th>
-                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
-                        <div class="flex justify-content-between align-items-center">
-                            Réference
                         </div>
                     </th>
                     <th style="min-width: 12rem; background-color: rgb(236,236,236)">
@@ -48,32 +52,27 @@
                             Forme
                         </div>
                     </th>
-<!--                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
-                        <div class="flex justify-content-between align-items-center">
-                            Unité
-                        </div>
-                    </th>-->
-                   <!-- <th style="min-width: 12rem; background-color: rgb(236,236,236)">
-                        <div class="flex justify-content-between align-items-center">
-                            Magasin
-                        </div>
-                    </th>-->
                     <th style="min-width: 12rem; background-color: rgb(236,236,236)">
                         <div class="flex justify-content-between align-items-center">
-                            Stock Actuel
+                            Stock Avant
                         </div>
                     </th>
-                    <th  *ngIf="type === 'CORRECTION'" style="min-width: 12rem; background-color: rgb(236,236,236)">
+                    <th style="min-width: 12rem; background-color: rgb(236,236,236)">
+                        <div class="flex justify-content-between align-items-center">
+                            Stock Après
+                        </div>
+                    </th>
+                    <th *ngIf="type === 'CORRECTION'" style="min-width: 12rem; background-color: rgb(236,236,236)">
                         <div class="flex justify-content-between align-items-center">
                             Différence
                         </div>
                     </th>
-                    <th  *ngIf="type === 'PERIME'" style="min-width: 12rem; background-color: rgb(236,236,236)">
+                    <th *ngIf="type === 'PERIME'" style="min-width: 12rem; background-color: rgb(236,236,236)">
                         <div class="flex justify-content-between align-items-center">
                             Quantité périmée
                         </div>
                     </th>
-                    <th  *ngIf="type === 'PERIME'" style="min-width: 12rem; background-color: rgb(236,236,236)">
+                    <th *ngIf="type === 'PERIME'" style="min-width: 12rem; background-color: rgb(236,236,236)">
                         <div class="flex justify-content-between align-items-center">
                             Date de péremption
                         </div>
@@ -83,139 +82,169 @@
             <ng-template let-correctionStock pTemplate="body">
                 <tr (click)="onRowSelect(correctionStock)" class="large-row" style="padding-top: 10px; padding-bottom: 10px;">
                     <td>{{correctionStock.dateCorrection | customDate }}</td>
-                    <td>{{correctionStock.produitReference}}</td>
                     <td>{{correctionStock.produitNom}}</td>
                     <td>{{correctionStock.famille}}</td>
                     <td>{{correctionStock.categorie}}</td>
-<!--                    <td>{{correctionStock.unite}}</td>-->
-<!--
-                    <td>{{correctionStock.magasinNom}}</td>
--->
                     <td>{{correctionStock.stockTheorique | customNumber}}</td>
-                    <td *ngIf="correctionStock.diff>=0&&type === 'CORRECTION'">
+                    <td>{{correctionStock.stockApresCorrection | customNumber}}</td>
+
+                    <!-- Pour les corrections -->
+                    <td *ngIf="type === 'CORRECTION'">
                         <p-tag [severity]="getSeverity(correctionStock)">
-                            +{{correctionStock.diff | customNumber}}</p-tag>
+                            <span *ngIf="correctionStock.diff > 0">+</span>{{correctionStock.diff | customNumber}}
+                        </p-tag>
                     </td>
-                    <td *ngIf="correctionStock.diff<0&&type === 'CORRECTION'">
-                        <p-tag [severity]="getSeverity(correctionStock)">{{correctionStock.diff | customNumber}}</p-tag>
-                    </td>
+
+                    <!-- Pour les produits périmés -->
                     <td *ngIf="type === 'PERIME'">
                         <p-tag [severity]="getSeverity(correctionStock)">
-                            {{correctionStock.qtePerime | customNumber}}</p-tag>
+                            {{correctionStock.qtePerime | customNumber}}
+                        </p-tag>
                     </td>
                     <td *ngIf="type === 'PERIME'">{{correctionStock.datePeremption | customDate}}</td>
                 </tr>
             </ng-template>
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="7" style="text-align: center">Aucune Correction de Stock disponible</td>
+                    <td colspan="8" style="text-align: center">
+                        <span *ngIf="type === 'CORRECTION'">Aucune correction de stock disponible</span>
+                        <span *ngIf="type === 'PERIME'">Aucun produit périmé disponible</span>
+                    </td>
                 </tr>
             </ng-template>
             <ng-template pTemplate="loadingbody">
                 <tr>
-                    <td colspan="7" style="text-align: center">Chargement de données, veuillez patienter...</td>
+                    <td colspan="8" style="text-align: center">Chargement de données, veuillez patienter...</td>
                 </tr>
             </ng-template>
         </p-table>
-
     </div>
+
+    <!-- Vue détaillée d'une correction -->
     <div [ngClass]="{'active': isSecondaryActive}" class="card secondary" style="height: 100%;">
         <div class="headerfact">
             <div>
-<!--
-                <h5>{{selectedItem.produitNom}}</h5>
--->
+                <h5>{{selectedItem?.produitNom}}</h5>
             </div>
-            <div class="actions">
-                <button pTooltip="Supprimer ou annuler la correction de stock" *ngIf="droits.includes('VOIR_CORRECTION_STOCK_SUPPRIMER')" (click)="deleteElement(selectedItem)" class="btn"
-                ><i class="pi pi-times"></i>Annuler
+            <div class="actions head1">
+                <button pTooltip="Supprimer ou annuler la correction de stock" *ngIf="droits.includes('VOIR_CORRECTION_STOCK_SUPPRIMER')" (click)="deleteElement(selectedItem)" class="btn">
+                    <i class="pi pi-times"></i>Annuler
                 </button>
+                <span class="close-button" (click)="close()">&#10006;</span>
             </div>
         </div>
 
         <div class="bon-commande-detail">
             <div class="container">
                 <h5>Détails de la Correction de Stock</h5>
+
+                <!-- Date -->
                 <div class="form-group row align-items-center">
-                    <label class="col-sm-3 col-form-label"><strong> Date : </strong> </label>
+                    <label class="col-sm-3 col-form-label"><strong>Date :</strong></label>
                     <div class="col-sm-9 ml-7">
                         <p>{{ selectedItem?.dateCorrection | customDate }}</p>
                     </div>
                 </div>
-                <!--
-                <div class="form-group row align-items-center">
-                    <label class="col-sm-3 col-form-label"><strong>Magasin : </strong></label>
-                    <div class="col-sm-9 ml-7">
-                        <p>{{ selectedItem?.magasinNom }}</p>
-                    </div>
-                </div>-->
 
+                <!-- Produit -->
                 <div class="form-group row align-items-center">
-                    <label class="col-sm-3 col-form-label"><strong>Produit : </strong></label>
+                    <label class="col-sm-3 col-form-label"><strong>Produit :</strong></label>
                     <div class="col-sm-9 ml-7">
                         <p>{{ selectedItem?.produitNom }}</p>
                     </div>
                 </div>
+
+                <!-- Unité -->
                 <div class="form-group row align-items-center">
-                    <label class="col-sm-3 col-form-label"><strong>Unité : </strong></label>
+                    <label class="col-sm-3 col-form-label"><strong>Unité :</strong></label>
                     <div class="col-sm-9 ml-7">
                         <p>{{ selectedItem?.unite }}</p>
                     </div>
                 </div>
+
+                <!-- Forme -->
                 <div class="form-group row align-items-center">
-                    <label class="col-sm-3 col-form-label"><strong>Forme : </strong></label>
+                    <label class="col-sm-3 col-form-label"><strong>Forme :</strong></label>
                     <div class="col-sm-9 ml-7">
                         <p>{{ selectedItem?.categorie }}</p>
                     </div>
                 </div>
+
+                <!-- Famille -->
                 <div class="form-group row align-items-center">
-                    <label class="col-sm-3 col-form-label"><strong>Famille : </strong></label>
+                    <label class="col-sm-3 col-form-label"><strong>Famille :</strong></label>
                     <div class="col-sm-9 ml-7">
                         <p>{{ selectedItem?.famille }}</p>
                     </div>
                 </div>
 
+                <!-- Stock avant correction -->
                 <div class="form-group row align-items-center">
-                    <label class="col-sm-3 col-form-label"><strong>Quantité Disponible : </strong></label>
+                    <label class="col-sm-3 col-form-label"><strong>Stock avant correction :</strong></label>
                     <div class="col-sm-9 ml-7">
                         <p>{{ selectedItem?.stockTheorique | customNumber }}</p>
                     </div>
                 </div>
+
+                <!-- Quantité périmée (pour les produits périmés) -->
                 <div *ngIf="type === 'PERIME'" class="form-group row align-items-center">
-                    <label class="col-sm-3 col-form-label"><strong>Quantité périmé : </strong></label>
+                    <label class="col-sm-3 col-form-label"><strong>Quantité périmée :</strong></label>
                     <div class="col-sm-9 ml-7">
-                        <p-tag [severity]="getSeverity(selectedItem!)">{{selectedItem?.qtePerime | customNumber}}</p-tag>
+                        <p-tag [severity]="getSeverity(selectedItem!)">{{ selectedItem?.qtePerime | customNumber }}</p-tag>
                     </div>
                 </div>
 
-                <div  *ngIf="type === 'CORRECTION'" class="form-group row align-items-center">
-                    <label class="col-sm-3 col-form-label"><strong>Différence : </strong></label>
+                <!-- Différence (pour les corrections normales) -->
+                <div *ngIf="type === 'CORRECTION'" class="form-group row align-items-center">
+                    <label class="col-sm-3 col-form-label"><strong>Différence :</strong></label>
                     <div class="col-sm-9 ml-7">
-                        <p *ngIf="selectedItem?.diff>=0">
+                        <p *ngIf="selectedItem?.diff >= 0">
                             <p-tag [severity]="getSeverity(selectedItem!)">
-                                +{{selectedItem?.diff | customNumber}}</p-tag>
+                                +{{ selectedItem?.diff | customNumber }}
+                            </p-tag>
                         </p>
-                        <td *ngIf="selectedItem?.diff<0">
-                            <p-tag [severity]="getSeverity(selectedItem!)">{{selectedItem?.diff | customNumber}}</p-tag>
-                        </td>
+                        <p *ngIf="selectedItem?.diff < 0">
+                            <p-tag [severity]="getSeverity(selectedItem!)">
+                                {{ selectedItem?.diff | customNumber }}
+                            </p-tag>
+                        </p>
                     </div>
                 </div>
 
+                <!-- Stock après correction -->
+                <div class="form-group row align-items-center">
+                    <label class="col-sm-3 col-form-label"><strong>Stock après correction :</strong></label>
+                    <div class="col-sm-9 ml-7">
+                        <p>{{ selectedItem?.stockApresCorrection | customNumber }}</p>
+                    </div>
+                </div>
+
+                <!-- Date de péremption (pour les produits périmés) -->
                 <div *ngIf="type === 'PERIME'" class="form-group row align-items-center">
-                    <label class="col-sm-3 col-form-label"><strong>Date de péremption : </strong></label>
+                    <label class="col-sm-3 col-form-label"><strong>Date de péremption :</strong></label>
                     <div class="col-sm-9 ml-7">
                         <p>{{ selectedItem?.datePeremption ? (selectedItem?.datePeremption | customDate) : "Non Specifiée" }}</p>
                     </div>
                 </div>
 
                 <div class="form-group row align-items-center">
-                    <label class="col-sm-3 col-form-label"><strong>Raison : </strong></label>
+                    <label class="col-sm-3 col-form-label"><strong>Stock actuel :</strong></label>
+                    <div class="col-sm-9 ml-7">
+                        <p>{{ selectedItem?.stockPhysique | customNumber }}</p>
+                    </div>
+                </div>
+
+                <!-- Raison -->
+                <div class="form-group row align-items-center">
+                    <label class="col-sm-3 col-form-label"><strong>Raison :</strong></label>
                     <div class="col-sm-9 ml-7">
                         <p>{{ selectedItem?.raison ? selectedItem?.raison : "Non spécifiée" }}</p>
                     </div>
                 </div>
+
+                <!-- Correcteur -->
                 <div class="form-group row align-items-center">
-                    <label class="col-sm-3 col-form-label"><strong>Correcteur : </strong></label>
+                    <label class="col-sm-3 col-form-label"><strong>Correcteur :</strong></label>
                     <div class="col-sm-9 ml-7">
                         <p>{{ selectedItem?.userCorrection }}</p>
                     </div>
@@ -225,34 +254,21 @@
     </div>
 </div>
 
-
+<!-- Formulaire d'ajout/modification de correction -->
 <div *ngIf="display" class="container1" style="height: 100%;">
-    <div class="header-special" >
+    <div class="header-special">
         <p style="font-size: large; margin-bottom: 25px">
             <i class="pi pi-verified" style="font-size: 1.5rem"></i>
-             <span *ngIf="type === 'CORRECTION'">Correction de stock</span>
-             <span *ngIf="type === 'PERIME'">Sortie de produits périmés</span>
+            <span *ngIf="type === 'CORRECTION'">Correction de stock</span>
+            <span *ngIf="type === 'PERIME'">Sortie de produits périmés</span>
         </p>
-        <button  (click)="closeSection(editForm)"     tooltipPosition="left"
-                 pTooltip="Retour sur la liste"  class="p-button-primary small-button p-button-icon-only" icon="pi pi-arrow-left" pButton></button>
+        <button (click)="closeSection(editForm)" tooltipPosition="left"
+                pTooltip="Retour sur la liste" class="p-button-primary small-button p-button-icon-only" icon="pi pi-arrow-left" pButton></button>
     </div>
     <form name="editForm" role="form" novalidate #editForm="ngForm" style="margin-bottom: 55px">
         <h5>Informations générales</h5>
-        <!--<div class="form-group row align-items-center">
-            <label style="color: red" class="col-sm-3 col-form-label">Selectionner le Magasin</label>
-            <div class="col-sm-9 ml-7">
-                <p-dropdown (onChange)="loadProductByMagasin()" [(ngModel)]="magasinSelected"
-                            [autoDisplayFirst]="false" [emptyFilterMessage]="'Aucun element trouvé'" [filterBy]="'nom'"
-                            [filter]="true" [options]="magasins" [required]="true" [showClear]="true"
-                            [style]="{width: '300px'}"  placeholder="Sélectionner un magasin"
-                            appendTo="body" name="magasin"
-                            optionLabel="nom"
-                            (onClear)="clearDropdown()"
-                >
-                </p-dropdown>
-            </div>
-        </div>-->
 
+        <!-- Sélection du produit -->
         <div class="form-group row align-items-center">
             <label style="color: red" class="col-sm-3 col-form-label">Selectionner le Produit</label>
             <div class="col-sm-9 ml-7">
@@ -266,85 +282,106 @@
                 </p-dropdown>
             </div>
         </div>
+
+        <!-- Stock théorique / Stock Actuel -->
         <div class="form-group row align-items-center">
-            <label *ngIf="type === 'CORRECTION'" class="col-sm-3 col-form-label">Quantité Théorique</label>
-            <label *ngIf="type === 'PERIME'" class="col-sm-3 col-form-label">Quantité totale</label>
+            <label *ngIf="type === 'CORRECTION'" class="col-sm-3 col-form-label">Stock Actuel</label>
+            <label *ngIf="type === 'PERIME'" class="col-sm-3 col-form-label">Stock Actuel</label>
             <div class="col-sm-9 ml-7">
-                <p-inputNumber class="form-control"  [(ngModel)]="correctionStock.stockTheorique" [disabled]="true"
+                <p-inputNumber class="form-control" [(ngModel)]="correctionStock.stockTheorique" [disabled]="true"
                                mode="decimal" [maxFractionDigits]="2"
-                                [required]="true" [style]="{'width': '100%'}" locale="de-DE" [minFractionDigits]="0" pInputNumber
-                                 name="stockTheorique">
+                               [required]="true" [style]="{'width': '100%'}" locale="de-DE" [minFractionDigits]="0" pInputNumber
+                               name="stockTheorique">
                 </p-inputNumber>
             </div>
         </div>
 
+        <!-- Quantité réelle / périmée -->
         <div class="form-group row align-items-center">
             <label style="color: red" *ngIf="type === 'CORRECTION'" class="col-sm-3 col-form-label">Quantité réelle</label>
             <label style="color: red" *ngIf="type === 'PERIME'" class="col-sm-3 col-form-label">Quantité périmée</label>
             <div *ngIf="type === 'CORRECTION'" class="col-sm-9 ml-7">
-                <p-inputNumber  class="form-control" [disabled]="produitSelected==null" type="number" id="stockPhysiquek" name="stockPhysique" pInputNumber
+                <p-inputNumber class="form-control" [disabled]="produitSelected==null" type="number" id="stockPhysiquek" name="stockPhysique" pInputNumber
                                [(ngModel)]="correctionStock.stockPhysique" [style]="{'width': '100%'}" [min]="0"
-                                mode="decimal"  [maxFractionDigits]="2"
-                               locale="de-DE" [minFractionDigits]="0" (onInput)="calculDif($event)"  [showButtons]="true">
+                               mode="decimal" [maxFractionDigits]="2"
+                               locale="de-DE" [minFractionDigits]="0" (onInput)="calculDif($event)" [showButtons]="true">
                 </p-inputNumber>
             </div>
             <div *ngIf="type === 'PERIME'" class="col-sm-9 ml-7">
-                    <p-inputNumber  class="form-control" [disabled]="produitSelected==null" type="number" id="qtePerime" name="qtePerime" pInputNumber
-                                   [(ngModel)]="correctionStock.qtePerime" [style]="{'width': '100%'}" [min]="0"
-                                    mode="decimal"  [maxFractionDigits]="2"
-                                   locale="de-DE" [minFractionDigits]="0" (onInput)="calculDif($event)"  [showButtons]="true">
-                    </p-inputNumber>
-                </div>
+                <p-inputNumber class="form-control" [disabled]="produitSelected==null" type="number" id="qtePerime" name="qtePerime" pInputNumber
+                               [(ngModel)]="correctionStock.qtePerime" [style]="{'width': '100%'}" [min]="0"
+                               mode="decimal" [maxFractionDigits]="2"
+                               locale="de-DE" [minFractionDigits]="0" (onInput)="calculDif($event)" [showButtons]="true">
+                </p-inputNumber>
             </div>
+        </div>
+
+        <!-- Différence / Quantité restante -->
         <div class="form-group row align-items-center">
-            <label *ngIf="type === 'CORRECTION'" class="col-sm-3 col-form-label">Difference</label>
-            <label *ngIf="type === 'PERIME'" class="col-sm-3 col-form-label">Quantitante restante</label>
+            <label *ngIf="type === 'CORRECTION'" class="col-sm-3 col-form-label">Différence</label>
+            <label *ngIf="type === 'PERIME'" class="col-sm-3 col-form-label">Quantité restante</label>
             <div class="col-sm-9 ml-7">
                 <input class="form-control" [(ngModel)]="correctionStock.diff" [disabled]="true" [required]="true"
                        name="diff"
                        pInputText style="font-weight:bold;" type="number"/>
             </div>
         </div>
+
+        <!-- Stock après correction -->
         <div class="form-group row align-items-center">
-            <label class="col-sm-3 col-form-label">Date de péremption </label>
+            <label class="col-sm-3 col-form-label">Stock après correction</label>
+            <div class="col-sm-9 ml-7">
+                <input class="form-control" [(ngModel)]="correctionStock.stockApresCorrection" [disabled]="true"
+                       name="stockApresCorrection"
+                       pInputText style="font-weight:bold;" type="number"/>
+            </div>
+        </div>
+
+        <!-- Date / Date de péremption -->
+        <div class="form-group row align-items-center">
+            <label *ngIf="type === 'PERIME'" class="col-sm-3 col-form-label">Date de péremption</label>
+            <label *ngIf="type != 'PERIME'" class="col-sm-3 col-form-label">Date</label>
             <div class="col-sm-9 ml-7 form-control">
                 <p-calendar appendTo="body" [(ngModel)]="correctionStock.datePeremption"
                             name="datePeremption" dateFormat="dd/mm/yy"
                             [showIcon]="true" [ngModelOptions]="{ standalone: true }"
-                            [maxDate]="currentdate" [style]="{'width':'300px'}"
-                            ></p-calendar>
+                            [maxDate]="currentdate" [style]="{'width':'300px'}">
+                </p-calendar>
             </div>
         </div>
 
+        <!-- Raison -->
         <div class="form-group row align-items-center">
             <label class="col-sm-3 col-form-label">Raison</label>
             <div class="col-sm-9 ml-7">
-            <textarea class="form-control" [(ngModel)]="correctionStock.raison" name="description" pInputText type="text">
-            </textarea>
+                <textarea class="form-control" [(ngModel)]="correctionStock.raison" name="description" pInputText type="text">
+                </textarea>
             </div>
         </div>
     </form>
 
+    <!-- Boutons de validation -->
     <div class="layout-footer p-d-flex p-ai-center p-p-4 p-shadow-z" style="bottom: 0; position: fixed; width: 100%">
-            <span style="font-weight: bold">
-                <button (click)="save(editForm)"  [disabled]="editForm.invalid || loading" class="btn btn-primary" type="Submit">
-                    <i *ngIf="loading && display" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
-                    <span *ngIf="!loading || !display">Enregistrer</span>
-                    <span *ngIf="loading && display">Enregistrement...</span>
-                </button>
-
-                <button (click)="annuler()" class="btn btn-secondary" type="button">Annuler</button>
-            </span>
+        <span style="font-weight: bold">
+            <button (click)="save(editForm)" [disabled]="editForm.invalid || loading" class="btn btn-primary" type="Submit">
+                <i *ngIf="loading && display" class="pi pi-spin pi-spinner" style="font-size: 1rem"></i>
+                <span *ngIf="!loading || !display">Enregistrer</span>
+                <span *ngIf="loading && display">Enregistrement...</span>
+            </button>
+            <button (click)="annuler()" class="btn btn-secondary" type="button">Annuler</button>
+        </span>
     </div>
 </div>
+
+<!-- Confirmation Dialog -->
 <p-confirmDialog #cd header="Confirmation" icon="pi pi-exclamation-triangle"
                  position="top">
     <p-footer style="display: flex;">
-        <button (click)="cd.reject()" class="btnannulate"
-        ><i class="pi pi-close"></i>Annuler
+        <button (click)="cd.reject()" class="btnannulate">
+            <i class="pi pi-close"></i>Annuler
         </button>
-        <button (click)="cd.accept()" class="btnvalidate"
-        ><i class="pi pi-confirm"></i>Confirmer
+        <button (click)="cd.accept()" class="btnvalidate">
+            <i class="pi pi-confirm"></i>Confirmer
         </button>
     </p-footer>
 </p-confirmDialog>

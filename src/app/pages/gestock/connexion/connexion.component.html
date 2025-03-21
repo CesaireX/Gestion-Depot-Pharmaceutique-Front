@@ -18,16 +18,20 @@
                     <div class="p-inputgroup">
                         <span class="p-inputgroup-addon"><i class="pi pi-key"></i></span>
                         <!--                    <input  name="password" placeholder="Mot de passe" type="password" pInputText [(ngModel)]="authEntity.password" [required]="true"/>-->
-                        <p-password name="password"
-                                    class="w-full"
-                                    [feedback]="false"
-                                    placeholder="Mot de passe"
-                                    [(ngModel)]="authEntity.password"
-                                    styleClass="p-password p-component p-inputwrapper p-input-icon-right"
-                                    [style]="{'width':'100%'}"
-                                    [inputStyle]="{'width':'100%'}"
-                                    [toggleMask]="true" [disabled]="loading"
-                        ></p-password>
+                        <div class="p-inputgroup">
+<!--                            <span class="p-inputgroup-addon"><i class="pi pi-key"></i></span>-->
+                            <input name="password"
+                                   placeholder="Mot de passe"
+                                   [type]="showPassword ? 'text' : 'password'"
+                                   pInputText
+                                   [(ngModel)]="authEntity.password"
+                                   [required]="true"
+                                   [disabled]="loading"
+                                   class="w-full"/>
+                            <span class="p-inputgroup-addon" (click)="showPassword = !showPassword" style="cursor: pointer">
+        <i class="pi" [ngClass]="showPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
+    </span>
+                        </div>
                     </div>
                     <p-progressSpinner *ngIf="loading" styleClass="w-2rem h-2rem" strokeWidth="4" fill="var(--surface-ground)"></p-progressSpinner>
                     <div>
